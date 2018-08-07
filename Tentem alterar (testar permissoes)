@@ -1,0 +1,18 @@
+linha 1
+linha 2
+bla bla
+codigos e etc
+
+
+int var = 0;
+
+if( 1 >= (7*3/4) ){
+  printf("falso como sempre, %s", "  -" );
+} else{ 
+  var += 2;
+}
+
+
+
+/* alterem qualquer coisa que seja */
+  
