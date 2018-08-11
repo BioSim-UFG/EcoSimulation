@@ -20,7 +20,11 @@ void LibPaleoData::getClimCell(int c, double timeKya, float SATMin, float SATMax
 		//troquei o função Trunc() por um cast (int), pois ela apenas trunca um ponto flutuante, retornando a parte inteira
 		tmp = (timeKya * PLASIMnTimeOffset) - ((int)timeKya * PLASIMnTimeOffset);
 		//não existe roundTo em c++, o que fazer?
+		//encontrei alternativas, mas que funcionam de forma um pouco diferentes: 
+		//https://stackoverflow.com/questions/11208971/round-a-float-to-a-given-precision
 		tmp = roundTo(tmp, 4);
+
+
 	}
 
 }
