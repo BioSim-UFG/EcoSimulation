@@ -32,9 +32,7 @@ int l2b_endian(int num){
 	b2 = (num & 0x00ff0000) >> 8u;
 	b3 = (num & 0xff000000) >> 24u;
 
-	res = b0 | b1 | b2 | b3;
-
-	return res;
+	return (b0 | b1 | b2 | b3);
 }
 
 int main(){
