@@ -74,7 +74,7 @@ int main(){
 }
 
 
-//******** retirado de: https://zlib.net/zlib_how.html ****************/
+//******** retirado de: https://zlib.net/zlib_how.html e https://zlib.net/manual.html ****************/
 
 /* Decompress from file source to file dest until stream ends or EOF.
    inf() returns Z_OK on success, Z_MEM_ERROR if memory could not be
