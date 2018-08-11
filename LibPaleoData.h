@@ -1,9 +1,10 @@
 
+
 // definindo o time temporariamente. Interpretei o nome do tipo no arquivo pascal para o mais proximo em C++
-typedef TSngMatrix **float;
-typedef TSngVector *float;
-typedef PSngVector *TSngVector;
-typedef TDblMatrix **double;
+typedef float** TSngMatrix;
+typedef float* TSngVector;
+typedef TSngVector* PSngVector;
+typedef double** TDblMatrix;
 
 
 typedef struct{
@@ -24,7 +25,8 @@ class LibPaleoData {
 /*construtor*/
 
   	// Create the class by opening the PLASIM file and the present-day climatology data as baseline
-  	LibPaleoData(String PLASIMFile, String presentClimateFile, bool projectAnnomalies);
+  	//LibPaleoData(String PLASIMFile, String presentClimateFile, bool projectAnnomalies);
+  	LibPaleoData(char* PLASIMFile, char* presentClimateFile, bool projectAnnomalies);
 
 /****metodos****/
 
@@ -60,8 +62,8 @@ class LibPaleoData {
   	TSngVector wLon, wLat;		//Weights for interpolation
 
   	TDblMatrix modelGridObsClimate;			// Baseline/current climate from "observed" data (e.g. WorldClim)
-  	TSngMatrix modelGridPLASIMClimate		// Predictions of PLASIM for the current climate
+  	TSngMatrix modelGridPLASIMClimate;		// Predictions of PLASIM for the current climate
 
   	TLastInterpolation *lastInterpolation;
   	bool projAnomalies;
-}
+};
