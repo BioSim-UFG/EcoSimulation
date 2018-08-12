@@ -1,28 +1,12 @@
 //@author: João Gabriel Silva Fernandes
 #include <stdio.h>
-#include <stdint.h>
+#include "decompressData.h"
 #include <assert.h>
 #include <zlib.h>
+#include <stdlib.h>
 #include <string.h>
 
-
-#if defined(MSDOS) || defined(OS2) || defined(WIN32) || defined(__CYGWIN__)
-#  include <fcntl.h>
-#  include <io.h>
-#  define SET_BINARY_MODE(file) setmode(fileno(file), O_BINARY)
-#else
-#  define SET_BINARY_MODE(file)
-#endif
-
-
-
-#define CHUNK 256000		//size of buffer in bytes
-
-#define COMPRESSION_LEVEL 9	//de -1 a 9 -> -1 = Z_DEFAULT_COMPRESSION ( que é igual a 6)
-
-int my_decompress(FILE *source, FILE *dest);
-
-
+/*
 int l2b_endian(int num){
 	uint32_t b0,b1,b2,b3;
 	uint32_t res;
@@ -35,53 +19,50 @@ int l2b_endian(int num){
 	return (b0 | b1 | b2 | b3);
 }
 
+
+
 int main(){
 
 	FILE *source, *dest;
+    byte *dest_stream=NULL;     //array de bytes a que terá os dados do arquivo descomprimido
+    unsigned long stream_size=0;
 
 	source = fopen("./TestePrimes.StreamZip", "rb");	//abre o arquivo fonte( comprimido)
-	dest = fopen("./saidaDecompressed.txt","wb");		//abre o arquivo destino, onde vao ser descomprimidos os dados
+	
 
-	my_decompress(source,dest);	//realiza a decompressão
+	if (my_decompress(source,&dest_stream, &stream_size) != Z_OK)	//realiza a decompressão
+        printf("Erro ao descompimir arquivo!!!!\n");
 
-	fclose(dest);
-	fclose(source);
-
-	/* aqui termina a decompressão*/
-
-	/* aqui inicia a leitura do arquivo resultante, apenas para imprimir o resultado na tela*/
-	source = fopen("./saidaDecompressed.txt", "rb");
-	char str[6458633];			//buffer de bytes
-	int size=0;					//quantidade de bytes que o arquivo tem
+    fclose(source);
+    // aqui termina a decompressão
 
 
-	//lê byte por byte do arquivo e armazena em str
-	while( fread(str+size, 1, 1, source) != 0 ){
-		size++;
-	}
-	fclose(source);
+    //***imprimindo resultado para checar se está tudo certo***
 
-
-	int *numeros = (int *)str;	//converte o tipo para inteiro 32bits
-
-	for(int i=0;i< 1020;i++){
-		printf("%i  ", numeros[i] );
-	}
+    //imprime endereço da stream e o tamanho dela (em bytes)
+    printf("%p - %lu\n",dest_stream, stream_size );     
+    for(int i=0;i< 1020;i++){
+        printf("%i  ", ((int*)dest_stream)[i] );    //imprime stream como array de int's
+    }
 
 	return 0;
 }
 
+*/
 
-//******** retirado de: https://zlib.net/zlib_how.html e https://zlib.net/manual.html ****************/
 
-/* Decompress from file source to file dest until stream ends or EOF.
+ /******** retirado e adaptado de: https://zlib.net/zlib_how.html e https://zlib.net/manual.html ****************/
+
+/* Decompress from file source to stream_dest (byte array) until source ends or EOF.
+
    inf() returns Z_OK on success, Z_MEM_ERROR if memory could not be
    allocated for processing, Z_DATA_ERROR if the deflate data is
    invalid or incomplete, Z_VERSION_ERROR if the version of zlib.h and
    the version of the library linked do not match, or Z_ERRNO if there
    is an error reading or writing the files. */
-int my_decompress(FILE *source, FILE *dest){
-	int ret;
+int my_decompress(FILE *source, byte **dest_stream, unsigned long *resulting_total_size){
+
+    int ret;
     unsigned have;
     z_stream strm;
     unsigned char in[CHUNK];
@@ -97,20 +78,21 @@ int my_decompress(FILE *source, FILE *dest){
         return ret;
     /* decompress until deflate stream ends or end of file */
     do {
-    	strm.avail_in = fread(in, 1, CHUNK, source);
+        strm.avail_in = fread(in, 1, CHUNK, source);
         if (ferror(source)) {
             (void)inflateEnd(&strm);
             return Z_ERRNO;
         }
-        if (strm.avail_in == 0)
+        if (strm.avail_in == 0)     //if fread returns 0 -> 0 bytes found
             break;
         strm.next_in = in;
          /* run inflate() on input until output buffer not full */
         do {
-        	strm.avail_out = CHUNK;
+            strm.avail_out = CHUNK;
             strm.next_out = out;
-            ret = inflate(&strm, Z_NO_FLUSH);
+            ret = inflate(&strm, Z_NO_FLUSH);       //the actual decompressing work
             assert(ret != Z_STREAM_ERROR);  /* state not clobbered */
+
             switch (ret) {
             case Z_NEED_DICT:
                 ret = Z_DATA_ERROR;     /* and fall through */
@@ -119,11 +101,14 @@ int my_decompress(FILE *source, FILE *dest){
                 (void)inflateEnd(&strm);
                 return ret;
             }
+
             have = CHUNK - strm.avail_out;
-            if (fwrite(out, 1, have, dest) != have || ferror(dest)) {
-                (void)inflateEnd(&strm);
-                return Z_ERRNO;
-            }
+            *dest_stream = realloc(*dest_stream, (*resulting_total_size)+have);
+            memcpy( *dest_stream+ *resulting_total_size, out, have );
+
+            (*resulting_total_size) = *resulting_total_size + have;
+            printf("total_size = %lu\n", *resulting_total_size);
+
         } while (strm.avail_out == 0);
          /* done when inflate() says it's done */
     } while (ret != Z_STREAM_END);
