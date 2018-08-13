@@ -1,3 +1,12 @@
+#ifndef PALEODATA_H
+#define PALEODATA_H
+
+#include <string>
+
+#define GRID_LINES 2566		//Numero de linhas da Grid model
+#define GRID_COLS 7			//Numero de colunas da Grid model
+
+using namespace std;
 
 namespace SimEco{
 
@@ -9,7 +18,6 @@ namespace SimEco{
 	typedef TSngVector* PSngVector;
 	typedef double** TDblMatrix;
 	typedef TPaleoClimate* PPaleoClimate;
-
 
 
 	typedef struct{
@@ -52,12 +60,15 @@ namespace SimEco{
 	  	TLastInterpolation *lastInterpolation;
 	  	bool projAnomalies;
 
+	  	//le a grid model, e já armazena nas variaveis da forma desejada
+	  	void readGrid(FILE *arq);
+
 	  public:
 	/*construtor*/
 
 	  	// Create the class by opening the PLASIM file and the present-day climatology data as baseline
 	  	//LibPaleoData(String PLASIMFile, String presentClimateFile, bool projectAnnomalies);
-	  	TPaleoClimate(char* PLASIMFile, char* presentClimateFile, bool projectAnnomalies);
+	  	TPaleoClimate(char *PLASIMFile, char *presentClimateFile, bool projectAnnomalies);
 
 	/****metodos****/
 
@@ -83,3 +94,6 @@ namespace SimEco{
 	};
 
 }
+
+
+#endif
