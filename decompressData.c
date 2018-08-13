@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include "decompressData.h"
 #include <assert.h>
-#include <zlib.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -20,7 +19,7 @@ int l2b_endian(int num){
 }
 
 
-
+//testando descompressão
 int main(){
 
 	FILE *source, *dest;
@@ -49,6 +48,48 @@ int main(){
 }
 
 */
+/*
+
+//testando compressão
+int main(){
+	int source[1020];
+	source[0] = 2;		source[1] = 3;	source[2] = 4;		source[3] = 7;
+	source[4] = 11;		source[5] = 13;	source[6] = 17;		source[7] = 19;
+	source[8] = 23;		source[9] = 31;	source[10] = 37;	source[11] = 41;
+	source[12] = 43;	source[13] = 47;	source[14] = 53;	source[15] = 59;
+	source[16] = 61;	source[17] = 67;	source[18] = 71;	source[19] = 73;
+
+	for(int i=1; i<= 1000; i++)
+		source[i+19] = i;
+	
+
+	FILE *dest = fopen("saida.StreamZip","wb");
+
+	my_compress((byte *)source, dest, 1020*sizeof(int));
+
+	fclose(dest);
+
+	//terminou compressão e salvou no arquivo destino
+
+
+	//agora abrindo arquivo comprimido, descomprimindo-o e verificando os valores
+
+	FILE *source_arq;
+    byte *dest_stream=NULL;     //array de bytes a que terá os dados do arquivo descomprimido
+    unsigned long stream_size=0;
+	source_arq = fopen("saida.StreamZip", "rb");	//abre o arquivo fonte( comprimido)
+	
+	if (my_decompress(source_arq,&dest_stream, &stream_size) != Z_OK)	//realiza a decompressão
+        printf("Erro ao descompimir arquivo!!!!\n");
+
+    fclose(source_arq);
+
+    for(int i=0;i< 1020;i++){
+        printf("%i  ", ((int*)dest_stream)[i] );    //imprime stream como array de int's
+    }
+}
+*/
+
 
 
  /******** retirado e adaptado de: https://zlib.net/zlib_how.html e https://zlib.net/manual.html ****************/
@@ -59,8 +100,12 @@ int main(){
    allocated for processing, Z_DATA_ERROR if the deflate data is
    invalid or incomplete, Z_VERSION_ERROR if the version of zlib.h and
    the version of the library linked do not match, or Z_ERRNO if there
-   is an error reading or writing the files. */
-int my_decompress(FILE *source, byte **dest_stream, unsigned long *resulting_total_size){
+   is an error reading or writing the files. 
+
+See header file por parameters details
+
+   */
+int my_decompress(FILE *source, byte **dest_stream, size_t *resulting_total_size){
 
     int ret;
     unsigned have;
@@ -76,6 +121,8 @@ int my_decompress(FILE *source, byte **dest_stream, unsigned long *resulting_tot
     ret = inflateInit(&strm);
     if (ret != Z_OK)
         return ret;
+
+
     /* decompress until deflate stream ends or end of file */
     do {
         strm.avail_in = fread(in, 1, CHUNK, source);
@@ -103,7 +150,7 @@ int my_decompress(FILE *source, byte **dest_stream, unsigned long *resulting_tot
             }
 
             have = CHUNK - strm.avail_out;
-            *dest_stream = realloc(*dest_stream, (*resulting_total_size)+have);
+            *dest_stream = (byte *)realloc(*dest_stream, (*resulting_total_size)+have);
             memcpy( *dest_stream+ *resulting_total_size, out, have );
 
             (*resulting_total_size) = *resulting_total_size + have;
@@ -118,8 +165,12 @@ int my_decompress(FILE *source, byte **dest_stream, unsigned long *resulting_tot
 }
 
 
-
-int my_compress(FILE *source, FILE *dest){
+/*
+	source_stream 	-> array de bytes (unsigned char) fonte, dados a serem comprimidos
+	dest 			-> ponteiro do arquivo destino, a ser gravado
+	size 			-> quantidade de bytes a serem gravados
+*/
+int my_compress(byte *source_stream, FILE *dest, size_t size){
 
 
 	/*
@@ -132,7 +183,6 @@ or flush to completion after the end of the input file is reached.
 	int ret, flush;
     unsigned have;
     z_stream strm;
-    unsigned char in[CHUNK];	//input buffer
     unsigned char out[CHUNK];	//output buffer
 
 
@@ -141,19 +191,23 @@ or flush to completion after the end of the input file is reached.
     strm.zfree = Z_NULL;
     strm.opaque = Z_NULL;
     ret = deflateInit(&strm, COMPRESSION_LEVEL);
+
     if (ret != Z_OK)
         return ret;
 
-
+    size_t total_bytes_writen =0;
 	do{
 
-		strm.avail_in = fread(in, 1, CHUNK, source);
-        if (ferror(source)) {
-            (void)deflateEnd(&strm);
-            return Z_ERRNO;
+        //se ainda tem mais de CHUNK bytes disponiveis no input para comprimir
+        if( CHUNK < size-total_bytes_writen){
+    		strm.avail_in = CHUNK;
+			flush =  Z_NO_FLUSH;
+        }else{							//se for o ultimo CHUNK ( ou "semi-CHUNK") a ser escrito
+            strm.avail_in = size - total_bytes_writen;
+            flush =  Z_FINISH;
         }
-        flush = feof(source) ? Z_FINISH : Z_NO_FLUSH;
-        strm.next_in = in;
+
+        strm.next_in = &source_stream[total_bytes_writen];
 
         /* run deflate() on input until output buffer not full, finish
            compression if all of source has been read in */
@@ -178,5 +232,4 @@ or flush to completion after the end of the input file is reached.
         /* clean up and return */
     (void)deflateEnd(&strm);
     return Z_OK;
-
 }
