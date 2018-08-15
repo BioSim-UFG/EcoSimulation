@@ -1,27 +1,29 @@
 #include "LibPaleoData.h"
-#include "Compressao-tools/decompressData.h"
+#include "decompressData.h"
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#include <iostream>
 #include <fstream>
 
+
 using namespace SimEco;
+
 
 
 double SimEco::roundTo(double number, int precision) {
 	long double num = (long double)number;
 
-	int decimals = std::pow(10, precision);
-	return (std::round(num * decimals)) / decimals;
+	int decimals = pow(10, precision);
+	return (round(num * decimals)) / decimals;
 }
 
 float SimEco::roundTo(float number, int precision) {
 	double num = (double)number;
 
-	int decimals = std::pow(10, precision);
-	return (std::round(num * decimals)) / decimals;
+	int decimals = pow(10, precision);
+	return ( round(num * decimals)) / decimals;
 }
-
 
 
 /* uma boa dar uma alterada aqui, usando files do C++ ao inves do FILE do C classico,
@@ -194,8 +196,8 @@ TPaleoClimate::TPaleoClimate(char *PLASIMFile, char *presentClimateFile, bool pr
 
    SetLength(wLon, ModelGridnCells);
    SetLength(wLat, ModelGridnCells);
-   SetLength(AdjLeft, ModelGridnCells);
-   SetLength(AdjDown, ModelGridnCells);
+   SetLength(adjLeft, ModelGridnCells);
+   SetLength(adjDown, ModelGridnCells);
 	*/
 	wLon = (TSngVector )malloc(modelGridnCells * sizeof(float));
 	wLat = (TSngVector )malloc(modelGridnCells * sizeof(float));
@@ -442,8 +444,186 @@ void TPaleoClimate::getClimCell(int c, double timeKya, float SATMin, float SATMa
 }
 
 void TPaleoClimate::getClimCell(int c, int timeStep,  float SATMin, float SATMax, float PPTNMin, float PPTNMax, float NPP){
+	int t;
+	double Tmp1,Tmp2;
+	bool firstInterpolation;
 
+	// With the definition of the four adjacent cells, whose centroids form the square, in which the modeled cell is contained...
+	// And having calculated the relative distance to each of those centroids, to be used as weights for the interpolation...
+	// We now calculate the interpolated value for the cell, for a given time step
 
+	// A regular call to the interpolate function
+	if(timeStep >= 0){
+		t = ((int)timeStep);
+		firstInterpolation = false;
+	}
+
+	// A special call to the interpolation function, to set up the prediction of present climate by PLASIM in the model grid
+	else{
+		t = PLASIMnTime - 1;
+		firstInterpolation = true;
+	}
+
+	// First interpolate the absolute PLASIM climate on the model grid
+
+	if( (adjLeft[c] >= 63 ) || (adjDown[c] <= 0)){
+		//valores substituidos pelos piores ints possiveis
+		SATMax = NAN;
+		SATMin = NAN;
+		PPTNMax = NAN;
+		PPTNMin = NAN;
+ 		// qual numero deve ser usado para inicializar?
+ 		NPP = 0 ;
+	}
+
+	else{
+		// If there are no PLASIM cells to the left
+     	// So consider only the value at the cell to the right
+		if(wLon[c] == 0){
+			Tmp1 = PLASIMDataSATMax [adjLeft[c]+1][adjDown[c] ][t]; //cell at the south
+			Tmp2 = PLASIMDataSATMax [adjLeft[c]+1][adjDown[c]-1][t]; //cell at the north
+		}
+		else{
+			// If there are no cells to the right
+     		// consider only the cell to the left
+			if( wLon[c] == 1){
+				Tmp1 = PLASIMDataSATMax[adjLeft[c]][adjDown[c]][t]; // cell at the south
+       			Tmp2 = PLASIMDataSATMax[adjLeft[c]][adjDown[c]-1][t]; // cell at the north
+			}
+			
+			// If there are both left and right cells **Aqui pode chegar? porque se tem nos dois tem em um****
+			else{
+				//The southern border
+				Tmp1 = PLASIMDataSATMax[adjLeft[c] ][adjDown[c] ][t ] * wLon[c] +	// the eastern border       PLASIMLongs[adjLeft[c]]      PLASIMLats[adjDown[c]]
+                	PLASIMDataSATMax[adjLeft[c]+1 ][adjDown[c] ][t ] * (1 - wLon[c]);	// the western border       PLASIMLongs[adjLeft[c]+1]    PLASIMLats[adjDown[c]]
+				
+				//The northern border 
+                Tmp2 = PLASIMDataSATMax[adjLeft[c] ][ adjDown[c]-1 ][ t] * wLon[c] +   // the eastern border       PLASIMLongs[adjLeft[c]]      PLASIMLats[adjDown[c]-1]
+              		PLASIMDataSATMax[adjLeft[c]+1 ][adjDown[c]-1 ][t ] * (1 - wLon[c]);   // the western border       PLASIMLongs[adjLeft[c]+1]    PLASIMLats[adjDown[c]-1]
+			}
+		}
+
+		//Esse NPP está na parte do if/else correta?
+		NPP =  Tmp1 * wLat[c] +
+           Tmp2 * (1 - wLat[c]);
+
+        if( NPP < 0 )
+        	NPP = 0;
+	}
+
+    // A first call to Interpolate is necessary to calculate the raw PLASIM prediction of climate at present time
+  	// This PLASIM prediction is later used as a baseline for the computation of the anomalies in relation to the present observed climate (i.e. worldclim)
+  	// Because the code below is the application of annomalies in relation to the present observed climate, and here we need the raw PLASIm prediction, we may just exit here
+    // If, instead, we want to interpolate the raw PLASIM data for all time steps, then we can just disable the "Exit" also calculate the "annomalies" during the creation of the class
+	if(firstInterpolation || (! projAnomalies))
+		return;
+
+// Convert anomalies from current climate
+
+	// Temperature
+    // Additive anomalies for temperature
+	SATMin = SATMin - //Current Time Step
+			modelGridPLASIMClimate[c ][0 ] + //Last time step
+			modelGridObsClimate[c ][0 ]; //Current climatology (sat_min, sat_max, pptn_min, pptn_max)
+
+	SATMax = SATMax -
+			modelGridPLASIMClimate[c ][1 ] +
+			modelGridObsClimate[c ][1 ];
+
+	// If SATMax is less than SatMin, then calculate the average
+	if( SATMax < SATMin ){
+		SATMax = (SATMax + SATMin) /2;
+		SATMin = SATMax;
+	} 
+
+	// Multiplicative anomalies for precipitation
+	if( modelGridPLASIMClimate[c ][3 ] > 0 ){
+		if(modelGridObsClimate[c ][3 ] <= modelGridPLASIMClimate[c ][3 ] )
+			PPTNMax = (PPTNMax / modelGridPLASIMClimate[c ][3 ]) * modelGridObsClimate[c ][3 ];
+		else
+			PPTNMax = PPTNMax - modelGridPLASIMClimate[c ][3 ] + modelGridObsClimate[c ][3 ];
+	}
+	else
+		PPTNMax = 0;
+
+	if(modelGridPLASIMClimate[c ][2 ] > 0){
+		if(modelGridObsClimate[c ][2 ] <= modelGridPLASIMClimate[c ][2 ])
+			PPTNMin = (PPTNMin / modelGridPLASIMClimate[c ][2 ]) * modelGridPLASIMClimate[c ][2 ];
+		else
+			PPTNMin = PPTNMin - modelGridPLASIMClimate[c ][2 ] + modelGridObsClimate[c ][2 ]; 
+	}
+	else
+		PPTNMin = 0;
+
+	// If PPTNMax is less than PPTNMin, then calculate the average
+	if(PPTNMax < PPTNMin){
+		PPTNMax = (PPTNMax + PPTNMin) / 2;
+		PPTNMin = PPTNMax;
+	}
+
+/*
+//Parte apenas copiada, já que estava comentada
+// For testing purposes one may decide to plot the raw climatology or emulated data
+{
+  SATMin:= ModelGridPLASIMClimate[c,0];
+  SATMax:= ModelGridPLASIMClimate[c,1];
+  PPTNMin:= ModelGridPLASIMClimate[c,2];
+  PPTNMax:= ModelGridPLASIMClimate[c,3];
+}
+{
+  SATMin:= ModelGridObsClimate[c,0];
+  SATMax:= ModelGridObsClimate[c,1];
+  PPTNMin:= ModelGridObsClimate[c,2];
+  PPTNMax:= ModelGridObsClimate[c,3];
+}
+{
+  SATMin:= ModelGridPLASIMClimate[c,0] - ModelGridObsClimate[c,0];
+  SATMax:= ModelGridPLASIMClimate[c,1] - ModelGridObsClimate[c,1];
+  If SATMax > +20 then
+    SATMax:= + 20;
+  If SATMax < -20 then
+    SATMax:= -20;
+  If SATMin > +20 then
+    SATMin:= + 20;
+  If SATMin < -20 then
+    SATMin:= -20;
+
+  PPTNMin:= ModelGridPLASIMClimate[c,2] - ModelGridObsClimate[c,2];
+  PPTNMax:= ModelGridPLASIMClimate[c,3] - ModelGridObsClimate[c,3];
+  If PPTNMax > +2000 then
+    PPTNMax:= + 2000;
+  If PPTNMax < -2000 then
+    PPTNMax:= -2000;
+  If PPTNMin > +2000 then
+    PPTNMin:= + 2000;
+  If PPTNMin < -2000 then
+    PPTNMin:= -2000;
+}
+*/
+
+// Capping PPTN at 2000mm / season
+	if(PPTNMin > 2000)
+		PPTNMin = 2000;
+	if(PPTNMax > 2000)
+		PPTNMax = 2000;
+	
+	// Multiplicative anomalies for NPP
+	if(!isnan(modelGridObsClimate[c ][4 ])){
+		if(modelGridPLASIMClimate[c ][4 ] > 0){
+			NPP = (NPP / modelGridPLASIMClimate[c ][4 ]) * modelGridObsClimate[c ][4 ];
+
+		}
+		else{
+			NPP = 0;
+		}
+
+		if(NPP < 0 ){
+			NPP = 0;
+		}
+	}
+	else{
+		NPP = NAN;
+	}
 }
 
 int main(){
