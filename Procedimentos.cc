@@ -632,6 +632,7 @@ void TPaleoClimate::getClimCell(int c, int timeStep,  float SATMin, float SATMax
 	}
 }
 // Interpolate the entire time series, for all cells of the model grid
+//como ambos getClimAtTime fazem a mesma verificação de tamanho ela pode ser transformada em função
 void TPaleoClimate::getClimAtTime(double timeKya, TSngVector SATMin, TSngVector SATMax, TSngVector PPTNMin, TSngVector PPTNMax, TSngVector NPP){
 	int c;
 
@@ -650,8 +651,31 @@ void TPaleoClimate::getClimAtTime(double timeKya, TSngVector SATMin, TSngVector 
 	if(NPP.size() != modelGridnCells)
 		NPP.resize(modelGridnCells);
 
-	for(c=0 ; c <= modelGridnCells-1 ; c++ ){
+	for(c=0 ; c < modelGridnCells ; c++ ){
 		getClimCell(c, timeKya, SATMin[c], SATMax[c], PPTNMin[c], PPTNMax[c], NPP[c] );
+	}
+}
+
+void TPaleoClimate::getClimAtTime(int timeStep, TSngVector SATMin, TSngVector SATMax, TSngVector PPTNMin, TSngVector PPTNMax, TSngVector NPP ){
+	int c;
+
+	if(SATMax.size() != modelGridnCells )
+		SATMax.resize(modelGridnCells);
+
+	if(SATMin.size() != modelGridnCells)
+		SATMin.resize(modelGridnCells);
+
+	if(PPTNMax.size() != modelGridnCells)
+		PPTNMax.resize(modelGridnCells);
+
+	if(PPTNMin.size() != modelGridnCells)
+		PPTNMin.resize(modelGridnCells);
+
+	if(NPP.size() != modelGridnCells)
+		NPP.resize(modelGridnCells);
+
+	for(c=0 ; c < modelGridnCells; c++ ){
+		getClimCell(c, timeStep, SATMin[c], SATMax[c], PPTNMin[c], PPTNMax[c], NPP[c]);
 	}
 }
 
