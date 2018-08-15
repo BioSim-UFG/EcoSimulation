@@ -1,5 +1,5 @@
 #include "LibPaleoData.h"
-#include "decompressData.h"
+#include "CompressLib/decompressData.h"
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -628,4 +628,6 @@ void TPaleoClimate::getClimCell(int c, int timeStep,  float SATMin, float SATMax
 
 int main(){
 
+
+	return 0;
 }
