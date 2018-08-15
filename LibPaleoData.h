@@ -1,6 +1,7 @@
 #ifndef PALEODATA_H
 #define PALEODATA_H
 
+#include <vector>
 #include <string>
 
 #define GRID_LINES 2566		//Numero de linhas da Grid model
@@ -14,7 +15,8 @@ namespace SimEco{
 
 	// definindo o time temporariamente. Interpretei o nome do tipo no arquivo pascal para o mais proximo em C++
 	typedef float** TSngMatrix;
-	typedef float* TSngVector;
+	typedef vector<float> TSngVector;
+	//typedef float* TSngVector;
 	typedef TSngVector* PSngVector;
 	typedef double** TDblMatrix;
 	typedef TPaleoClimate* PPaleoClimate;

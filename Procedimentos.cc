@@ -65,15 +65,19 @@ TPaleoClimate::TPaleoClimate(char *PLASIMFile, char *presentClimateFile, bool pr
 
 	PLASIM_nLong = ((int*)stream)[0];	//obtendo a quantidade da dados de Longitude
 	cur_pos += sizeof(int);
-	PLASIMLongs = (TSngVector)malloc(PLASIM_nLong * sizeof(float));
-	memcpy(PLASIMLongs, stream+cur_pos, PLASIM_nLong * sizeof(float));	//lendo a longitude
+	//PLASIMLongs = (TSngVector)malloc(PLASIM_nLong * sizeof(float));
+	PLASIMLongs.resize(PLASIM_nLong);
+	//memcpy(PLASIMLongs, stream+cur_pos, PLASIM_nLong * sizeof(float));	//lendo a longitude
+	PLASIMLongs.assign( ((int*)stream)+1, ((int*)stream)+1+PLASIM_nLong);
 	cur_pos += PLASIM_nLong * sizeof(float);
 
 
 	PLASIM_nLat = ((int*)stream)[cur_pos]; 	//obtendo a quantidade da dados de Latitude
 	cur_pos+= sizeof(int);
-	PLASIMLats = (TSngVector)malloc(PLASIM_nLat * sizeof(float));
-	memcpy(PLASIMLats, stream+cur_pos, PLASIM_nLat * sizeof(float));	//lendo a latitude
+	//PLASIMLats = (TSngVector)malloc(PLASIM_nLat * sizeof(float));
+	PLASIMLats.resize(PLASIM_nLat);
+	//memcpy(PLASIMLats, stream+cur_pos, PLASIM_nLat * sizeof(float));	//lendo a latitude
+	PLASIMLats.assign( ((int*)stream)+1+PLASIM_nLong, ((int*)stream)+1+PLASIM_nLong+PLASIM_nLat );
 	cur_pos += PLASIM_nLat * sizeof(float);
 
 
@@ -199,8 +203,10 @@ TPaleoClimate::TPaleoClimate(char *PLASIMFile, char *presentClimateFile, bool pr
    SetLength(adjLeft, ModelGridnCells);
    SetLength(adjDown, ModelGridnCells);
 	*/
-	wLon = (TSngVector )malloc(modelGridnCells * sizeof(float));
-	wLat = (TSngVector )malloc(modelGridnCells * sizeof(float));
+	//wLon = (TSngVector )malloc(modelGridnCells * sizeof(float));
+	wLon.resize(modelGridnCells);
+	//wLat = (TSngVector )malloc(modelGridnCells * sizeof(float));
+	wLat.resize(modelGridnCells);
 	adjLeft = (short *)malloc(modelGridnCells * sizeof(short));
 	adjDown = (short *)malloc(modelGridnCells * sizeof(short));
 
@@ -266,7 +272,7 @@ TPaleoClimate::TPaleoClimate(char *PLASIMFile, char *presentClimateFile, bool pr
 		// Weight for the northern (top) PLASIM cell is (1 - northern)
 		wLat[c] = (PLASIMLats[adjDown[c]-1]  - modelGridLat[c]) / (PLASIMLats[adjDown[c]-1]  - PLASIMLats[adjDown[c]]);
 		if(wLat[c] > 1 || wLat[c] < 0)
-			wLat = 0;
+			wLat[c] = 0;
 	}
 
 
@@ -623,6 +629,29 @@ void TPaleoClimate::getClimCell(int c, int timeStep,  float SATMin, float SATMax
 	}
 	else{
 		NPP = NAN;
+	}
+}
+// Interpolate the entire time series, for all cells of the model grid
+void TPaleoClimate::getClimAtTime(double timeKya, TSngVector SATMin, TSngVector SATMax, TSngVector PPTNMin, TSngVector PPTNMax, TSngVector NPP){
+	int c;
+
+	if( SATMax.size() != modelGridnCells)
+		SATMax.resize(modelGridnCells);
+	
+	if(SATMin.size() != modelGridnCells)
+		SATMin.resize(modelGridnCells);
+
+	if(PPTNMax.size() != modelGridnCells)
+		PPTNMax.resize(modelGridnCells);
+
+	if(PPTNMin.size() != modelGridnCells)
+		PPTNMin.resize(modelGridnCells);
+
+	if(NPP.size() != modelGridnCells)
+		NPP.resize(modelGridnCells);
+
+	for(c=0 ; c <= modelGridnCells-1 ; c++ ){
+		getClimCell(c, timeKya, SATMin[c], SATMax[c], PPTNMin[c], PPTNMax[c], NPP[c] );
 	}
 }
 
