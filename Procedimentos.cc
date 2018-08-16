@@ -679,6 +679,39 @@ void TPaleoClimate::getClimAtTime(int timeStep, TSngVector SATMin, TSngVector SA
 	}
 }
 
+
+// EnvVec is a single array containing four environmental variables for the entire grid
+// Thus, the length of EnvVec is four times the number of grid cells
+// The order is regular: For each grid cell, SATMin, SATMax, PPTNMin, PPTN
+void TPaleoClimate::getClimGrid(int timeStep, PSngVector envVec, PSngVector NPPVec){
+	TSngVector tmpEnvVec, tmpNPPVec;
+	int c;
+
+	// = tem overload para o vector
+	//perigoso e pode causar erros
+	tmpEnvVec = *envVec;
+	tmpNPPVec = *NPPVec;
+
+	if( (tmpEnvVec.size() / 4) != modelGridnCells)
+		tmpEnvVec.resize(modelGridnCells * 4);
+
+	if(tmpNPPVec.size() != modelGridnCells)
+		tmpNPPVec.resize(modelGridnCells);
+
+	//função escrita em paralelo
+	//TParallel.For(0, ModelGridnCells-1,
+	for(c=0 ; c < modelGridnCells ; c++){
+		getClimCell(c, timeStep, 
+			tmpEnvVec[(c*4) + 0], 
+			tmpEnvVec[(c*4) + 1], 
+			tmpEnvVec[(c*4) + 2],
+			tmpEnvVec[(c*4) + 3],
+			tmpNPPVec[c]);		
+	}
+
+
+}
+
 int main(){
 
 
