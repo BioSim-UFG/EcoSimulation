@@ -14,11 +14,10 @@ namespace SimEco{
 	class TPaleoClimate;
 
 	// definindo o time temporariamente. Interpretei o nome do tipo no arquivo pascal para o mais proximo em C++
-	typedef float** TSngMatrix;
 	typedef vector<float> TSngVector;
-	//typedef float* TSngVector;
+	typedef vector<TSngVector> TSngMatrix;	// aka, vector<vector<float>>
 	typedef TSngVector* PSngVector;
-	typedef double** TDblMatrix;
+	typedef vector<vector<double>> TDblMatrix;
 	typedef TPaleoClimate* PPaleoClimate;
 
 
@@ -48,18 +47,18 @@ namespace SimEco{
 	  	int PLASIMnTime;
 	  	int PLASIMnTimeOffset;	// 1 if PLASIMnTime = 5001, and 10 if PLASIMnTime = 50001
 
-	  	short *adjLeft, *adjDown;	// PLASIM grid cells relating to model grid
+	  	vector<short> adjLeft, adjDown;	// PLASIM grid cells relating to model grid
 
-	  	TSngMatrix *PLASIMDataSATMax, *PLASIMDataSATMin;
-	  	TSngMatrix *PLASIMDataPPTNMax, *PLASIMDataPPTNMin;
-	  	TSngMatrix *PLASIMDataNPP;
+	  	vector<TSngMatrix> PLASIMDataSATMax, PLASIMDataSATMin;
+	  	vector<TSngMatrix> PLASIMDataPPTNMax, PLASIMDataPPTNMin;
+	  	vector<TSngMatrix> PLASIMDataNPP;
 
 	  	TSngVector wLon, wLat;		//Weights for interpolation
 
 	  	TDblMatrix modelGridObsClimate;			// Baseline/current climate from "observed" data (e.g. WorldClim)
 	  	TSngMatrix modelGridPLASIMClimate;		// Predictions of PLASIM for the current climate
 
-	  	TLastInterpolation *lastInterpolation;
+	  	vector<TLastInterpolation> lastInterpolation;
 	  	bool projAnomalies;
 
 	  	//le a grid model, e já armazena nas variaveis da forma desejada
@@ -89,9 +88,10 @@ namespace SimEco{
 
 		void getClimGrid(int timeStep, PSngVector envVec, PSngVector NPPVec);
 		// Interpolate the entire time series, for all cells of the model grid
-		void getClimTimeSeries(double startTime, double endTime, double timeResolution, 
+		void getClimTimeSeries(double startTime, double endTime, double timeResolution,
 							TSngMatrix SATMin, TSngMatrix SATMax, TSngMatrix PPTNMin, TSngMatrix PPTNMax, TSngMatrix NPP);
-
+		void getClimTimeSeries(double timeResolution,
+							TSngMatrix SATMin, TSngMatrix SATMax, TSngMatrix PPTNMin, TSngMatrix PPTNMax, TSngMatrix NPP);
 
 	};
 
