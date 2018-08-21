@@ -1,5 +1,5 @@
 #include "LibPaleoData.h"
-#include "CompressLib/decompressData.h"
+#include "../CompressLib/decompressData.h"
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -735,11 +735,4 @@ void TPaleoClimate::getClimTimeSeries(double timeResolution,
 									TSngMatrix SATMin, TSngMatrix SATMax, TSngMatrix PPTNMin, TSngMatrix PPTNMax, TSngMatrix NPP){
 
 	getClimTimeSeries(5000, 0, timeResolution, SATMin, SATMax, PPTNMin, PPTNMax, NPP);
-}
-
-
-int main(){
-
-
-	return 0;
 }
