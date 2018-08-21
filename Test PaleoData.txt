@@ -1,0 +1,52 @@
+Is the grid + present climate file 'Coords and Clim.txt'?
+This file should as many rows as there are grid cells, and 7 columns:
+1) Longitude
+2) Latitude
+3) Temperature in the coldest quarter
+4) Temperature in the warmest quarter
+5) Precipitation in the driest quarter
+6) Precipitation in the wettest quarter
+7) Annual NPP
+
+Type ENTER or "Y" if yes, or type the correct name of the paleoclimate file
+-> DummyHex2566 - Coords and Clim.txt
+
+
+
+
+Is the paleoclimate file 'xPLASIM.All3DMats.Single.Zip.Stream'?
+Type ENTER or "Y" if yes, or the correct name of the paleoclimate file
+-> Y
+
+
+
+
+Would you like to use the suffix '!OutPaleoClim - Var.txt*'?
+
+Type ENTER or "Y" if yes, or type the suffix for the output files
+If you would like to customize the suffix, enter only a single word (e.g. 'ClimDat')
+-> DummyHex2566 - Output
+
+
+
+
+Would you like to start 5M years ago?
+
+Type ENTER or "Y" if yes, or enter the starting time in thousand of years ago (5000 = 5Mya)
+-> 500
+
+
+
+
+Would you like to end in the present time?
+
+Type ENTER or "Y" if yes, or enter the ending time in thousand of years ago (1000 = 1Mya)
+-> Y
+
+
+
+
+Would you like to use 500 years as time step?
+
+Type ENTER or "Y" if yes, or enter the length of time step in thousand of years ago (0.5 = 500y)
+-> 10
