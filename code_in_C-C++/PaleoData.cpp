@@ -18,10 +18,6 @@ int main(){
 
 	string input_str(100, '\0');
 
-
-	//temos um problema a decidir como resolver:
-	// no arquivo geader (.h) o numero de linhas é definido por uma MACRO, e aqui seria uma boa pedir o numero de linhas
-	//e passar como argumento para função da classe.
 	//ps: aqui, precisa de saber o numero de linhas(celulas) antes de ler o arquivo;
 	int numero_de_linhas=0; 
 
