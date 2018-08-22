@@ -1,6 +1,6 @@
 # EcoSimulation
 
-é necessário que sua versão do gcc/g++ seja acima da versão 6.1
+é recomendado que sua versão do gcc/g++ seja acima da versão 6.1
 -> https://gcc.gnu.org/projects/cxx-status.html#cxx14
 
 se nao tiver, pode usar alguma acima da 4.8.1, e alterar a flag da compilação de
@@ -8,10 +8,19 @@ se nao tiver, pode usar alguma acima da 4.8.1, e alterar a flag da compilação 
 
 
 
-comando de terminal para compilar:
+comando de terminal para compilar normalmente:
 
 ubuntu:
 ~ g++ code_in_C-C++/Procedimentos.cc code_in_C-C++/PaleoData.cpp CompressLib/decompressData.c -lz -lm -o Prog.exe -std=c++14
+
+Windows:
+
+?
+
+comando de terminal para usar o Debugger:
+
+ubuntu:
+~ g++ code_in_C-C++/Procedimentos.cc code_in_C-C++/PaleoData.cpp CompressLib/decompressData.c -lz -lm -o Prog.exe -std=c++14 -g
 
 Windows:
 
