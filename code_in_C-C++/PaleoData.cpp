@@ -86,6 +86,9 @@ int main(){
 		b = stod(input_str, NULL);
 	}
 
+	system("clear"); //for unix
+	//system("CLS");      //for DOS ( windows);
+
 	printf("Would you like to end in the present time?\n\n");
 	printf("Type ENTER or \"Y\" if yes, or enter the ending time in thousand of years ago (1000 = 1Mya)\n");
 
@@ -97,6 +100,9 @@ int main(){
 		e = stod(input_str);
 	}
 
+	system("clear"); //for unix
+	//system("CLS");      //for DOS ( windows);
+	
 	printf("Would you like to use 500 years as time step?\n\n");
 	printf("Type ENTER or \"Y\" if yes, or enter the length of time step in thousand of years ago (0.5 = 500y)\n");
 

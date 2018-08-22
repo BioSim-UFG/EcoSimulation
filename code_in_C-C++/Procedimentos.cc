@@ -74,10 +74,12 @@ TPaleoClimate::TPaleoClimate(const char *PLASIMFile, const char *presentClimateF
 	cur_pos += PLASIM_nLong * sizeof(float);
 
 
+
+	//~BUG: PLASIM_nLat está dando um valor negativo...., erro na descompactação ou na posição que estamos acessando?
 	PLASIM_nLat = ((int*)stream)[cur_pos]; 	//obtendo a quantidade da dados de Latitude
 	cur_pos+= sizeof(int);
 	//PLASIMLats = (TSngVector)malloc(PLASIM_nLat * sizeof(float));
-	PLASIMLats.resize(PLASIM_nLat);
+	PLASIMLats.resize(PLASIM_nLat);																			
 	//memcpy(PLASIMLats, stream+cur_pos, PLASIM_nLat * sizeof(float));	//lendo a latitude
 	PLASIMLats.assign( ((int*)stream)+1+PLASIM_nLong, ((int*)stream)+1+PLASIM_nLong+PLASIM_nLat );
 	cur_pos += PLASIM_nLat * sizeof(float);

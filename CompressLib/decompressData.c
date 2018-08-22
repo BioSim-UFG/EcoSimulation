@@ -154,7 +154,7 @@ int my_decompress(FILE *source, byte **dest_stream, size_t *resulting_total_size
             memcpy( *dest_stream+ *resulting_total_size, out, have );
 
             (*resulting_total_size) = *resulting_total_size + have;
-            printf("total_size = %lu\n", *resulting_total_size);
+            //printf("total_size = %lu\n", *resulting_total_size);
 
         } while (strm.avail_out == 0);
          /* done when inflate() says it's done */
