@@ -65,7 +65,7 @@ TPaleoClimate::TPaleoClimate(const char *PLASIMFile, const char *presentClimateF
 	}
 
 
-	PLASIM_nLong = ((int*)stream)[0];	//obtendo a quantidade da dados de Longitude
+	PLASIM_nLong = (int)(stream[0]);	//obtendo a quantidade da dados de Longitude
 	cur_pos += sizeof(int);
 	//PLASIMLongs = (TSngVector)malloc(PLASIM_nLong * sizeof(float));
 	PLASIMLongs.resize(PLASIM_nLong);
@@ -76,7 +76,8 @@ TPaleoClimate::TPaleoClimate(const char *PLASIMFile, const char *presentClimateF
 
 
 	//~BUG: PLASIM_nLat está dando um valor negativo...., erro na descompactação ou na posição que estamos acessando?
-	PLASIM_nLat = ((int*)stream)[cur_pos]; 	//obtendo a quantidade da dados de Latitude
+	// quando a conversão explicita é retirada a conversão indireta corrige o problema
+	PLASIM_nLat = (int)(stream[cur_pos]); 	//obtendo a quantidade da dados de Latitude
 	cur_pos+= sizeof(int);
 	//PLASIMLats = (TSngVector)malloc(PLASIM_nLat * sizeof(float));
 	PLASIMLats.resize(PLASIM_nLat);																			
@@ -88,31 +89,42 @@ TPaleoClimate::TPaleoClimate(const char *PLASIMFile, const char *presentClimateF
 
 	// Original PLASIM data starts at 5.000.000 ya (5 million years ago, 5Mya), and may have different temporal resolutions (1ky or 100y)
 	// For this class, user can either specify time as an integer (in that case, the time step), or actual time (in that case, kya)
-	PLASIMnTime = ((int*)stream)[cur_pos];
+	//~BUG igual ao do PLASIM_nLat suspeito
+	PLASIMnTime = (int)(stream[cur_pos]);
 	cur_pos += sizeof(int);
 
 	// PLASIMNTimeOffset = 1 if PLASIMnTime = 5001, or PLASIMNTimeOffset = 10 if PLASIMnTime = 50001
 	PLASIMnTimeOffset = (PLASIMnTime-1) / 5000;
 
-
+	printf("99\n");
 	// Read PLASIM Minimum Temperature
 	//PLASIMDataSATMin = (TSngMatrix *)malloc( PLASIM_nLong * sizeof(TSngMatrix));	//SATmin -> Surface Air Temperature Min ( minima do ano -> inverno)
-	PLASIMDataSATMin = vector<TSngMatrix>(PLASIM_nLong);
+	//PLASIMDataSATMin = vector<TSngMatrix>(PLASIM_nLong);
+	vector<TSngMatrix> PLASIMDataSATMin(PLASIM_nLong);
 	for(int i=0; i<PLASIM_nLong; i++){
-		PLASIMDataSATMin[i] = vector<TSngVector>(PLASIM_nLat);
+		//PLASIMDataSATMin[i] = vector<TSngVector>(PLASIM_nLat);
+		PLASIMDataSATMin[i].resize(PLASIM_nLat);
 		for(int j=0; j<PLASIM_nLat; j++){
 			//memcpy(  *(PLASIMDataSATMin[i] +j), stream+cur_pos, PLASIMnTime *sizeof(float)  );
+			// ~BUG ainda não identificado a causa do crash, mas parece erro no acesso da matriz;
 			PLASIMDataSATMin[i][j] = vector<float>((float*)(stream+cur_pos), ((float*)(stream+cur_pos)) + PLASIMnTime);
+			//Abaixo melhor solução, mas nao consegui fazer funcionar
+			//PLASIMDataSATMin[i].insert(PLASIMDataSATMin[i].begin(),stream+cur_pos,stream + cur_pos + PLASIMnTime);
+			//PLASIMDataSATMin[i][j] = ((float*)stream)[cur_pos];
 			cur_pos += PLASIMnTime * sizeof(float);		//atualiza a posição atual da stream, em bytes
 		}
 	}
 
+	printf("118\n");
+
 	// Read PLASIM Maximum Temperature
 	PLASIMDataSATMax = vector<TSngMatrix>(PLASIM_nLong);	//SATmax -> Surface Air Temperature Max ( maxima do ano -> verão)
 	for(int i=0; i<PLASIM_nLong; i++){
-		PLASIMDataSATMax[i] = vector<TSngVector>(PLASIM_nLat);
+		//PLASIMDataSATMax[i] = vector<TSngVector>(PLASIM_nLat);
+		PLASIMDataSATMax[i].resize(PLASIM_nLat);
 		for(int j=0; j<PLASIM_nLat; j++){
 			PLASIMDataSATMax[i][j] = vector<float>((float*)(stream+cur_pos), ((float*)(stream+cur_pos)) + PLASIMnTime);
+			//PLASIMDataSATMax[i][j] = ((float*)stream)[cur_pos];
 			cur_pos += PLASIMnTime * sizeof(float);
 		}
 	}
@@ -121,9 +133,10 @@ TPaleoClimate::TPaleoClimate(const char *PLASIMFile, const char *presentClimateF
 	PLASIMDataPPTNMin = vector<TSngMatrix>(PLASIM_nLong);		//PPTN -> PerciPiTatioN 
 	for(int i=0; i<PLASIM_nLong; i++){
 		PLASIMDataPPTNMin[i] = vector<TSngVector>(PLASIM_nLat);
+		//PLASIMDataPPTMin[i].resize(PLASIM_nLat);
 		for(int j=0; j<PLASIM_nLat; j++){
 			PLASIMDataPPTNMin[i][j] = vector<float>((float*)(stream+cur_pos), ((float*)(stream+cur_pos)) + PLASIMnTime);
-
+			//PLASIMDataPPTNMin[i][j].resize()
 			cur_pos += PLASIMnTime * sizeof(float);
 			for(int k=0; k<PLASIMnTime ;k++){
 				PLASIMDataPPTNMin[i][j][k] = (PLASIMDataPPTNMin[i][j][k] * 365) /4;	// Convert mm/day to mm/season

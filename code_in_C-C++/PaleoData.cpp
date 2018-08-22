@@ -21,8 +21,8 @@ int main(){
 	//ps: aqui, precisa de saber o numero de linhas(celulas) antes de ler o arquivo;
 	int numero_de_linhas=0; 
 
-	printf("Is the grid + present climate file ' 'Coords and Clim.txt' '?\n");
-	printf("This file should as many rows as there are grid cells, and 7 columns:\n");
+	printf("Is the grid + present climate file ''Coords and Clim.txt'' ?\n");
+	printf("This file should have as many rows as there are grid cells, and 7 columns:\n");
 	printf("1) Longitude\n");
 	printf("2) Latitude\n");
 	printf("3) Temperature in the coldest quarter\n");
@@ -115,7 +115,10 @@ int main(){
 	}
 
 	//creates a new Object of class TPaleoClimate
+	printf("TESTE1\n");
 	TPaleoClimate paleoClimate(paleoClimFile.c_str(), presentClimFile.c_str(), numero_de_linhas, true);
+	printf("TESTE2\n");
+
 
 	fstream arq_outMinTemp, arq_outMaxTemp, arq_outMinPPTN, arq_outMaxPPTN, arq_outNPP;
 
