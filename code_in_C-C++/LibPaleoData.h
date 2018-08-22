@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 
-#define GRID_LINES 2566		//Numero de linhas da Grid model
+//#define GRID_LINES 2566		//Numero de linhas da Grid model
 #define GRID_COLS 7			//Numero de colunas da Grid model
 
 using namespace std;
@@ -68,10 +68,10 @@ namespace SimEco{
 	/*construtor*/
 
 	  	// Create the class by opening the PLASIM file and the present-day climatology data as baseline
-	  	//LibPaleoData(String PLASIMFile, String presentClimateFile, bool projectAnnomalies);
-	  	TPaleoClimate(char *PLASIMFile, char *presentClimateFile, bool projectAnnomalies);
+	  	//cellsLen is the number of cells in the presentClimateFile, equivalent to the number of lines
+		TPaleoClimate(const char *PLASIMFile, const char *presentClimateFile, int modelGridnCells, bool projectAnnomalies);
 
-	/****metodos****/
+		/****metodos****/
 
 		/* Interpolate only one cell, and get the four climatic variables for the cell
 			c-> Index of the model grid cell for which the interpolation will be calculated
@@ -79,9 +79,12 @@ namespace SimEco{
 		 If Time is a round number, than the number comes straight from the time series of PLASIM
 		 If Time has a decimal value, than it is temporally interpolated between two milenia
 		*/
-		void getClimCell(int c, double timeKya, float SATMin, float SATMax, float PPTNMin, float PPTNMax, float NPP);
-		void getClimCell(int c, int timeStep,  float SATMin, float SATMax, float PPTNMin, float PPTNMax, float NPP);			
-																				
+		void getClimCell(int c, double timeKya, float *SATMin, float *SATMax, float *PPTNMin, float *PPTNMax, float *NPP);
+		void getClimCell(int c, int timeStep,  float *SATMin, float *SATMax, float *PPTNMin, float *PPTNMax, float *NPP);			
+		//aqui coloquei as variaveis como ponteiros, pois no cod em delphi, elas são passadas por referencia, nao por valor
+
+
+
 		// Interpolate the entire time series, for all cells of the model grid
 		void getClimAtTime(double timeKya, TSngVector SATMin, TSngVector SATMax, TSngVector PPTNMin, TSngVector PPTNMax, TSngVector NPP);
 		void getClimAtTime(int timeStep, TSngVector SATMin, TSngVector SATMax, TSngVector PPTNMin, TSngVector PPTNMax, TSngVector NPP);
@@ -93,6 +96,8 @@ namespace SimEco{
 		void getClimTimeSeries(double timeResolution,
 							TSngMatrix SATMin, TSngMatrix SATMax, TSngMatrix PPTNMin, TSngMatrix PPTNMax, TSngMatrix NPP);
 
+		int getCellsLen();
+	
 	};
 
 }

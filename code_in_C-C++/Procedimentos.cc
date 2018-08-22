@@ -34,7 +34,9 @@ também, usar biblioteca de matrizes para realizar operações de forma mais fac
 
 */
 
-TPaleoClimate::TPaleoClimate(char *PLASIMFile, char *presentClimateFile, bool projectAnnomalies = true){
+int TPaleoClimate::getCellsLen() { return modelGridnCells; }
+
+TPaleoClimate::TPaleoClimate(const char *PLASIMFile, const char *presentClimateFile, int cellsLen, bool projectAnnomalies = true){
 	int PLASIM_nLat, PLASIM_nLong;
 
 	FILE *ZStream_compressed;
@@ -43,7 +45,7 @@ TPaleoClimate::TPaleoClimate(char *PLASIMFile, char *presentClimateFile, bool pr
 	size_t total_bytes = 0;
 
 	projAnomalies = projectAnnomalies;	//~NOTA: por que copia o valor, sendo que ele só é lido uma vez no contrutor todo?
-
+	this->modelGridnCells = modelGridnCells;
 
 	//le e descomprime o Grid PLASIM
 	ZStream_compressed = fopen(PLASIMFile, "rb");
@@ -157,8 +159,8 @@ TPaleoClimate::TPaleoClimate(char *PLASIMFile, char *presentClimateFile, bool pr
 
 	// Open a file containing the coordinates of model grid, and "observed" present climate
 	// The order of environmental variables must be: SAT_Min, SAT_Max, PPTN_Min, PPTN_Max
-/*
-//exemplo de uso de fstream
+ /*
+ //exemplo de uso de fstream
 	ifstream modelGrid_arq(PresentClimateFile, ios::in | ios::binary | ios:ate);	//abre arquivo como input, binario e posiciona ao final
 	if(! modelGrid_arq.isOpen() ){
 		printf("Erro ao abrir arquivo %s!\n",PresentClimateFile );
@@ -169,7 +171,7 @@ TPaleoClimate::TPaleoClimate(char *PLASIMFile, char *presentClimateFile, bool pr
 	modelGridObsClimate = (double **)malloc(size);		//aloca memoria para armazenar os dados na variavel
 	modelGrid_arq.read((char*)modelGridObsClimate, size);
 	modelGrid_arq.close();
-*/
+ */
 
 
 
@@ -183,14 +185,15 @@ TPaleoClimate::TPaleoClimate(char *PLASIMFile, char *presentClimateFile, bool pr
 
 	//~NOTA: aqui le e armazena tudo como double, mas depois tudo é convertido para float, 
 	//pq não já ler como float,e tb a variavel ser uma matriz de floats ( ao inves de doubles)?
-	//modelGridObsClimate = (TDblMatrix)malloc(GRID_LINES * sizeof(double*));
-	modelGridObsClimate = vector<vector<double>>(GRID_LINES);
-	for(int i=0; i<GRID_LINES;i++){
+	modelGridLat = vector<float>(modelGridnCells);
+	modelGridLong = vector<float>(modelGridnCells);
+	modelGridObsClimate = vector<vector<double>>(modelGridnCells);
+	for (int i = 0; i < modelGridnCells; i++)
+	{
 		modelGridObsClimate[i] = vector<double>(GRID_COLS);
 	}
 
 	readGrid(modelGrid_arq);
-	modelGridnCells = GRID_LINES;
 
 	// Create a map of references between Model grid cell and PLASIM cells
 	wLon.resize(modelGridnCells);
@@ -275,18 +278,18 @@ TPaleoClimate::TPaleoClimate(char *PLASIMFile, char *presentClimateFile, bool pr
 		for(int c=0; c<modelGridnCells; c++){
 
 			getClimCell(c,(int)-1, 							// Yes, the time is negative because this is a first call
-						modelGridPLASIMClimate[c][0],			// Yes, the matrix is CurrentPLASIM because this is a first call
-						modelGridPLASIMClimate[c][1],
-						modelGridPLASIMClimate[c][2],
-						modelGridPLASIMClimate[c][3],
-						modelGridPLASIMClimate[c][4] );
+						&modelGridPLASIMClimate[c][0],			// Yes, the matrix is CurrentPLASIM because this is a first call
+						&modelGridPLASIMClimate[c][1],
+						&modelGridPLASIMClimate[c][2],
+						&modelGridPLASIMClimate[c][3],
+						&modelGridPLASIMClimate[c][4] );
 		}
 	}
 
 }
 
 void TPaleoClimate::readGrid(FILE *arq){
-	for(int i=0;i < GRID_LINES; i++){
+	for (int i = 0; i < modelGridnCells; i++) {
 		//le as duas primeira colunas (de longitude de latitude)
 		fscanf(arq,"%f", &modelGridLong[i]);
 		fscanf(arq,"\t%f", &modelGridLat[i]);
@@ -299,9 +302,7 @@ void TPaleoClimate::readGrid(FILE *arq){
 }
 
 
-
-
-void TPaleoClimate::getClimCell(int c, double timeKya, float SATMin, float SATMax, float PPTNMin, float PPTNMax, float NPP){
+void TPaleoClimate::getClimCell(int c, double timeKya, float *SATMin, float *SATMax, float *PPTNMin, float *PPTNMax, float *NPP){
 
 	int timeInt, i;
 	int timeIntPrev, timeIntNext;
@@ -313,7 +314,7 @@ void TPaleoClimate::getClimCell(int c, double timeKya, float SATMin, float SATMa
   // That estimate is used to later plug PLASIM annomalies into the current "observe" climate data
 	if(timeKya < 0){
 		timeInt = -1;
-		getClimCell(c, timeInt,SATMin,SATMax, PPTNMin, PPTNMax, NPP);
+		getClimCell(c, timeInt, SATMin, SATMax, PPTNMin, PPTNMax, NPP);
 	}
 	else{	
 		//troquei o função Trunc() por um cast (int), pois ela apenas trunca um ponto flutuante, retornando a parte inteira
@@ -335,18 +336,18 @@ void TPaleoClimate::getClimCell(int c, double timeKya, float SATMin, float SATMa
     		if ( !lastInterpolation.empty()){
     			
     			if(timeInt == lastInterpolation[c].prevTimeStep){		// Previous time step?
-    				SATMin = lastInterpolation[c].prevSATMin;
-					SATMax = lastInterpolation[c].prevSATMax;
-					PPTNMin = lastInterpolation[c].prevPPTNMin;
-					PPTNMax = lastInterpolation[c].prevPPTNMax;
-					NPP = lastInterpolation[c].prevNPP;
+    				*SATMin = lastInterpolation[c].prevSATMin;
+					*SATMax = lastInterpolation[c].prevSATMax;
+					*PPTNMin = lastInterpolation[c].prevPPTNMin;
+					*PPTNMax = lastInterpolation[c].prevPPTNMax;
+					*NPP = lastInterpolation[c].prevNPP;
     			}
     			else if(timeInt == lastInterpolation[c].nextTimeStep){	// Next time step?
-    				SATMin = lastInterpolation[c].prevSATMin;
-					SATMax = lastInterpolation[c].prevSATMax;
-					PPTNMin = lastInterpolation[c].prevPPTNMin;
-					PPTNMax = lastInterpolation[c].prevPPTNMax;
-					NPP = lastInterpolation[c].prevNPP;
+    				*SATMin = lastInterpolation[c].prevSATMin;
+					*SATMax = lastInterpolation[c].prevSATMax;
+					*PPTNMin = lastInterpolation[c].prevPPTNMin;
+					*PPTNMax = lastInterpolation[c].prevPPTNMax;
+					*NPP = lastInterpolation[c].prevNPP;
     			}
     			else{		// Yes... we have to calculate it...
     				getClimCell(c, timeInt, SATMin, SATMax, PPTNMin, PPTNMax, NPP);
@@ -396,11 +397,11 @@ void TPaleoClimate::getClimCell(int c, double timeKya, float SATMin, float SATMa
 				// in case the user wants to interpolate again within the interval
 				lastInterpolation[c].prevTimeStep = timeIntPrev;
 				getClimCell(c, timeIntPrev,
-                    		lastInterpolation[c].prevSATMin,
-                    		lastInterpolation[c].prevSATMax,
-                    		lastInterpolation[c].prevPPTNMin,
-                    		lastInterpolation[c].prevPPTNMax,
-                    		lastInterpolation[c].prevNPP);
+                    		&lastInterpolation[c].prevSATMin,
+                    		&lastInterpolation[c].prevSATMax,
+                    		&lastInterpolation[c].prevPPTNMin,
+                    		&lastInterpolation[c].prevPPTNMax,
+                    		&lastInterpolation[c].prevNPP);
 			}
 
 			if( timeIntNext == lastInterpolation[c].nextTimeStep ){
@@ -418,26 +419,26 @@ void TPaleoClimate::getClimCell(int c, double timeKya, float SATMin, float SATMa
 				// We need to re-estimate the climate for both time steps...
 				lastInterpolation[c].nextTimeStep = timeIntNext;
 				getClimCell(c, timeIntNext,
-			                lastInterpolation[c].nextSATMin,
-			                lastInterpolation[c].nextSATMax,
-			                lastInterpolation[c].nextPPTNMin,
-			                lastInterpolation[c].nextPPTNMax,
-			                lastInterpolation[c].nextNPP);
+			                &lastInterpolation[c].nextSATMin,
+			                &lastInterpolation[c].nextSATMax,
+			                &lastInterpolation[c].nextPPTNMin,
+			                &lastInterpolation[c].nextPPTNMax,
+			                &lastInterpolation[c].nextNPP);
 			}
 
 			distNext = timeKya - ((int)timeKya);
       		distPrev = 1 - distNext;
 
-      		SATMin =  (lastInterpolation[c].prevSATMin * distPrev)  + (lastInterpolation[c].nextSATMin * distNext);
-      		SATMax =  (lastInterpolation[c].prevSATMax * distPrev)  + (lastInterpolation[c].nextSATMax * distNext);
-      		PPTNMin = (lastInterpolation[c].prevPPTNMin * distPrev) + (lastInterpolation[c].nextPPTNMin * distNext);
-      		PPTNMax = (lastInterpolation[c].prevPPTNMax * distPrev) + (lastInterpolation[c].nextPPTNMax * distNext);
-      		NPP = (lastInterpolation[c].prevNPP * distPrev) + (lastInterpolation[c].nextNPP * distNext);
+      		*SATMin =  (lastInterpolation[c].prevSATMin * distPrev)  + (lastInterpolation[c].nextSATMin * distNext);
+      		*SATMax =  (lastInterpolation[c].prevSATMax * distPrev)  + (lastInterpolation[c].nextSATMax * distNext);
+      		*PPTNMin = (lastInterpolation[c].prevPPTNMin * distPrev) + (lastInterpolation[c].nextPPTNMin * distNext);
+      		*PPTNMax = (lastInterpolation[c].prevPPTNMax * distPrev) + (lastInterpolation[c].nextPPTNMax * distNext);
+      		*NPP = (lastInterpolation[c].prevNPP * distPrev) + (lastInterpolation[c].nextNPP * distNext);
     	}
 	}
 }
 
-void TPaleoClimate::getClimCell(int c, int timeStep,  float SATMin, float SATMax, float PPTNMin, float PPTNMax, float NPP){
+void TPaleoClimate::getClimCell(int c, int timeStep,  float *SATMin, float *SATMax, float *PPTNMin, float *PPTNMax, float *NPP){
 	int t;
 	double Tmp1,Tmp2;
 	bool firstInterpolation;
@@ -462,12 +463,12 @@ void TPaleoClimate::getClimCell(int c, int timeStep,  float SATMin, float SATMax
 
 	if( (adjLeft[c] >= 63 ) || (adjDown[c] <= 0)){
 		//valores substituidos pelos piores ints possiveis
-		SATMax = NAN;
-		SATMin = NAN;
-		PPTNMax = NAN;
-		PPTNMin = NAN;
+		*SATMax = NAN;
+		*SATMin = NAN;
+		*PPTNMax = NAN;
+		*PPTNMin = NAN;
  		// qual numero deve ser usado para inicializar?
- 		NPP = 0 ;
+ 		*NPP = 0 ;
 	}
 
 	else{
@@ -498,11 +499,11 @@ void TPaleoClimate::getClimCell(int c, int timeStep,  float SATMin, float SATMax
 		}
 
 		//Esse NPP está na parte do if/else correta?
-		NPP =  Tmp1 * wLat[c] +
+		*NPP =  Tmp1 * wLat[c] +
            Tmp2 * (1 - wLat[c]);
 
-        if( NPP < 0 )
-        	NPP = 0;
+        if( *NPP < 0 )
+        	*NPP = 0;
 	}
 
     // A first call to Interpolate is necessary to calculate the raw PLASIM prediction of climate at present time
@@ -516,43 +517,43 @@ void TPaleoClimate::getClimCell(int c, int timeStep,  float SATMin, float SATMax
 
 	// Temperature
     // Additive anomalies for temperature
-	SATMin = SATMin - //Current Time Step
+	*SATMin = *SATMin - //Current Time Step
 			modelGridPLASIMClimate[c ][0 ] + //Last time step
 			modelGridObsClimate[c ][0 ]; //Current climatology (sat_min, sat_max, pptn_min, pptn_max)
 
-	SATMax = SATMax -
+	*SATMax = *SATMax -
 			modelGridPLASIMClimate[c ][1 ] +
 			modelGridObsClimate[c ][1 ];
 
 	// If SATMax is less than SatMin, then calculate the average
-	if( SATMax < SATMin ){
-		SATMax = (SATMax + SATMin) /2;
-		SATMin = SATMax;
+	if( *SATMax < *SATMin ){
+		*SATMax = (*SATMax + *SATMin) /2;
+		*SATMin = *SATMax;
 	} 
 
 	// Multiplicative anomalies for precipitation
 	if( modelGridPLASIMClimate[c ][3 ] > 0 ){
 		if(modelGridObsClimate[c ][3 ] <= modelGridPLASIMClimate[c ][3 ] )
-			PPTNMax = (PPTNMax / modelGridPLASIMClimate[c ][3 ]) * modelGridObsClimate[c ][3 ];
+			*PPTNMax = (*PPTNMax / modelGridPLASIMClimate[c ][3 ]) * modelGridObsClimate[c ][3 ];
 		else
-			PPTNMax = PPTNMax - modelGridPLASIMClimate[c ][3 ] + modelGridObsClimate[c ][3 ];
+			*PPTNMax = *PPTNMax - modelGridPLASIMClimate[c ][3 ] + modelGridObsClimate[c ][3 ];
 	}
 	else
-		PPTNMax = 0;
+		*PPTNMax = 0;
 
 	if(modelGridPLASIMClimate[c ][2 ] > 0){
 		if(modelGridObsClimate[c ][2 ] <= modelGridPLASIMClimate[c ][2 ])
-			PPTNMin = (PPTNMin / modelGridPLASIMClimate[c ][2 ]) * modelGridPLASIMClimate[c ][2 ];
+			*PPTNMin = (*PPTNMin / modelGridPLASIMClimate[c ][2 ]) * modelGridPLASIMClimate[c ][2 ];
 		else
-			PPTNMin = PPTNMin - modelGridPLASIMClimate[c ][2 ] + modelGridObsClimate[c ][2 ]; 
+			*PPTNMin = *PPTNMin - modelGridPLASIMClimate[c ][2 ] + modelGridObsClimate[c ][2 ]; 
 	}
 	else
-		PPTNMin = 0;
+		*PPTNMin = 0;
 
 	// If PPTNMax is less than PPTNMin, then calculate the average
-	if(PPTNMax < PPTNMin){
-		PPTNMax = (PPTNMax + PPTNMin) / 2;
-		PPTNMin = PPTNMax;
+	if(*PPTNMax < *PPTNMin){
+		*PPTNMax = (*PPTNMax + *PPTNMin) / 2;
+		*PPTNMin = *PPTNMax;
 	}
 
  /*
@@ -596,27 +597,27 @@ void TPaleoClimate::getClimCell(int c, int timeStep,  float SATMin, float SATMax
  */
 
  // Capping PPTN at 2000mm / season
-	if(PPTNMin > 2000)
-		PPTNMin = 2000;
-	if(PPTNMax > 2000)
-		PPTNMax = 2000;
+	if(*PPTNMin > 2000)
+		*PPTNMin = 2000;
+	if(*PPTNMax > 2000)
+		*PPTNMax = 2000;
 	
 	// Multiplicative anomalies for NPP
 	if(!isnan(modelGridObsClimate[c ][4 ])){
 		if(modelGridPLASIMClimate[c ][4 ] > 0){
-			NPP = (NPP / modelGridPLASIMClimate[c ][4 ]) * modelGridObsClimate[c ][4 ];
+			*NPP = (*NPP / modelGridPLASIMClimate[c ][4 ]) * modelGridObsClimate[c ][4 ];
 
 		}
 		else{
-			NPP = 0;
+			*NPP = 0;
 		}
 
-		if(NPP < 0 ){
-			NPP = 0;
+		if(*NPP < 0 ){
+			*NPP = 0;
 		}
 	}
 	else{
-		NPP = NAN;
+		*NPP = NAN;
 	}
 }
 // Interpolate the entire time series, for all cells of the model grid
@@ -640,7 +641,7 @@ void TPaleoClimate::getClimAtTime(double timeKya, TSngVector SATMin, TSngVector 
 		NPP.resize(modelGridnCells);
 
 	for(c=0 ; c < modelGridnCells ; c++ ){
-		getClimCell(c, timeKya, SATMin[c], SATMax[c], PPTNMin[c], PPTNMax[c], NPP[c] );
+		getClimCell(c, timeKya, &SATMin[c], &SATMax[c], &PPTNMin[c], &PPTNMax[c], &NPP[c] );
 	}
 }
 
@@ -663,7 +664,7 @@ void TPaleoClimate::getClimAtTime(int timeStep, TSngVector SATMin, TSngVector SA
 		NPP.resize(modelGridnCells);
 
 	for(c=0 ; c < modelGridnCells; c++ ){
-		getClimCell(c, timeStep, SATMin[c], SATMax[c], PPTNMin[c], PPTNMax[c], NPP[c]);
+		getClimCell(c, timeStep, &SATMin[c], &SATMax[c], &PPTNMin[c], &PPTNMax[c], &NPP[c]);
 	}
 }
 
@@ -690,11 +691,11 @@ void TPaleoClimate::getClimGrid(int timeStep, PSngVector envVec, PSngVector NPPV
 	//TParallel.For(0, ModelGridnCells-1,
 	for(c=0 ; c < modelGridnCells ; c++){
 		getClimCell(c, timeStep, 
-					tmpEnvVec[(c*4) + 0], 
-					tmpEnvVec[(c*4) + 1], 
-					tmpEnvVec[(c*4) + 2],
-					tmpEnvVec[(c*4) + 3],
-					tmpNPPVec[c]);		
+					&tmpEnvVec[(c*4) + 0], 
+					&tmpEnvVec[(c*4) + 1], 
+					&tmpEnvVec[(c*4) + 2],
+					&tmpEnvVec[(c*4) + 3],
+					&tmpNPPVec[c]);		
 	}
 }
 
@@ -725,7 +726,7 @@ void TPaleoClimate::getClimTimeSeries(double startTime, double endTime, double t
 	// aqui era pra transpor a matriz mesmo? (inverter colunas com linhas)
 	for(k=0; k<nSteps; k++){
 		for(c=0; c<modelGridnCells; c++){
-			getClimCell(c, t, SATMin[c][k], SATMax[c][k], PPTNMin[c][k], PPTNMax[c][k], NPP[c][k]);
+			getClimCell(c, t, &SATMin[c][k], &SATMax[c][k], &PPTNMin[c][k], &PPTNMax[c][k], &NPP[c][k]);
 		}
 		t = t - timeResolution;
 	}
