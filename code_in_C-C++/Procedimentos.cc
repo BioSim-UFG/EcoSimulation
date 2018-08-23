@@ -36,7 +36,8 @@ também, usar biblioteca de matrizes para realizar operações de forma mais fac
 
 int TPaleoClimate::getCellsLen() { return modelGridnCells; }
 
-TPaleoClimate::TPaleoClimate(const char *PLASIMFile, const char *presentClimateFile, int cellsLen, bool projectAnnomalies = true){
+TPaleoClimate::TPaleoClimate(const char *PLASIMFile, const char *presentClimateFile, int modelGridnCells, bool projectAnnomalies = true)
+{
 	int PLASIM_nLat, PLASIM_nLong;
 
 	FILE *ZStream_compressed;
@@ -67,40 +68,40 @@ TPaleoClimate::TPaleoClimate(const char *PLASIMFile, const char *presentClimateF
 
 	PLASIM_nLong = (int)(stream[0]);	//obtendo a quantidade da dados de Longitude
 	cur_pos += sizeof(int);
-	//PLASIMLongs = (TSngVector)malloc(PLASIM_nLong * sizeof(float));
+	//PLASIMLongs = vector<float>(PLASIM_nLat);
 	PLASIMLongs.resize(PLASIM_nLong);
 	//memcpy(PLASIMLongs, stream+cur_pos, PLASIM_nLong * sizeof(float));	//lendo a longitude
-	PLASIMLongs.assign( ((int*)stream)+1, ((int*)stream)+1+PLASIM_nLong);
+	//PLASIMLongs.assign( ((int*)stream)+1, ((int*)stream)+1+PLASIM_nLong);	// ~BUG CORRIGIDO:o assign estava sendo feito com interpretação de inteiro, que tem outra representação na CPU.
+	PLASIMLongs.assign((float *)(stream + cur_pos), ((float *)(stream + cur_pos)) +PLASIM_nLong);
 	cur_pos += PLASIM_nLong * sizeof(float);
 
 
 
-	//~BUG: PLASIM_nLat está dando um valor negativo...., erro na descompactação ou na posição que estamos acessando?
 	// quando a conversão explicita é retirada a conversão indireta corrige o problema
 	PLASIM_nLat = (int)(stream[cur_pos]); 	//obtendo a quantidade da dados de Latitude
-	cur_pos+= sizeof(int);
-	//PLASIMLats = (TSngVector)malloc(PLASIM_nLat * sizeof(float));
-	PLASIMLats.resize(PLASIM_nLat);																			
+	cur_pos += sizeof(int);
+	//PLASIMLats = vector<float>(PLASIM_nLat);
+	PLASIMLats.resize(PLASIM_nLat);
 	//memcpy(PLASIMLats, stream+cur_pos, PLASIM_nLat * sizeof(float));	//lendo a latitude
-	PLASIMLats.assign( ((int*)stream)+1+PLASIM_nLong, ((int*)stream)+1+PLASIM_nLong+PLASIM_nLat );
+	//PLASIMLongs.assign( ((int*)stream)+1+PLASIM_nLong, ((int*)stream)+1+PLASIM_nLong+PLASIM_nLat);
+	PLASIMLats.assign((float *)(stream + cur_pos), ((float *)(stream + cur_pos) )+ PLASIM_nLat);
 	cur_pos += PLASIM_nLat * sizeof(float);
 
 
 
 	// Original PLASIM data starts at 5.000.000 ya (5 million years ago, 5Mya), and may have different temporal resolutions (1ky or 100y)
 	// For this class, user can either specify time as an integer (in that case, the time step), or actual time (in that case, kya)
-	//~BUG igual ao do PLASIM_nLat suspeito
 	PLASIMnTime = (int)(stream[cur_pos]);
 	cur_pos += sizeof(int);
 
+
+	// ~BUG: ao degugar, percebi que PLASIMnTime é 137, ou seja, PLASIMnTimeOffset sempre vai ser 0, erro daqui ou no cod original?
 	// PLASIMNTimeOffset = 1 if PLASIMnTime = 5001, or PLASIMNTimeOffset = 10 if PLASIMnTime = 50001
 	PLASIMnTimeOffset = (PLASIMnTime-1) / 5000;
 
-	printf("99\n");
 	// Read PLASIM Minimum Temperature
 	//PLASIMDataSATMin = (TSngMatrix *)malloc( PLASIM_nLong * sizeof(TSngMatrix));	//SATmin -> Surface Air Temperature Min ( minima do ano -> inverno)
-	//PLASIMDataSATMin = vector<TSngMatrix>(PLASIM_nLong);
-	vector<TSngMatrix> PLASIMDataSATMin(PLASIM_nLong);
+	PLASIMDataSATMin = vector<TSngMatrix>(PLASIM_nLong); // ~ BUG CORRIGIDO: antes estava sobrescrevendo a variavel PLASIMDataSATMin, agora está correto.
 	for(int i=0; i<PLASIM_nLong; i++){
 		//PLASIMDataSATMin[i] = vector<TSngVector>(PLASIM_nLat);
 		PLASIMDataSATMin[i].resize(PLASIM_nLat);
@@ -115,7 +116,6 @@ TPaleoClimate::TPaleoClimate(const char *PLASIMFile, const char *presentClimateF
 		}
 	}
 
-	printf("118\n");
 
 	// Read PLASIM Maximum Temperature
 	PLASIMDataSATMax = vector<TSngMatrix>(PLASIM_nLong);	//SATmax -> Surface Air Temperature Max ( maxima do ano -> verão)

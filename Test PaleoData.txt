@@ -1,3 +1,14 @@
+pode copiar e colar:
+DummyHex2566 - Coords and Clim.txt
+2566
+Y
+DummyHex2566 - Output
+500
+Y
+10
+
+
+
 Is the grid + present climate file 'Coords and Clim.txt'?
 This file should as many rows as there are grid cells, and 7 columns:
 1) Longitude

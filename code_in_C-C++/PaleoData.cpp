@@ -1,5 +1,6 @@
 #include "LibPaleoData.h"
 #include "../CompressLib/decompressData.h"
+#include "color.h"
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
@@ -16,7 +17,8 @@ int main(){
 	string outSuffix;
 	double b, e, s; 
 
-	string input_str(100, '\0');
+	//string input_str(100,'\0');
+	char input_str[100];			// ~BUG CORRIGIDO: teve que mudar pq estava dando problema com a classe string e o uso dela para o nome dos arquivos
 
 	//ps: aqui, precisa de saber o numero de linhas(celulas) antes de ler o arquivo;
 	int numero_de_linhas=0; 
@@ -32,9 +34,9 @@ int main(){
 	printf("7) Annual NPP\n\n");
 	printf("Type ENTER or \"Y\" if yes, or type the correct name of the paleoclimate file\n");
 
-	scanf(" %[^\n]s", &input_str[0]);
+	scanf(" %[^\n]s", input_str);
 
-	if(input_str[0] == 'Y' || input_str.find("yes") !=-1  || input_str.empty() ){
+	if(input_str[0] == 'Y' || string(input_str).find("yes") !=-1  || string(input_str).empty() ){
 		presentClimFile = "Coords and Clim.txt";
 	}else{
 		presentClimFile = input_str;
@@ -50,7 +52,7 @@ int main(){
 
 	scanf(" %[^\n]s", &input_str[0]);
 
-	if (input_str[0] == 'Y' || input_str.find("yes") != -1 || input_str.empty()) {
+	if (input_str[0] == 'Y' || string(input_str).find("yes") != -1 || string(input_str).empty()){
 		paleoClimFile = "xPLASIM.All3DMats.Single.Zip.Stream";
 	}
 	else {
@@ -66,21 +68,21 @@ int main(){
 
 	scanf(" %[^\n]s", &input_str[0]);
 
-	if( input_str[0] == 'Y' || input_str.find("yes") != -1 || input_str.empty() ){
+	if( input_str[0] == 'Y' || string(input_str).find("yes") != -1 || string(input_str).empty() ){
 		outSuffix = "!OutPaleoClim";
 	}else{
-		outSuffix = input_str;
+		outSuffix.assign( input_str);
 	}
+
 
 	system("clear");    //for unix
 	//system("CLS");      //for DOS ( windows);
-
 	printf("Would you like to start 5M years ago?\n\n");
 	printf("Type ENTER or \"Y\" if yes, or enter the starting time in thousand of years ago (5000 = 5Mya)\n");
 
 	scanf(" %[^\n]s", &input_str[0]);
 
-	if( input_str[0] == 'Y' || input_str.find("yes") != -1 || input_str.empty() ){
+	if (input_str[0] == 'Y' || string(input_str).find("yes") != -1 || string(input_str).empty()){
 		b = 5000.0;
 	}else{
 		b = stod(input_str, NULL);
@@ -88,13 +90,12 @@ int main(){
 
 	system("clear"); //for unix
 	//system("CLS");      //for DOS ( windows);
-
 	printf("Would you like to end in the present time?\n\n");
 	printf("Type ENTER or \"Y\" if yes, or enter the ending time in thousand of years ago (1000 = 1Mya)\n");
 
 	scanf(" %[^\n]s", &input_str[0]);
 
-	if( input_str[0] == 'Y' || input_str.find("yes") != -1 || input_str.empty() ){
+	if (input_str[0] == 'Y' || string(input_str).find("yes") != -1 || string(input_str).empty()){
 		e = 0;
 	}else{
 		e = stod(input_str);
@@ -102,87 +103,101 @@ int main(){
 
 	system("clear"); //for unix
 	//system("CLS");      //for DOS ( windows);
-	
 	printf("Would you like to use 500 years as time step?\n\n");
 	printf("Type ENTER or \"Y\" if yes, or enter the length of time step in thousand of years ago (0.5 = 500y)\n");
 
 	scanf(" %[^\n]s", &input_str[0]);
 
-	if( input_str[0] == 'Y' || input_str.find("yes") != -1 || input_str.empty() ){
+	if (input_str[0] == 'Y' || string(input_str).find("yes") != -1 || string(input_str).empty()){
 		s = 0.5;
 	}else{
 		s = stod(input_str);
 	}
 
 	//creates a new Object of class TPaleoClimate
-	printf("TESTE1\n");
-	TPaleoClimate paleoClimate(paleoClimFile.c_str(), presentClimFile.c_str(), numero_de_linhas, true);
-	printf("TESTE2\n");
-
+	TPaleoClimate paleoClimate(("input/"+paleoClimFile).c_str(), ("input/"+presentClimFile).c_str(), numero_de_linhas, true);
+	printf(GRN("\tObjeto " BOLD("<TPaleoClimate>") " criado\n"));		// ~DebugLog
 
 	fstream arq_outMinTemp, arq_outMaxTemp, arq_outMinPPTN, arq_outMaxPPTN, arq_outNPP;
+	fstream arq_teste;
+	try{
+		arq_outMinTemp.open( "output/"+outSuffix+ "-MinTemp.txt", ios::trunc | ios::out);
+		arq_outMaxTemp.open( "output/"+outSuffix+ "-MaxTemp.txt", ios::trunc | ios::out);
+		arq_outMinPPTN.open( "output/"+outSuffix+ "-MinPPTN.txt", ios::trunc | ios::out);
+		arq_outMaxPPTN.open( "output/"+outSuffix+ "-MaxPPTN.txt", ios::trunc | ios::out);
+		arq_outNPP.open("output/"+outSuffix+ " - NPP.txt", ios::trunc | ios::out);
+	}catch (const fstream::failure &e){
+		printf(RED("Erro ao abrir arquivo de saida %s\n"), e.what()); // ~DebugLog
+		exit(1);
+	}
+	printf(GRN("\tArquivos de saida abertos com sucesso\n")); // ~DebugLog
 
-	arq_outMinTemp.open( outSuffix + " - MinTemp.txt", ios::trunc | ios::out);
-	arq_outMaxTemp.open( outSuffix + " - MaxTemp.txt", ios::trunc | ios::out);
-	arq_outMinPPTN.open( outSuffix + " - MinPPTN.txt", ios::trunc | ios::out);
-	arq_outMaxPPTN.open( outSuffix + " - MaxPPTN.txt", ios::trunc | ios::out);
-	arq_outNPP.open(outSuffix + " - NPP.txt", ios::trunc | ios::out);
+	
+	try
+	{	//o que é nt?
+		int nt = (b - e) / s;
 
-
-	//o que é nt?
-	int nt = (b-e)/s;
-
-	char temp_str[100];
-	sprintf(temp_str,"T%.1f",b);
-	streamsize size = strlen(temp_str);
-	arq_outMinTemp.write(temp_str, size);
-	arq_outMaxTemp.write(temp_str, size);
-	arq_outMinPPTN.write(temp_str, size);
-	arq_outMaxPPTN.write(temp_str, size);
-	arq_outNPP.write(temp_str, size);
-
-	for(int i=0; i<nt; i++){
-		sprintf(temp_str, "\tT%.1f", b - (i * s));
-		size = strlen(temp_str);
+		char temp_str[100];
+		sprintf(temp_str,"T%.1f",b);
+		streamsize size = strlen(temp_str);
 		arq_outMinTemp.write(temp_str, size);
 		arq_outMaxTemp.write(temp_str, size);
 		arq_outMinPPTN.write(temp_str, size);
 		arq_outMaxPPTN.write(temp_str, size);
 		arq_outNPP.write(temp_str, size);
-	}
-	arq_outMinTemp.write("\n", 1);
-	arq_outMaxTemp.write("\n", 1);
-	arq_outMinPPTN.write("\n", 1);
-	arq_outMaxPPTN.write("\n", 1);
-	arq_outNPP.write("\n", 1);
 
-	float SATMin, SATMax, PPTNMin, PPTNMax, NPP;
-
-	for(int cell=0; cell<paleoClimate.getCellsLen(); cell++){
-		paleoClimate.getClimCell(cell, b, &SATMin, &SATMax, &PPTNMin, &PPTNMax, &NPP);
-
-		sprintf(temp_str, "%.3f", SATMin);          arq_outMinTemp.write(temp_str, 5);
-		sprintf(temp_str, "%.3f", SATMax);          arq_outMaxTemp.write(temp_str, 5);
-		sprintf(temp_str, "%.3f", PPTNMin);         arq_outMinPPTN.write(temp_str, 5);
-		sprintf(temp_str, "%.3f", PPTNMax);         arq_outMaxPPTN.write(temp_str, 5);
-		sprintf(temp_str, "%.3f", NPP);        		arq_outNPP.write(temp_str, 5);
-
-		for(int t=1; t<=nt; t++){
-			paleoClimate.getClimCell(cell, b-(t*s), &SATMin, &SATMax, &PPTNMin, &PPTNMax, &NPP);
-
-			sprintf(temp_str, "\t%.3f", SATMin); 		arq_outMinTemp.write(temp_str, strlen(temp_str));
-			sprintf(temp_str, "\t%.3f", SATMax); 		arq_outMaxTemp.write(temp_str, strlen(temp_str));
-			sprintf(temp_str, "\t%.3f", PPTNMin);		arq_outMinPPTN.write(temp_str, strlen(temp_str));
-			sprintf(temp_str, "\t%.3f", PPTNMax);		arq_outMaxPPTN.write(temp_str, strlen(temp_str));
-			sprintf(temp_str, "\t%.3f", NPP);			arq_outNPP.write(temp_str, strlen(temp_str));
+		for(int i=1; i<=nt; i++){
+			sprintf(temp_str, "\tT%.1f", b - (i * s));
+			size = strlen(temp_str);
+			arq_outMinTemp.write(temp_str, size);
+			arq_outMaxTemp.write(temp_str, size);
+			arq_outMinPPTN.write(temp_str, size);
+			arq_outMaxPPTN.write(temp_str, size);
+			arq_outNPP.write(temp_str, size);
 		}
-
 		arq_outMinTemp.write("\n", 1);
 		arq_outMaxTemp.write("\n", 1);
 		arq_outMinPPTN.write("\n", 1);
 		arq_outMaxPPTN.write("\n", 1);
 		arq_outNPP.write("\n", 1);
+
+		float SATMin, SATMax, PPTNMin, PPTNMax, NPP;
+
+		for(int cell=0; cell<paleoClimate.getCellsLen(); cell++){
+			// ~BUG: todas variaveis estão retornando com valor 0 ( menos NPP) -> provavel erro de calculo na função getClimCell()
+			paleoClimate.getClimCell(cell, b, &SATMin, &SATMax, &PPTNMin, &PPTNMax, &NPP);
+
+			sprintf(temp_str, "%.3f", SATMin);          arq_outMinTemp.write(temp_str, 5);
+			sprintf(temp_str, "%.3f", SATMax);          arq_outMaxTemp.write(temp_str, 5);
+			sprintf(temp_str, "%.3f", PPTNMin);         arq_outMinPPTN.write(temp_str, 5);
+			sprintf(temp_str, "%.3f", PPTNMax);         arq_outMaxPPTN.write(temp_str, 5);
+			sprintf(temp_str, "%.3f", NPP);        		arq_outNPP.write(temp_str, 5);
+
+			for(int t=1; t<=nt; t++){
+				paleoClimate.getClimCell(cell, b-(t*s), &SATMin, &SATMax, &PPTNMin, &PPTNMax, &NPP);
+
+				sprintf(temp_str, "\t%.3f", SATMin); 		arq_outMinTemp.write(temp_str, strlen(temp_str));
+				sprintf(temp_str, "\t%.3f", SATMax); 		arq_outMaxTemp.write(temp_str, strlen(temp_str));
+				sprintf(temp_str, "\t%.3f", PPTNMin);		arq_outMinPPTN.write(temp_str, strlen(temp_str));
+				sprintf(temp_str, "\t%.3f", PPTNMax);		arq_outMaxPPTN.write(temp_str, strlen(temp_str));
+				sprintf(temp_str, "\t%.3f", NPP);			arq_outNPP.write(temp_str, strlen(temp_str));
+			}
+
+			arq_outMinTemp.write("\n", 1);
+			arq_outMaxTemp.write("\n", 1);
+			arq_outMinPPTN.write("\n", 1);
+			arq_outMaxPPTN.write("\n", 1);
+			arq_outNPP.write("\n", 1);
+		}
+
+	} catch(const fstream::failure &e) {
+		printf(RED("Erro ao escrever em arquivo de saida %s\n"), e.what()); // ~DebugLog
+		exit(1);
+	} catch(exception &e){
+		cout << "Standard exception: " << e.what() <<endl;
 	}
+
+	printf(GRN("\tArquivos de saida escritos com sucesso\n")); // ~DebugLog
 
 	arq_outMinTemp.close();
 	arq_outMaxTemp.close();
