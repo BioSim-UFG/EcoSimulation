@@ -1,5 +1,8 @@
 # EcoSimulation
 
+Use a aba Issues para reportar bugs e problemas no código.
+Também comente no Código no formato " // ~BUG: .... ", para facilitar a localização
+
 é recomendado que sua versão do gcc/g++ seja acima da versão 6.1
 -> https://gcc.gnu.org/projects/cxx-status.html#cxx14
 
