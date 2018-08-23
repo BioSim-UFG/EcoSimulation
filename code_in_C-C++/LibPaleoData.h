@@ -80,7 +80,7 @@ namespace SimEco{
 		 If Time has a decimal value, than it is temporally interpolated between two milenia
 		*/
 		void getClimCell(int c, double timeKya, float *SATMin, float *SATMax, float *PPTNMin, float *PPTNMax, float *NPP);
-		void getClimCell(int c, int timeStep,  float *SATMin, float *SATMax, float *PPTNMin, float *PPTNMax, float *NPP);			
+		void getClimCell(int c, int timeStep,  float *SATMin, float *SATMax, float *PPTNMin, float *PPTNMax, float *NPP);
 		//aqui coloquei as variaveis como ponteiros, pois no cod em delphi, elas são passadas por referencia, nao por valor
 
 

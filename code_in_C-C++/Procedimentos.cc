@@ -66,7 +66,9 @@ TPaleoClimate::TPaleoClimate(const char *PLASIMFile, const char *presentClimateF
 	}
 
 
-	PLASIM_nLong = (int)(stream[0]);	//obtendo a quantidade da dados de Longitude
+	//PLASIM_nLong = (int)(stream[0]);	//obtendo a quantidade da dados de Longitude
+	// ~BUG CORRIGIDO: antes, se o inteiro que queremos obter for maior que a capacidade de um Byte, teremos um valor errado
+	PLASIM_nLong = *((int*)stream);	//obtendo a quantidade da dados de Longitude
 	cur_pos += sizeof(int);
 	//PLASIMLongs = vector<float>(PLASIM_nLat);
 	PLASIMLongs.resize(PLASIM_nLong);
@@ -75,10 +77,9 @@ TPaleoClimate::TPaleoClimate(const char *PLASIMFile, const char *presentClimateF
 	PLASIMLongs.assign((float *)(stream + cur_pos), ((float *)(stream + cur_pos)) +PLASIM_nLong);
 	cur_pos += PLASIM_nLong * sizeof(float);
 
-
-
 	// quando a conversão explicita é retirada a conversão indireta corrige o problema
-	PLASIM_nLat = (int)(stream[cur_pos]); 	//obtendo a quantidade da dados de Latitude
+	// ~BUG CORRIGIDO: antes, se o inteiro que queremos obter for maior que a capacidade de um Byte, teremos um valor errado
+	PLASIM_nLat = *((int *)(stream+cur_pos)); //obtendo a quantidade da dados de Latitude
 	cur_pos += sizeof(int);
 	//PLASIMLats = vector<float>(PLASIM_nLat);
 	PLASIMLats.resize(PLASIM_nLat);
@@ -91,13 +92,14 @@ TPaleoClimate::TPaleoClimate(const char *PLASIMFile, const char *presentClimateF
 
 	// Original PLASIM data starts at 5.000.000 ya (5 million years ago, 5Mya), and may have different temporal resolutions (1ky or 100y)
 	// For this class, user can either specify time as an integer (in that case, the time step), or actual time (in that case, kya)
-	PLASIMnTime = (int)(stream[cur_pos]);
+	//PLASIMnTime = (int)(stream[cur_pos]);
+	PLASIMnTime = *((int *)(stream+cur_pos));
 	cur_pos += sizeof(int);
 
-
 	// ~BUG: ao degugar, percebi que PLASIMnTime é 137, ou seja, PLASIMnTimeOffset sempre vai ser 0, erro daqui ou no cod original?
-	// PLASIMNTimeOffset = 1 if PLASIMnTime = 5001, or PLASIMNTimeOffset = 10 if PLASIMnTime = 50001
-	PLASIMnTimeOffset = (PLASIMnTime-1) / 5000;
+	/* ~BUG CORRIGIDO: antes, o inteiro 5001 nao cabia em apenas 1 byte, Por isso obtiamos o valor 137 ( que estava em stream[cur_pos]).
+	//mesmo convertendo para int, o que convertemos foi o valor ( depois ja ter obtido ele),isto é, um byte apenas */
+	PLASIMnTimeOffset = (PLASIMnTime - 1) / 5000; // PLASIMNTimeOffset = 1 if PLASIMnTime = 5001, or PLASIMNTimeOffset = 10 if PLASIMnTime = 50001
 
 	// Read PLASIM Minimum Temperature
 	//PLASIMDataSATMin = (TSngMatrix *)malloc( PLASIM_nLong * sizeof(TSngMatrix));	//SATmin -> Surface Air Temperature Min ( minima do ano -> inverno)
@@ -112,13 +114,13 @@ TPaleoClimate::TPaleoClimate(const char *PLASIMFile, const char *presentClimateF
 			//Abaixo melhor solução, mas nao consegui fazer funcionar
 			//PLASIMDataSATMin[i].insert(PLASIMDataSATMin[i].begin(),stream+cur_pos,stream + cur_pos + PLASIMnTime);
 			//PLASIMDataSATMin[i][j] = ((float*)stream)[cur_pos];
-			cur_pos += PLASIMnTime * sizeof(float);		//atualiza a posição atual da stream, em bytes
+			cur_pos += PLASIMnTime * sizeof(float); //atualiza a posição atual da stream, em bytes
 		}
+		
 	}
 
-
 	// Read PLASIM Maximum Temperature
-	PLASIMDataSATMax = vector<TSngMatrix>(PLASIM_nLong);	//SATmax -> Surface Air Temperature Max ( maxima do ano -> verão)
+	PLASIMDataSATMax = vector<TSngMatrix>(PLASIM_nLong); //SATmax -> Surface Air Temperature Max ( maxima do ano -> verão)
 	for(int i=0; i<PLASIM_nLong; i++){
 		//PLASIMDataSATMax[i] = vector<TSngVector>(PLASIM_nLat);
 		PLASIMDataSATMax[i].resize(PLASIM_nLat);
@@ -158,6 +160,8 @@ TPaleoClimate::TPaleoClimate(const char *PLASIMFile, const char *presentClimateF
 		}
 	}
 
+
+	// ~ BUG: ???, TODOS os valores estão dando zero. Erro ou isso é intencional mesmo?
 	// Read PLASIM NPP
 	PLASIMDataNPP = vector<TSngMatrix>(PLASIM_nLong);	//NPP -> Net Primary productivity (produtividade primaria líquida, basicamente a produtividade "ecologica", dependente da quantidade de luz e agua)
 	for(int i=0; i<PLASIM_nLong; i++){
@@ -174,22 +178,6 @@ TPaleoClimate::TPaleoClimate(const char *PLASIMFile, const char *presentClimateF
 
 	// Open a file containing the coordinates of model grid, and "observed" present climate
 	// The order of environmental variables must be: SAT_Min, SAT_Max, PPTN_Min, PPTN_Max
- /*
- //exemplo de uso de fstream
-	ifstream modelGrid_arq(PresentClimateFile, ios::in | ios::binary | ios:ate);	//abre arquivo como input, binario e posiciona ao final
-	if(! modelGrid_arq.isOpen() ){
-		printf("Erro ao abrir arquivo %s!\n",PresentClimateFile );
-		//aqui usar algo para "cancelar a criação do objeto", como um throw (exceptions e etc)
-	}
-	streampos size = file.tellg();		//obtem tamanho do arquivo
-	modelGrid_arq.seekg(0, ios::beg);	//posiciona ao inicio
-	modelGridObsClimate = (double **)malloc(size);		//aloca memoria para armazenar os dados na variavel
-	modelGrid_arq.read((char*)modelGridObsClimate, size);
-	modelGrid_arq.close();
- */
-
-
-
 	FILE *modelGrid_arq = fopen(presentClimateFile,"r");
 		if( modelGrid_arq == NULL ){
 		printf("Erro ao abrir arquivo %s!\n",presentClimateFile );
@@ -203,7 +191,7 @@ TPaleoClimate::TPaleoClimate(const char *PLASIMFile, const char *presentClimateF
 	modelGridLat = vector<float>(modelGridnCells);
 	modelGridLong = vector<float>(modelGridnCells);
 	modelGridObsClimate = vector<vector<double>>(modelGridnCells);
-	for (int i = 0; i < modelGridnCells; i++)
+	for (int i = 0; i < modelGridnCells; i++)	//creio q pode tirar esse for daqui
 	{
 		modelGridObsClimate[i] = vector<double>(GRID_COLS);
 	}
@@ -291,7 +279,7 @@ TPaleoClimate::TPaleoClimate(const char *PLASIMFile, const char *presentClimateF
 
 
 		for(int c=0; c<modelGridnCells; c++){
-
+			// ~BUG: Apenas o indice 4 é alterado, o resto continua 0. Ou seja, erro na função getClimCell
 			getClimCell(c,(int)-1, 							// Yes, the time is negative because this is a first call
 						&modelGridPLASIMClimate[c][0],			// Yes, the matrix is CurrentPLASIM because this is a first call
 						&modelGridPLASIMClimate[c][1],
@@ -306,8 +294,8 @@ TPaleoClimate::TPaleoClimate(const char *PLASIMFile, const char *presentClimateF
 void TPaleoClimate::readGrid(FILE *arq){
 	for (int i = 0; i < modelGridnCells; i++) {
 		//le as duas primeira colunas (de longitude de latitude)
-		fscanf(arq,"%f", &modelGridLong[i]);
-		fscanf(arq,"\t%f", &modelGridLat[i]);
+		fscanf(arq,"%f", &modelGridLong[i]);		//copiando apenas a primeira coluna
+		fscanf(arq,"\t%f", &modelGridLat[i]);		//copiando apenas a segunda coluna
 		//le o restante das colunas
 		for(int j=2; j < GRID_COLS; j++){
 			fscanf(arq,"\t%lf", &modelGridObsClimate[i][j] );

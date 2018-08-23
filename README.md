@@ -20,7 +20,7 @@ Windows:
 comando de terminal para usar o Debugger:
 
 ubuntu:
-~ g++ code_in_C-C++/Procedimentos.cc code_in_C-C++/PaleoData.cpp CompressLib/decompressData.c -lz -lm -o Prog.exe -std=c++14 -g
+~ g++ code_in_C-C++/Procedimentos.cc code_in_C-C++/PaleoData.cpp CompressLib/decompressData.c -lz -lm -o Prog.exe -std=c++14 -g -fno-inline-functions -DGLIBCXX_DEBUG
 
 Windows:
 
