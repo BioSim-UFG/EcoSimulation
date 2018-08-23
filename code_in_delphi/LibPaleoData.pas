@@ -1,13 +1,12 @@
 unit LibPaleoData;
-
+{$mode delphi}{$H+}
 interface
 
 //bibliotecas / "includes"
 uses
-  System.SysUtils,
-  System.Classes,
-  System.ZLib,
-  System.Threading,
+  SysUtils,
+  Classes,
+  ZLib,
   Math,
   LibTypes,   // biblioteca pessoal
   LibFiles,  // biblioteca pessoal

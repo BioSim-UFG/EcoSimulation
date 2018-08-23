@@ -441,9 +441,11 @@ void TPaleoClimate::getClimCell(int c, double timeKya, float *SATMin, float *SAT
 	}
 }
 
+
+		/************************* BUG: Tradução Errada *************************************/
 void TPaleoClimate::getClimCell(int c, int timeStep,  float *SATMin, float *SATMax, float *PPTNMin, float *PPTNMax, float *NPP){
 	int t;
-	double Tmp1,Tmp2;
+	double tmp1,tmp2;
 	bool firstInterpolation;
 
 	// With the definition of the four adjacent cells, whose centroids form the square, in which the modeled cell is contained...
@@ -464,6 +466,7 @@ void TPaleoClimate::getClimCell(int c, int timeStep,  float *SATMin, float *SATM
 
 	// First interpolate the absolute PLASIM climate on the model grid
 
+	/*
 	if( (adjLeft[c] >= 63 ) || (adjDown[c] <= 0)){
 		//valores substituidos pelos piores ints possiveis
 		*SATMax = NAN;
@@ -478,45 +481,169 @@ void TPaleoClimate::getClimCell(int c, int timeStep,  float *SATMin, float *SATM
 		// If there are no PLASIM cells to the left
      	// So consider only the value at the cell to the right
 		if(wLon[c] == 0){
-			Tmp1 = PLASIMDataSATMax [adjLeft[c]+1][adjDown[c] ][t]; //cell at the south
-			Tmp2 = PLASIMDataSATMax [adjLeft[c]+1][adjDown[c]-1][t]; //cell at the north
+			tmp1 = PLASIMDataSATMax [adjLeft[c]+1][adjDown[c] ][t]; //cell at the south
+			tmp2 = PLASIMDataSATMax [adjLeft[c]+1][adjDown[c]-1][t]; //cell at the north
 		}
 		else{
 			// If there are no cells to the right
      		// consider only the cell to the left
 			if( wLon[c] == 1){
-				Tmp1 = PLASIMDataSATMax[adjLeft[c]][adjDown[c]][t]; // cell at the south
-       			Tmp2 = PLASIMDataSATMax[adjLeft[c]][adjDown[c]-1][t]; // cell at the north
+				tmp1 = PLASIMDataSATMax[adjLeft[c]][adjDown[c]][t]; // cell at the south
+       			tmp2 = PLASIMDataSATMax[adjLeft[c]][adjDown[c]-1][t]; // cell at the north
 			}
 			
 			// If there are both left and right cells **Aqui pode chegar? porque se tem nos dois tem em um****
 			else{
 				//The southern border
-				Tmp1 = PLASIMDataSATMax[adjLeft[c] ][adjDown[c] ][t ] * wLon[c] +	// the eastern border       PLASIMLongs[adjLeft[c]]      PLASIMLats[adjDown[c]]
+				tmp1 = PLASIMDataSATMax[adjLeft[c] ][adjDown[c] ][t ] * wLon[c] +	// the eastern border       PLASIMLongs[adjLeft[c]]      PLASIMLats[adjDown[c]]
                 	PLASIMDataSATMax[adjLeft[c]+1 ][adjDown[c] ][t ] * (1 - wLon[c]);	// the western border       PLASIMLongs[adjLeft[c]+1]    PLASIMLats[adjDown[c]]
 				
 				//The northern border 
-                Tmp2 = PLASIMDataSATMax[adjLeft[c] ][ adjDown[c]-1 ][ t] * wLon[c] +   // the eastern border       PLASIMLongs[adjLeft[c]]      PLASIMLats[adjDown[c]-1]
+                tmp2 = PLASIMDataSATMax[adjLeft[c] ][ adjDown[c]-1 ][ t] * wLon[c] +   // the eastern border       PLASIMLongs[adjLeft[c]]      PLASIMLats[adjDown[c]-1]
               		PLASIMDataSATMax[adjLeft[c]+1 ][adjDown[c]-1 ][t ] * (1 - wLon[c]);   // the western border       PLASIMLongs[adjLeft[c]+1]    PLASIMLats[adjDown[c]-1]
 			}
 		}
 
 		//Esse NPP está na parte do if/else correta?
-		*NPP =  Tmp1 * wLat[c] +
-           Tmp2 * (1 - wLat[c]);
+		*NPP =  tmp1 * wLat[c] +
+           tmp2 * (1 - wLat[c]);
 
         if( *NPP < 0 )
         	*NPP = 0;
 	}
+	*/
 
-    // A first call to Interpolate is necessary to calculate the raw PLASIM prediction of climate at present time
+	// First interpolate the absolute PLASIM climate on the model grid
+	if ((adjLeft[c] >= 63) || (adjDown[c] <= 0)){
+		//valores substituidos pelos piores ints possiveis
+		*SATMax = NAN;
+		*SATMin = NAN;
+		*PPTNMax = NAN;
+		*PPTNMin = NAN;
+		// qual numero deve ser usado para inicializar?
+		*NPP = 0;
+
+		return;
+	}
+	else{
+		// If there are no PLASIM cells to the left
+		// So consider only the value at the cell to the right
+		if (wLon[c] == 0){
+			tmp1 = PLASIMDataSATMax[adjLeft[c] + 1][adjDown[c]][t];		//cell at the south
+			tmp2 = PLASIMDataSATMax[adjLeft[c] + 1][adjDown[c] - 1][t]; //cell at the north
+		}
+		else if (wLon[c] == 1){		// If there are no cells to the right
+									// consider only the cell to the left
+			tmp1 = PLASIMDataSATMax[adjLeft[c]][adjDown[c]][t];		// cell at the south
+			tmp2 = PLASIMDataSATMax[adjLeft[c]][adjDown[c] - 1][t]; // cell at the north
+		}
+		else{ // If there are both left and right cells
+			//The southern border
+			tmp1 = PLASIMDataSATMax[adjLeft[c]][adjDown[c]][t] * wLon[c] +			// the eastern border       PLASIMLongs[adjLeft[c]]      PLASIMLats[adjDown[c]]
+				   PLASIMDataSATMax[adjLeft[c] + 1][adjDown[c]][t] * (1 - wLon[c]); // the western border       PLASIMLongs[adjLeft[c]+1]    PLASIMLats[adjDown[c]]
+
+			//The northern border
+			tmp2 = PLASIMDataSATMax[adjLeft[c]][adjDown[c] - 1][t] * wLon[c] +			// the eastern border       PLASIMLongs[adjLeft[c]]      PLASIMLats[adjDown[c]-1]
+				   PLASIMDataSATMax[adjLeft[c] + 1][adjDown[c] - 1][t] * (1 - wLon[c]); // the western border       PLASIMLongs[adjLeft[c]+1]    PLASIMLats[adjDown[c]-1]
+		}
+		*SATMax = tmp1*wLat[c] + tmp2*(1.0f-wLat[c]);
+
+
+	//////////////////////////////////////////////////////////
+
+		// If there are no cells to the right
+		if(wLon[c] == 0){
+			tmp1 = PLASIMDataSATMin[ adjLeft[c]+1] [ adjDown[c]]  [t];
+			tmp2 = PLASIMDataSATMin[ adjLeft[c]+1] [ adjDown[c]-1][t];
+		}
+		else if (wLon[c] == 1){ // If there are no cells to the left
+			tmp1 = PLASIMDataSATMin[ adjLeft[c] ]  [adjDown[c]]  [t];
+			tmp2 = PLASIMDataSATMin[ adjLeft[c] ]  [adjDown[c]-1][t];
+		}
+		else{ 	// If there are both left and right cells
+			tmp1 = PLASIMDataSATMin[ adjLeft[c] ]  [ adjDown[c] ] [t] * wLon[c] +
+				   PLASIMDataSATMin[ adjLeft[c]+1] [ adjDown[c] ] [t] * (1-wLon[c]);
+
+			tmp2 = PLASIMDataSATMin[ adjLeft[c] ]  [ adjDown[c]-1] [t] * wLon[c] +
+				   PLASIMDataSATMin[ adjLeft[c]+1] [ adjDown[c]-1] [t] * (1 - wLon[c]);
+		}
+		*SATMin = tmp1*wLat[c] + tmp2*(1.0f-wLat[c]);
+
+	//////////////////////////////////////////////////////////
+
+		// If there are no cells to the right
+		if (wLon[c] == 0){
+			tmp1 = PLASIMDataPPTNMax[adjLeft[c] + 1][adjDown[c]][t];
+			tmp2 = PLASIMDataPPTNMax[adjLeft[c] + 1][adjDown[c] - 1][t];
+		}
+		else if (wLon[c] == 1){ // If there are no cells to the left
+			tmp1 = PLASIMDataPPTNMax[adjLeft[c]][adjDown[c]][t];
+			tmp2 = PLASIMDataPPTNMax[adjLeft[c]][adjDown[c] - 1][t];
+		}
+		else{ // If there are both left and right cells
+			tmp1 = PLASIMDataPPTNMax[adjLeft[c]]  [adjDown[c]][t] * wLon[c] +
+				   PLASIMDataPPTNMax[adjLeft[c]+1][adjDown[c]][t] * (1 - wLon[c]);
+
+			tmp2 = PLASIMDataPPTNMax[adjLeft[c]]  [adjDown[c]-1][t] * wLon[c] +
+				   PLASIMDataPPTNMax[adjLeft[c]+1][adjDown[c]-1][t] * (1 - wLon[c]);
+		}
+		*PPTNMax = tmp1 * wLat[c] +  tmp2 * (1.0f - wLat[c]);
+
+	//////////////////////////////////////////////////////////
+
+		// If there are no cells to the right
+		if (wLon[c] == 0){
+			tmp1 = PLASIMDataPPTNMin[adjLeft[c] + 1][adjDown[c]]  [t];
+			tmp2 = PLASIMDataPPTNMin[adjLeft[c] + 1][adjDown[c]-1][t];
+		}
+		else if (wLon[c] == 1){ 	// If there are no cells to the left
+			tmp1 = PLASIMDataPPTNMin[adjLeft[c]][adjDown[c]]  [t];
+			tmp2 = PLASIMDataPPTNMin[adjLeft[c]][adjDown[c]-1][t];
+		}
+		else{	// If there are both left and right cells
+			tmp1 = PLASIMDataPPTNMin[adjLeft[c]]  [adjDown[c]][t] * wLon[c] +
+				   PLASIMDataPPTNMin[adjLeft[c]+1][adjDown[c]][t] * (1 - wLon[c]);
+
+			tmp2 = PLASIMDataPPTNMin[adjLeft[c]]  [adjDown[c]-1][t] * wLon[c] +
+				   PLASIMDataPPTNMin[adjLeft[c]+1][adjDown[c]-1][t] * (1 - wLon[c]);
+		}
+		*PPTNMin = tmp1 * wLat[c] + tmp2 * (1.0f - wLat[c]);
+
+		// Zero Precipitation value if the emulated precipitation was negative
+		if(*PPTNMax < 0)	*PPTNMax = 0.04f; // minimum observed value in current climatology
+		if(*PPTNMin < 0)	*PPTNMin = 0.04f;
+
+	//////////////////////////////////////////////////////////
+
+		// If there are no cells to the right
+		if(wLon[c]==0){
+			tmp1 = PLASIMDataNPP[adjLeft[c]+1][adjDown[c]][t];
+			tmp2 = PLASIMDataNPP[adjLeft[c]+1][adjDown[c]-1][t];
+		}
+		else if (wLon[c] == 1){ 	// If there are no cells to the left
+			tmp1 = PLASIMDataNPP[adjLeft[c]][adjDown[c]][t];
+			tmp2 = PLASIMDataNPP[adjLeft[c]][adjDown[c]-1][t];
+		}
+		else{ 	// If there are both left and right cells
+			tmp1 = PLASIMDataNPP[adjLeft[c]] [adjDown[c]] [t] * wLon[c] +
+				   PLASIMDataNPP[adjLeft[c]+1][adjDown[c]][t] * (1 - wLon[c]);
+
+			tmp2 = PLASIMDataNPP[adjLeft[c]] [adjDown[c]-1] [t] * wLon[c] +
+				   PLASIMDataNPP[adjLeft[c]+1][adjDown[c]-1][t] * (1 - wLon[c]);
+		}
+		*NPP = tmp1 * wLat[c] + tmp2 * (1.0f - wLat[c]);
+
+		if (NPP<0)	NPP = 0;
+	}
+
+	// A first call to Interpolate is necessary to calculate the raw PLASIM prediction of climate at present time
   	// This PLASIM prediction is later used as a baseline for the computation of the anomalies in relation to the present observed climate (i.e. worldclim)
   	// Because the code below is the application of annomalies in relation to the present observed climate, and here we need the raw PLASIm prediction, we may just exit here
     // If, instead, we want to interpolate the raw PLASIM data for all time steps, then we can just disable the "Exit" also calculate the "annomalies" during the creation of the class
 	if(firstInterpolation || (! projAnomalies))
 		return;
 
- // Convert anomalies from current climate
+  // Convert anomalies from current climate
 
 	// Temperature
     // Additive anomalies for temperature
@@ -541,8 +668,9 @@ void TPaleoClimate::getClimCell(int c, int timeStep,  float *SATMin, float *SATM
 		else
 			*PPTNMax = *PPTNMax - modelGridPLASIMClimate[c ][3 ] + modelGridObsClimate[c ][3 ];
 	}
-	else
+	else{
 		*PPTNMax = 0;
+	}
 
 	if(modelGridPLASIMClimate[c ][2 ] > 0){
 		if(modelGridObsClimate[c ][2 ] <= modelGridPLASIMClimate[c ][2 ])
@@ -606,18 +734,15 @@ void TPaleoClimate::getClimCell(int c, int timeStep,  float *SATMin, float *SATM
 		*PPTNMax = 2000;
 	
 	// Multiplicative anomalies for NPP
-	if(!isnan(modelGridObsClimate[c ][4 ])){
-		if(modelGridPLASIMClimate[c ][4 ] > 0){
-			*NPP = (*NPP / modelGridPLASIMClimate[c ][4 ]) * modelGridObsClimate[c ][4 ];
-
-		}
-		else{
+	if(!isnan(modelGridObsClimate[c][4])){
+		if(modelGridPLASIMClimate[c][4] > 0)
+			*NPP = (*NPP / modelGridPLASIMClimate[c][4]) * modelGridObsClimate[c][4];
+		else
 			*NPP = 0;
-		}
 
-		if(*NPP < 0 ){
+
+		if(*NPP < 0 )
 			*NPP = 0;
-		}
 	}
 	else{
 		*NPP = NAN;
