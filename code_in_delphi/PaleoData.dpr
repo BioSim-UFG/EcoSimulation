@@ -2,10 +2,6 @@ program PaleoData;
 
 uses
   SysUtils,
-  LibTypes,
-  LibMatrix,
-  LibText,
-  LibFiles,
   LibPaleoData in '..\..\Libs\LibPaleoData.pas';
 
 var
