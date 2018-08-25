@@ -1,12 +1,13 @@
-unit LibPaleoData;
+unit LibPaleoData2;
+{$mode delphi}{$H+}
 
 interface
 
 uses
-  System.SysUtils,
-  System.Classes,
-  System.ZLib,
-  System.Threading,
+  SysUtils,
+  Classes,
+  zlib,
+  zstream,
   Math;
 
 Type
@@ -14,6 +15,7 @@ Type
   TDblVector = Array of Double;
   TSngMatrix = Array of TSngVector;
   TDblMatrix = Array of TDblVector;
+
 
   PSngVector = ^TSngVector;
 
@@ -119,7 +121,7 @@ implementation
 
 
 
-// Funções do Thiago tiradas de LibFiles
+// Funï¿½ï¿½es do Thiago tiradas de LibFiles
 Function OpenSimple(FileName: String): TDblMatrix;
  var
   InputFile: TextFile;
@@ -156,7 +158,7 @@ Function OpenSimple(FileName: String): TDblMatrix;
  end;
 
 
-// Funções do Thiago tiradas de LibMatrix
+// Funï¿½ï¿½es do Thiago tiradas de LibMatrix
 
 Function DoubleToSingle(Vector: TDblVector): TSngVector; overload;
  var
@@ -235,7 +237,7 @@ Function Col(const Matrix: TSngMatrix; j: Integer): TSngVector; overload;
  end;
 
 
-// Funções do Thiago tiradas de LibText
+// Funï¿½ï¿½es do Thiago tiradas de LibText
 
 Function Float2Str(const Value: Double;
                    const Integers, Decimals: Integer;
@@ -308,7 +310,7 @@ Function Float2Str(const Value: Double;
       Result:= Format('%*.*f', [Integers, Decimals, Value]);
    end;
 
-{ Aumenta o número de espaços em branco no início }
+{ Aumenta o nï¿½mero de espaï¿½os em branco no inï¿½cio }
   For i:= Length(Result) DownTo 1 do
    begin
     If (Copy(Result, i, 1) = '.') then
@@ -337,7 +339,7 @@ Function Float2Str(const Value: Double;
      end;
    end;
 
-{ Aumenta o número de espaços em branco no final }
+{ Aumenta o nï¿½mero de espaï¿½os em branco no final }
   If ForceDecs then
    begin
     j:= 0;
@@ -386,11 +388,83 @@ Function Float2Str(const Value: Double;
 
 
 
+//procedure ZDecompressStream(inStream, outStream: TStream);
 
+procedure Descomprimir(ArquivoZip: TFileName; saida: TMemoryStream);
+var
+   NomeSaida: string;
+   FileEntrada, FileOut: TFileStream;
+   Descompressor: TDecompressionStream;
+   NumArq, I, Len,Size: Integer;
+   Fim: Byte;
 
+begin
+     FileEntrada := TFileStream.Create(ArquivoZip, fmOpenRead and fmShareExclusive);
+     Descompressor := TDecompressionStream.Create(FileEntrada);
+     Descompressor.Read(NumArq,SizeOf(Integer));
 
+     try
+        I:=0;
+        While I < NumArq  do begin
+          write('I = ');write(I);
+           Descompressor.Read(Len,SizeOf(UInt64));
+           SetLength(NomeSaida, Len);
+           writeln(Len);
+           writeln('linha 414');
+           Descompressor.Read(NomeSaida[1],Len);
+           Descompressor.Read(Size,SizeOf(Integer));
+           //FileOut := TFileStream.Create(IncludeTrailingBackslash(DiretorioDestino) + NomeSaida, fmCreate or fmShareExclusive);
+           //try
+           //   FileOut.CopyFrom(Descompressor,Size);
+           //   finally
+           //   FileOut.Free;
+           //end;
+           saida.read(Descompressor, sizeOf(Integer));
+           Descompressor.Read(Fim, SizeOf(Byte));
+           Inc(I);
+        end;
+        finally
+        FreeAndNil(Descompressor);
+        FreeAndNil(FileEntrada);
+  end;
 
+end;
 
+procedure DecompressFiles(const Filename:string ; saida: TMemoryStream);
+var
+  Dest,S: String;
+  Decompr: TDecompressionStream;
+  InFile, OutFile: TFilestream;
+  I,L,C: Integer;
+begin
+  //Dest   := IncludeTrailingPathDelimiter(DestDirectory);
+  InFile := TFileStream.Create(Filename,fmOpenRead);
+  try
+{ number of files }
+InFile.Read(C,SizeOf(C));
+for I := 1 to C do
+begin
+  { read filename }
+  //InFile.Read(L,SizeOf(L));
+  //SetLength(S,L);
+  //InFile.Read(S[1],L);
+  { read filesize }
+  InFile.Read(L,SizeOf(L));
+  { Decompress the files and store it }
+  //S := Dest+S; //include the path
+  //OutFile := TFileStream.Create(Dest+S,fmCreate);
+  Decompr := TDecompressionStream.Create(InFile);
+  try
+saida.CopyFrom(Decompr,L);
+  finally
+//OutFile.Free;
+Decompr.Free;
+  end;
+end;
+  finally
+InFile.Free;
+  end;
+end;
 
 
 
@@ -408,11 +482,15 @@ Constructor TPaleoClimate.Create(PLASIMFile,
    ProjAnomalies:= ProjectAnnomalies;
 
    // Reads PLASIM Grid
-   ZipStream:= TMemoryStream.Create;
-   ZipStream.Position:= 0;
-   ZipStream.LoadFromFile(PLASIMFile);
+   //ZipStream:= TMemoryStream.Create;
+   //ZipStream.Position:= 0;
+   //ZipStream.LoadFromFile(PLASIMFile);
    Stream:= TMemoryStream.Create;
-   ZDecompressStream(ZipStream, Stream);
+   Stream.Position:=0;
+   write('450');
+   //ZDecompressStream(ZipStream, Stream);
+   DecompressFiles(PLASIMFile, Stream);
+   write('453');
    FreeAndNil(ZipStream);
 
    Stream.Position:= 0;
@@ -1249,6 +1327,7 @@ Procedure TPaleoClimate.GetClimGrid(TimeStep: Integer;
                                     var EnvVec, NPPVec: PSngVector);
  var
   TmpEnvVec, TmpNPPVec: TSngVector;
+  c : Integer;
  begin
   TmpEnvVec:= EnvVec^;
   TmpNPPVec:= NPPVec^;
@@ -1259,8 +1338,7 @@ Procedure TPaleoClimate.GetClimGrid(TimeStep: Integer;
   If Length(TmpNPPVec) <> ModelGridnCells then
     SetLength(TmpNPPVec, ModelGridnCells);
 
-  TParallel.For(0, ModelGridnCells-1,
-    Procedure (c: Integer)
+  For c:= 0 to ModelGridnCells-1 do
      begin
       GetClimCell(c, TimeStep,
                   TmpEnvVec[(c*4) + 0],
@@ -1268,7 +1346,7 @@ Procedure TPaleoClimate.GetClimGrid(TimeStep: Integer;
                   TmpEnvVec[(c*4) + 2],
                   TmpEnvVec[(c*4) + 3],
                   TmpNPPVec[c]);
-     end);
+     end;
  end;
 
 Procedure TPaleoClimate.GetClimTimeSeries(StartTime, EndTime: Double;

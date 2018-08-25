@@ -1,8 +1,8 @@
 program PaleoData;
-
+{$mode delphi}{$H+}
 uses
   SysUtils,
-  LibPaleoData in '..\..\Libs\LibPaleoData.pas';
+  LibPaleoData2 in 'LibPaleoData2.pas';
 
 var
   PaleoClimate: TPaleoClimate;
