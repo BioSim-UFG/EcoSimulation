@@ -1,14 +1,25 @@
 unit LibPaleoData2;
 {$mode delphi}{$H+}
+{$LINKLIB c}
+{$linklib gcc_s}
+{$link ../CompressLib/decompressData.o}
 
 interface
 
 uses
   SysUtils,
   Classes,
+  Ctypes,
   zlib,
   zstream,
   Math;
+
+Type
+  ppcuchar = ^pcuchar;
+
+  procedure pas_decompress(fileName: pcchar; bytesStream: ppcuchar ;totalBytes: pcsize_t) ;cdecl;external;
+  function ptr_to_int(ptr: pointer): cint;cdecl;external;
+  function my_decompress_to_file(sourceName, destName: pcchar):Integer; cdecl; external;
 
 Type
   TSngVector = Array of Single;
@@ -475,6 +486,11 @@ Constructor TPaleoClimate.Create(PLASIMFile,
  var
   PLASIMnLat, PLASIMnLong: Integer;
   Stream, ZipStream: TMemoryStream;
+  bytesOut: pcuchar;
+  size: Longint;
+  int_num: Integer;
+
+
 
   i, j, k, c: Integer;
  begin
@@ -485,18 +501,18 @@ Constructor TPaleoClimate.Create(PLASIMFile,
    //ZipStream:= TMemoryStream.Create;
    //ZipStream.Position:= 0;
    //ZipStream.LoadFromFile(PLASIMFile);
-   Stream:= TMemoryStream.Create;
-   Stream.Position:=0;
-   write('450');
+   //bytesOut := Nil;
+   //pas_decompress(PCCHAR(PCHAR(PLASIMFile)), @bytesOut , @size);
    //ZDecompressStream(ZipStream, Stream);
-   DecompressFiles(PLASIMFile, Stream);
-   write('453');
-   FreeAndNil(ZipStream);
+   //DecompressFiles(PLASIMFile, Stream);
+   //FreeAndNil(ZipStream);
 
+
+  my_decompress_to_file(Pcchar(PCHAR(PLASIMFile)), Pcchar(PCHAR('Temp.Stream')));
+
+   Stream:= TMemoryStream.Create;
    Stream.Position:= 0;
-
-
-
+   Stream.LoadFromFile('Temp.Stream');
 
 
 
@@ -506,6 +522,7 @@ Constructor TPaleoClimate.Create(PLASIMFile,
    For i:= 0 to PLASIMnLong-1 do
      Stream.Read(PLASIMLongs[i], SizeOf(Single));
 
+  writeln('517');
    Stream.Read(PLASIMnLat, SizeOf(Integer));
    SetLength(PLASIMLats, PLASIMnLat);
    For i:= 0 to PLASIMnLat-1 do

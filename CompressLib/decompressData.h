@@ -2,6 +2,8 @@
 
 #include <stdio.h>
 #include <zlib.h>
+#ifndef COMPRESS_LIB
+#define COMPRESS_LIB
 
 #if defined(MSDOS) || defined(OS2) || defined(WIN32) || defined(__CYGWIN__)
 #  include <fcntl.h>
@@ -28,10 +30,13 @@ typedef unsigned char byte;
 		my_decompress(source_file, &dest_stream, &size);
 	final_size 	-> quantidade total de bytes colocados na stream
 */
-int my_decompress(FILE *source, byte **dest_stream, size_t *final_size );
+int my_decompress(FILE *source, byte **dest_stream, size_t *final_size);
+int my_decompress_to_file(char source_str[], char dest_str[]);
 
-/*
+	/*
 	source 		-> ponteiro para arquivo fonte a ser lido
 	dest 		-> ponteiro para arquivo destino a ser escrito
 */
 int my_compress(byte *source_stream, FILE *dest, size_t size);
+
+#endif
