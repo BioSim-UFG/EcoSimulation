@@ -7,6 +7,14 @@ DummyHex2566 - Output
 Y
 10
 
+DummyHex2566 - Coords and Clim.txt
+Y
+DummyHex2566 - Output
+500
+Y
+10
+
+
 
 
 Is the grid + present climate file 'Coords and Clim.txt'?

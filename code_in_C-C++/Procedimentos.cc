@@ -279,7 +279,6 @@ TPaleoClimate::TPaleoClimate(const char *PLASIMFile, const char *presentClimateF
 
 
 		for(int c=0; c<modelGridnCells; c++){
-			// ~BUG: Apenas o indice 4 é alterado, o resto continua 0. Ou seja, erro na função getClimCell
 			getClimCell(c,(int)-1, 							// Yes, the time is negative because this is a first call
 						&modelGridPLASIMClimate[c][0],			// Yes, the matrix is CurrentPLASIM because this is a first call
 						&modelGridPLASIMClimate[c][1],
@@ -324,9 +323,9 @@ void TPaleoClimate::getClimCell(int c, double timeKya, float *SATMin, float *SAT
 	}
 	else{	
 		//troquei o função Trunc() por um cast (int), pois ela apenas trunca um ponto flutuante, retornando a parte inteira
-		tmp = (timeKya * PLASIMnTimeOffset) - ((int)timeKya * PLASIMnTimeOffset);
+		tmp = (timeKya * PLASIMnTimeOffset) - (int)(timeKya * PLASIMnTimeOffset);
 
-  /************************** ~NOTA: POSSIVEL ERRO NO codigo em DELPHI************************************/
+		/************************** ~NOTA: POSSIVEL ERRO NO codigo em DELPHI************************************/
 		//não existe roundTo em c++, o que fazer?
 		//encontrei alternativas, mas que funcionam de forma um pouco diferentes: 
 		//https://stackoverflow.com/questions/11208971/round-a-float-to-a-given-precision
@@ -457,7 +456,7 @@ void TPaleoClimate::getClimCell(int c, int timeStep,  float *SATMin, float *SATM
 
 	// A regular call to the interpolate function
 	if(timeStep >= 0){
-		t = ((int)timeStep);
+		t = ((int)timeStep);		
 		firstInterpolation = false;
 	}
 
@@ -467,54 +466,6 @@ void TPaleoClimate::getClimCell(int c, int timeStep,  float *SATMin, float *SATM
 		firstInterpolation = true;
 	}
 
-	// First interpolate the absolute PLASIM climate on the model grid
-
-	/*
-	if( (adjLeft[c] >= 63 ) || (adjDown[c] <= 0)){
-		//valores substituidos pelos piores ints possiveis
-		*SATMax = NAN;
-		*SATMin = NAN;
-		*PPTNMax = NAN;
-		*PPTNMin = NAN;
- 		// qual numero deve ser usado para inicializar?
- 		*NPP = 0 ;
-	}
-
-	else{
-		// If there are no PLASIM cells to the left
-     	// So consider only the value at the cell to the right
-		if(wLon[c] == 0){
-			tmp1 = PLASIMDataSATMax [adjLeft[c]+1][adjDown[c] ][t]; //cell at the south
-			tmp2 = PLASIMDataSATMax [adjLeft[c]+1][adjDown[c]-1][t]; //cell at the north
-		}
-		else{
-			// If there are no cells to the right
-     		// consider only the cell to the left
-			if( wLon[c] == 1){
-				tmp1 = PLASIMDataSATMax[adjLeft[c]][adjDown[c]][t]; // cell at the south
-       			tmp2 = PLASIMDataSATMax[adjLeft[c]][adjDown[c]-1][t]; // cell at the north
-			}
-			
-			// If there are both left and right cells **Aqui pode chegar? porque se tem nos dois tem em um****
-			else{
-				//The southern border
-				tmp1 = PLASIMDataSATMax[adjLeft[c] ][adjDown[c] ][t ] * wLon[c] +	// the eastern border       PLASIMLongs[adjLeft[c]]      PLASIMLats[adjDown[c]]
-                	PLASIMDataSATMax[adjLeft[c]+1 ][adjDown[c] ][t ] * (1 - wLon[c]);	// the western border       PLASIMLongs[adjLeft[c]+1]    PLASIMLats[adjDown[c]]
-				
-				//The northern border 
-                tmp2 = PLASIMDataSATMax[adjLeft[c] ][ adjDown[c]-1 ][ t] * wLon[c] +   // the eastern border       PLASIMLongs[adjLeft[c]]      PLASIMLats[adjDown[c]-1]
-              		PLASIMDataSATMax[adjLeft[c]+1 ][adjDown[c]-1 ][t ] * (1 - wLon[c]);   // the western border       PLASIMLongs[adjLeft[c]+1]    PLASIMLats[adjDown[c]-1]
-			}
-		}
-
-		//Esse NPP está na parte do if/else correta?
-		*NPP =  tmp1 * wLat[c] +
-           tmp2 * (1 - wLat[c]);
-
-        if( *NPP < 0 )
-        	*NPP = 0;
-	}
-	*/
 
 	// First interpolate the absolute PLASIM climate on the model grid
 	if ((adjLeft[c] >= 63) || (adjDown[c] <= 0)){
@@ -534,109 +485,89 @@ void TPaleoClimate::getClimCell(int c, int timeStep,  float *SATMin, float *SATM
 		if (wLon[c] == 0){
 			tmp1 = PLASIMDataSATMax[adjLeft[c] + 1][adjDown[c]][t];		//cell at the south
 			tmp2 = PLASIMDataSATMax[adjLeft[c] + 1][adjDown[c] - 1][t]; //cell at the north
+			*SATMax = tmp1 * wLat[c] + tmp2 * (1.0f - wLat[c]);
+
+			tmp1 = PLASIMDataSATMin[adjLeft[c] + 1][adjDown[c]][t];
+			tmp2 = PLASIMDataSATMin[adjLeft[c] + 1][adjDown[c] - 1][t];
+			*SATMin = tmp1 * wLat[c] + tmp2 * (1.0f - wLat[c]);
+
+			tmp1 = PLASIMDataPPTNMax[adjLeft[c] + 1][adjDown[c]][t];
+			tmp2 = PLASIMDataPPTNMax[adjLeft[c] + 1][adjDown[c] - 1][t];
+			*PPTNMax = tmp1 * wLat[c] + tmp2 * (1.0f - wLat[c]);
+
+			tmp1 = PLASIMDataPPTNMin[adjLeft[c] + 1][adjDown[c]][t];
+			tmp2 = PLASIMDataPPTNMin[adjLeft[c] + 1][adjDown[c] - 1][t];
+			*PPTNMin = tmp1 * wLat[c] + tmp2 * (1.0f - wLat[c]);
+
+			tmp1 = PLASIMDataNPP[adjLeft[c] + 1][adjDown[c]][t];
+			tmp2 = PLASIMDataNPP[adjLeft[c] + 1][adjDown[c] - 1][t];
+			*NPP = tmp1 * wLat[c] + tmp2 * (1.0f - wLat[c]);
 		}
-		else if (wLon[c] == 1){		// If there are no cells to the right
-									// consider only the cell to the left
+		else if (wLon[c] == 1){															// If there are no cells to the right
+																	// consider only the cell to the left
 			tmp1 = PLASIMDataSATMax[adjLeft[c]][adjDown[c]][t];		// cell at the south
 			tmp2 = PLASIMDataSATMax[adjLeft[c]][adjDown[c] - 1][t]; // cell at the north
+			*SATMax = tmp1 * wLat[c] + tmp2 * (1.0f - wLat[c]);
+
+			tmp1 = PLASIMDataSATMin[adjLeft[c]][adjDown[c]][t];
+			tmp2 = PLASIMDataSATMin[adjLeft[c]][adjDown[c] - 1][t];
+			*SATMin = tmp1 * wLat[c] + tmp2 * (1.0f - wLat[c]);
+
+			tmp1 = PLASIMDataPPTNMax[adjLeft[c]][adjDown[c]][t];
+			tmp2 = PLASIMDataPPTNMax[adjLeft[c]][adjDown[c] - 1][t];
+			*PPTNMax = tmp1 * wLat[c] + tmp2 * (1.0f - wLat[c]);
+
+			tmp1 = PLASIMDataPPTNMin[adjLeft[c]][adjDown[c]][t];
+			tmp2 = PLASIMDataPPTNMin[adjLeft[c]][adjDown[c] - 1][t];
+			*PPTNMin = tmp1 * wLat[c] + tmp2 * (1.0f - wLat[c]);
+
+			tmp1 = PLASIMDataNPP[adjLeft[c]][adjDown[c]][t];
+			tmp2 = PLASIMDataNPP[adjLeft[c]][adjDown[c] - 1][t];
+			*NPP = tmp1 * wLat[c] + tmp2 * (1.0f - wLat[c]);
 		}
 		else{ // If there are both left and right cells
 			//The southern border
-			tmp1 = PLASIMDataSATMax[adjLeft[c]][adjDown[c]][t] * wLon[c] +			// the eastern border       PLASIMLongs[adjLeft[c]]      PLASIMLats[adjDown[c]]
-				   PLASIMDataSATMax[adjLeft[c] + 1][adjDown[c]][t] * (1 - wLon[c]); // the western border       PLASIMLongs[adjLeft[c]+1]    PLASIMLats[adjDown[c]]
+			tmp1 = PLASIMDataSATMax[adjLeft[c]][adjDown[c]][t] * wLon[c] +			   // the eastern border       PLASIMLongs[adjLeft[c]]      PLASIMLats[adjDown[c]]
+				   PLASIMDataSATMax[adjLeft[c] + 1][adjDown[c]][t] * (1.0f - wLon[c]); // the western border       PLASIMLongs[adjLeft[c]+1]    PLASIMLats[adjDown[c]]
 
 			//The northern border
-			tmp2 = PLASIMDataSATMax[adjLeft[c]][adjDown[c] - 1][t] * wLon[c] +			// the eastern border       PLASIMLongs[adjLeft[c]]      PLASIMLats[adjDown[c]-1]
-				   PLASIMDataSATMax[adjLeft[c] + 1][adjDown[c] - 1][t] * (1 - wLon[c]); // the western border       PLASIMLongs[adjLeft[c]+1]    PLASIMLats[adjDown[c]-1]
-		}
-		*SATMax = tmp1*wLat[c] + tmp2*(1.0f-wLat[c]);
+			tmp2 = PLASIMDataSATMax[adjLeft[c]][adjDown[c] - 1][t] * wLon[c] +			   // the eastern border       PLASIMLongs[adjLeft[c]]      PLASIMLats[adjDown[c]-1]
+				   PLASIMDataSATMax[adjLeft[c] + 1][adjDown[c] - 1][t] * (1.0f - wLon[c]); // the western border       PLASIMLongs[adjLeft[c]+1]    PLASIMLats[adjDown[c]-1]
+			*SATMax = tmp1 * wLat[c] + tmp2 * (1.0f - wLat[c]);
 
 
-	//////////////////////////////////////////////////////////
+			tmp1 = PLASIMDataSATMin[adjLeft[c]][adjDown[c]][t] * wLon[c] +
+				   PLASIMDataSATMin[adjLeft[c] + 1][adjDown[c]][t] * (1.0f - wLon[c]);
+			tmp2 = PLASIMDataSATMin[adjLeft[c]][adjDown[c] - 1][t] * wLon[c] +
+				   PLASIMDataSATMin[adjLeft[c] + 1][adjDown[c] - 1][t] * (1.0f - wLon[c]);
+			*SATMin = tmp1 * wLat[c] + tmp2 * (1.0f - wLat[c]);
 
-		// If there are no cells to the right
-		if(wLon[c] == 0){
-			tmp1 = PLASIMDataSATMin[ adjLeft[c]+1] [ adjDown[c]]  [t];
-			tmp2 = PLASIMDataSATMin[ adjLeft[c]+1] [ adjDown[c]-1][t];
-		}
-		else if (wLon[c] == 1){ // If there are no cells to the left
-			tmp1 = PLASIMDataSATMin[ adjLeft[c] ]  [adjDown[c]]  [t];
-			tmp2 = PLASIMDataSATMin[ adjLeft[c] ]  [adjDown[c]-1][t];
-		}
-		else{ 	// If there are both left and right cells
-			tmp1 = PLASIMDataSATMin[ adjLeft[c] ]  [ adjDown[c] ] [t] * wLon[c] +
-				   PLASIMDataSATMin[ adjLeft[c]+1] [ adjDown[c] ] [t] * (1-wLon[c]);
 
-			tmp2 = PLASIMDataSATMin[ adjLeft[c] ]  [ adjDown[c]-1] [t] * wLon[c] +
-				   PLASIMDataSATMin[ adjLeft[c]+1] [ adjDown[c]-1] [t] * (1 - wLon[c]);
-		}
-		*SATMin = tmp1*wLat[c] + tmp2*(1.0f-wLat[c]);
+			tmp1 = PLASIMDataPPTNMax[adjLeft[c]][adjDown[c]][t] * wLon[c] +
+				   PLASIMDataPPTNMax[adjLeft[c] + 1][adjDown[c]][t] * (1.0f - wLon[c]);
+			tmp2 = PLASIMDataPPTNMax[adjLeft[c]][adjDown[c] - 1][t] * wLon[c] +
+				   PLASIMDataPPTNMax[adjLeft[c] + 1][adjDown[c] - 1][t] * (1.0f - wLon[c]);
+			*PPTNMax = tmp1 * wLat[c] + tmp2 * (1.0f - wLat[c]);
 
-	//////////////////////////////////////////////////////////
 
-		// If there are no cells to the right
-		if (wLon[c] == 0){
-			tmp1 = PLASIMDataPPTNMax[adjLeft[c] + 1][adjDown[c]][t];
-			tmp2 = PLASIMDataPPTNMax[adjLeft[c] + 1][adjDown[c] - 1][t];
-		}
-		else if (wLon[c] == 1){ // If there are no cells to the left
-			tmp1 = PLASIMDataPPTNMax[adjLeft[c]][adjDown[c]][t];
-			tmp2 = PLASIMDataPPTNMax[adjLeft[c]][adjDown[c] - 1][t];
-		}
-		else{ // If there are both left and right cells
-			tmp1 = PLASIMDataPPTNMax[adjLeft[c]]  [adjDown[c]][t] * wLon[c] +
-				   PLASIMDataPPTNMax[adjLeft[c]+1][adjDown[c]][t] * (1 - wLon[c]);
+			tmp1 = PLASIMDataPPTNMin[adjLeft[c]][adjDown[c]][t] * wLon[c] +
+				   PLASIMDataPPTNMin[adjLeft[c] + 1][adjDown[c]][t] * (1.0f - wLon[c]);
+			tmp2 = PLASIMDataPPTNMin[adjLeft[c]][adjDown[c] - 1][t] * wLon[c] +
+				   PLASIMDataPPTNMin[adjLeft[c] + 1][adjDown[c] - 1][t] * (1.0f - wLon[c]);
+			*PPTNMin = tmp1 * wLat[c] + tmp2 * (1.0f - wLat[c]);
 
-			tmp2 = PLASIMDataPPTNMax[adjLeft[c]]  [adjDown[c]-1][t] * wLon[c] +
-				   PLASIMDataPPTNMax[adjLeft[c]+1][adjDown[c]-1][t] * (1 - wLon[c]);
-		}
-		*PPTNMax = tmp1 * wLat[c] +  tmp2 * (1.0f - wLat[c]);
 
-	//////////////////////////////////////////////////////////
-
-		// If there are no cells to the right
-		if (wLon[c] == 0){
-			tmp1 = PLASIMDataPPTNMin[adjLeft[c] + 1][adjDown[c]]  [t];
-			tmp2 = PLASIMDataPPTNMin[adjLeft[c] + 1][adjDown[c]-1][t];
+			tmp1 = PLASIMDataNPP[adjLeft[c]][adjDown[c]][t] * wLon[c] +
+				   PLASIMDataNPP[adjLeft[c] + 1][adjDown[c]][t] * (1.0f - wLon[c]);
+			tmp2 = PLASIMDataNPP[adjLeft[c]][adjDown[c] - 1][t] * wLon[c] +
+				   PLASIMDataNPP[adjLeft[c] + 1][adjDown[c] - 1][t] * (1.0f - wLon[c]);
+			*NPP = tmp1 * wLat[c] + tmp2 * (1.0f - wLat[c]);
 		}
-		else if (wLon[c] == 1){ 	// If there are no cells to the left
-			tmp1 = PLASIMDataPPTNMin[adjLeft[c]][adjDown[c]]  [t];
-			tmp2 = PLASIMDataPPTNMin[adjLeft[c]][adjDown[c]-1][t];
-		}
-		else{	// If there are both left and right cells
-			tmp1 = PLASIMDataPPTNMin[adjLeft[c]]  [adjDown[c]][t] * wLon[c] +
-				   PLASIMDataPPTNMin[adjLeft[c]+1][adjDown[c]][t] * (1 - wLon[c]);
-
-			tmp2 = PLASIMDataPPTNMin[adjLeft[c]]  [adjDown[c]-1][t] * wLon[c] +
-				   PLASIMDataPPTNMin[adjLeft[c]+1][adjDown[c]-1][t] * (1 - wLon[c]);
-		}
-		*PPTNMin = tmp1 * wLat[c] + tmp2 * (1.0f - wLat[c]);
 
 		// Zero Precipitation value if the emulated precipitation was negative
-		if(*PPTNMax < 0)	*PPTNMax = 0.04f; // minimum observed value in current climatology
-		if(*PPTNMin < 0)	*PPTNMin = 0.04f;
-
-	//////////////////////////////////////////////////////////
-
-		// If there are no cells to the right
-		if(wLon[c]==0){
-			tmp1 = PLASIMDataNPP[adjLeft[c]+1][adjDown[c]][t];
-			tmp2 = PLASIMDataNPP[adjLeft[c]+1][adjDown[c]-1][t];
-		}
-		else if (wLon[c] == 1){ 	// If there are no cells to the left
-			tmp1 = PLASIMDataNPP[adjLeft[c]][adjDown[c]][t];
-			tmp2 = PLASIMDataNPP[adjLeft[c]][adjDown[c]-1][t];
-		}
-		else{ 	// If there are both left and right cells
-			tmp1 = PLASIMDataNPP[adjLeft[c]] [adjDown[c]] [t] * wLon[c] +
-				   PLASIMDataNPP[adjLeft[c]+1][adjDown[c]][t] * (1 - wLon[c]);
-
-			tmp2 = PLASIMDataNPP[adjLeft[c]] [adjDown[c]-1] [t] * wLon[c] +
-				   PLASIMDataNPP[adjLeft[c]+1][adjDown[c]-1][t] * (1 - wLon[c]);
-		}
-		*NPP = tmp1 * wLat[c] + tmp2 * (1.0f - wLat[c]);
-
-		if (NPP<0)	NPP = 0;
+		if (*PPTNMax < 0)	*PPTNMax = 0.04f; // minimum observed value in current climatology
+		if (*PPTNMin < 0)	*PPTNMin = 0.0f;
+		if (NPP < 0)	NPP = 0;
 	}
 
 	// A first call to Interpolate is necessary to calculate the raw PLASIM prediction of climate at present time
@@ -677,12 +608,13 @@ void TPaleoClimate::getClimCell(int c, int timeStep,  float *SATMin, float *SATM
 
 	if(modelGridPLASIMClimate[c ][2 ] > 0){
 		if(modelGridObsClimate[c ][2 ] <= modelGridPLASIMClimate[c ][2 ])
-			*PPTNMin = (*PPTNMin / modelGridPLASIMClimate[c ][2 ]) * modelGridPLASIMClimate[c ][2 ];
+			*PPTNMin = (*PPTNMin / modelGridPLASIMClimate[c ][2 ]) * modelGridObsClimate[c ][2 ];
 		else
 			*PPTNMin = *PPTNMin - modelGridPLASIMClimate[c ][2 ] + modelGridObsClimate[c ][2 ]; 
 	}
-	else
+	else{
 		*PPTNMin = 0;
+	}
 
 	// If PPTNMax is less than PPTNMin, then calculate the average
 	if(*PPTNMax < *PPTNMin){
@@ -731,10 +663,8 @@ void TPaleoClimate::getClimCell(int c, int timeStep,  float *SATMin, float *SATM
  */
 
  // Capping PPTN at 2000mm / season
-	if(*PPTNMin > 2000)
-		*PPTNMin = 2000;
-	if(*PPTNMax > 2000)
-		*PPTNMax = 2000;
+	if(*PPTNMin > 2000)		*PPTNMin = 2000;
+	if(*PPTNMax > 2000)		*PPTNMax = 2000;
 	
 	// Multiplicative anomalies for NPP
 	if(!isnan(modelGridObsClimate[c][4])){
@@ -743,9 +673,7 @@ void TPaleoClimate::getClimCell(int c, int timeStep,  float *SATMin, float *SATM
 		else
 			*NPP = 0;
 
-
-		if(*NPP < 0 )
-			*NPP = 0;
+		if(*NPP < 0 )	*NPP = 0;
 	}
 	else{
 		*NPP = NAN;
@@ -756,20 +684,11 @@ void TPaleoClimate::getClimCell(int c, int timeStep,  float *SATMin, float *SATM
 void TPaleoClimate::getClimAtTime(double timeKya, TSngVector SATMin, TSngVector SATMax, TSngVector PPTNMin, TSngVector PPTNMax, TSngVector NPP){
 	int c;
 
-	if( SATMax.size() != modelGridnCells)
-		SATMax.resize(modelGridnCells);
-	
-	if(SATMin.size() != modelGridnCells)
-		SATMin.resize(modelGridnCells);
-
-	if(PPTNMax.size() != modelGridnCells)
-		PPTNMax.resize(modelGridnCells);
-
-	if(PPTNMin.size() != modelGridnCells)
-		PPTNMin.resize(modelGridnCells);
-
-	if(NPP.size() != modelGridnCells)
-		NPP.resize(modelGridnCells);
+	if( SATMax.size() != modelGridnCells)		SATMax.resize(modelGridnCells);
+	if(SATMin.size() != modelGridnCells)		SATMin.resize(modelGridnCells);
+	if(PPTNMax.size() != modelGridnCells)		PPTNMax.resize(modelGridnCells);
+	if(PPTNMin.size() != modelGridnCells)		PPTNMin.resize(modelGridnCells);
+	if(NPP.size() != modelGridnCells)			NPP.resize(modelGridnCells);
 
 	for(c=0 ; c < modelGridnCells ; c++ ){
 		getClimCell(c, timeKya, &SATMin[c], &SATMax[c], &PPTNMin[c], &PPTNMax[c], &NPP[c] );
@@ -779,20 +698,11 @@ void TPaleoClimate::getClimAtTime(double timeKya, TSngVector SATMin, TSngVector 
 void TPaleoClimate::getClimAtTime(int timeStep, TSngVector SATMin, TSngVector SATMax, TSngVector PPTNMin, TSngVector PPTNMax, TSngVector NPP ){
 	int c;
 
-	if(SATMax.size() != modelGridnCells )
-		SATMax.resize(modelGridnCells);
-
-	if(SATMin.size() != modelGridnCells)
-		SATMin.resize(modelGridnCells);
-
-	if(PPTNMax.size() != modelGridnCells)
-		PPTNMax.resize(modelGridnCells);
-
-	if(PPTNMin.size() != modelGridnCells)
-		PPTNMin.resize(modelGridnCells);
-
-	if(NPP.size() != modelGridnCells)
-		NPP.resize(modelGridnCells);
+	if(SATMax.size() != modelGridnCells )		SATMax.resize(modelGridnCells);
+	if(SATMin.size() != modelGridnCells)		SATMin.resize(modelGridnCells);
+	if(PPTNMax.size() != modelGridnCells)		PPTNMax.resize(modelGridnCells);
+	if(PPTNMin.size() != modelGridnCells)		PPTNMin.resize(modelGridnCells);
+	if(NPP.size() != modelGridnCells)			NPP.resize(modelGridnCells);
 
 	for(c=0 ; c < modelGridnCells; c++ ){
 		getClimCell(c, timeStep, &SATMin[c], &SATMax[c], &PPTNMin[c], &PPTNMax[c], &NPP[c]);
@@ -804,29 +714,33 @@ void TPaleoClimate::getClimAtTime(int timeStep, TSngVector SATMin, TSngVector SA
 // Thus, the length of EnvVec is four times the number of grid cells
 // The order is regular: For each grid cell, SATMin, SATMax, PPTNMin, PPTN
 void TPaleoClimate::getClimGrid(int timeStep, PSngVector envVec, PSngVector NPPVec){
-	TSngVector tmpEnvVec, tmpNPPVec;
+	//TSngVector tmpEnvVec, tmpNPPVec;
+	TSngVector *tmpEnvVec, *tmpNPPVec;
 	int c;
 
 	// = tem overload para o vector
 	//perigoso e pode causar erros
-	tmpEnvVec = *envVec;
-	tmpNPPVec = *NPPVec;
+	//jg diz: podemos então apenas usar o endereço do vetor, assim evitando o operador '=' :
+	//tmpEnvVec = *envVec;
+	//tmpNPPVec = *NPPVec;
+	tmpEnvVec = envVec;
+	tmpNPPVec = NPPVec;
 
-	if( (tmpEnvVec.size() / 4) != modelGridnCells)
-		tmpEnvVec.resize(modelGridnCells * 4);
+	if( (tmpEnvVec->size() / 4) != modelGridnCells)
+		tmpEnvVec->resize(modelGridnCells * 4);
 
-	if(tmpNPPVec.size() != modelGridnCells)
-		tmpNPPVec.resize(modelGridnCells);
+	if(tmpNPPVec->size() != modelGridnCells)
+		tmpNPPVec->resize(modelGridnCells);
 
 	//função escrita em paralelo
 	//TParallel.For(0, ModelGridnCells-1,
 	for(c=0 ; c < modelGridnCells ; c++){
 		getClimCell(c, timeStep, 
-					&tmpEnvVec[(c*4) + 0], 
-					&tmpEnvVec[(c*4) + 1], 
-					&tmpEnvVec[(c*4) + 2],
-					&tmpEnvVec[(c*4) + 3],
-					&tmpNPPVec[c]);		
+					&(*tmpEnvVec)[(c*4) + 0],
+					&(*tmpEnvVec)[(c*4) + 1],
+					&(*tmpEnvVec)[(c*4) + 2],
+					&(*tmpEnvVec)[(c*4) + 3],
+					&(*tmpNPPVec)[c]);		
 	}
 }
 

@@ -138,7 +138,7 @@ int main(){
 		int nt = (b - e) / s;
 
 		char temp_str[100];
-		sprintf(temp_str,"T%.1f",b);
+		sprintf(temp_str,"T%.0f",b);
 		streamsize size = strlen(temp_str);
 		arq_outMinTemp.write(temp_str, size);
 		arq_outMaxTemp.write(temp_str, size);
@@ -147,7 +147,7 @@ int main(){
 		arq_outNPP.write(temp_str, size);
 
 		for(int i=1; i<=nt; i++){
-			sprintf(temp_str, "\tT%.1f", b - (i * s));
+			sprintf(temp_str, "\tT%.0f", b - (i * s));
 			size = strlen(temp_str);
 			arq_outMinTemp.write(temp_str, size);
 			arq_outMaxTemp.write(temp_str, size);
@@ -167,11 +167,11 @@ int main(){
 			// ~BUG: todas variaveis estão retornando com valor 0 ( menos NPP) -> provavel erro de calculo na função getClimCell()
 			paleoClimate.getClimCell(cell, b, &SATMin, &SATMax, &PPTNMin, &PPTNMax, &NPP);
 
-			sprintf(temp_str, "%.3f", SATMin);          arq_outMinTemp.write(temp_str, 5);
-			sprintf(temp_str, "%.3f", SATMax);          arq_outMaxTemp.write(temp_str, 5);
-			sprintf(temp_str, "%.3f", PPTNMin);         arq_outMinPPTN.write(temp_str, 5);
-			sprintf(temp_str, "%.3f", PPTNMax);         arq_outMaxPPTN.write(temp_str, 5);
-			sprintf(temp_str, "%.3f", NPP);        		arq_outNPP.write(temp_str, 5);
+			sprintf(temp_str, "%.3f", SATMin);			arq_outMinTemp.write(temp_str, strlen(temp_str));
+			sprintf(temp_str, "%.3f", SATMax);          arq_outMaxTemp.write(temp_str, strlen(temp_str));
+			sprintf(temp_str, "%.3f", PPTNMin);         arq_outMinPPTN.write(temp_str, strlen(temp_str));
+			sprintf(temp_str, "%.3f", PPTNMax);         arq_outMaxPPTN.write(temp_str, strlen(temp_str));
+			sprintf(temp_str, "%.3f", NPP);        		arq_outNPP.write(temp_str, strlen(temp_str));
 
 			for(int t=1; t<=nt; t++){
 				paleoClimate.getClimCell(cell, b-(t*s), &SATMin, &SATMax, &PPTNMin, &PPTNMax, &NPP);

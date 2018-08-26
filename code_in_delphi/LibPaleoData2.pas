@@ -425,6 +425,17 @@ procedure print_array(source: array of single);overload;
     end;
  end;
 
+  procedure print_array(source: array of SmallInt);overload;
+ var
+  i : Integer;
+ begin
+   for i:=0 to length(source)-1 do
+    begin
+      write(source[i]);
+      write(' ');
+    end;
+ end;
+
 
 
 Constructor TPaleoClimate.Create(PLASIMFile,
@@ -877,15 +888,16 @@ Procedure TPaleoClimate.GetClimCell(c: Integer; TimeStep: Integer; var SATMin, S
   FirstInterpolation: Boolean;
  begin
 
-// With the definition of the four adjacent cells, whose centroids form the square, in which the modeled cell is contained...
-// And having calculated the relative distance to each of those centroids, to be used as weights for the interpolation...
-// We now calculate the interpolated value for the cell, for a given time step
+  // With the definition of the four adjacent cells, whose centroids form the square, in which the modeled cell is contained...
+  // And having calculated the relative distance to each of those centroids, to be used as weights for the interpolation...
+  // We now calculate the interpolated value for the cell, for a given time step
 
    // A regular call to the interpolate function
    If TimeStep >= 0 then
     begin
      t:= Trunc(TimeStep);
      FirstInterpolation:= False;
+
     end
 
    // A special call to the interpolation function, to set up the prediction of present climate by PLASIM in the model grid
@@ -1025,6 +1037,7 @@ Procedure TPaleoClimate.GetClimCell(c: Integer; TimeStep: Integer; var SATMin, S
      PPTNMin:= Tmp1 * wLat[c] +
                Tmp2 * (1 - wLat[c]);
 
+
      // Zero Precipitation value if the emulated precipitation was negative
      If PPTNMax < 0 then
        PPTNMax:= 0.04;    // minimum observed value in current climatology
@@ -1076,7 +1089,7 @@ Procedure TPaleoClimate.GetClimCell(c: Integer; TimeStep: Integer; var SATMin, S
     end;
 
 
-// Convert anomalies from current climate
+ // Convert anomalies from current climate
    // Temperature
    // Additive anomalies for temperature
    SATMin:= SATMin -               // Current time step
@@ -1120,6 +1133,7 @@ Procedure TPaleoClimate.GetClimCell(c: Integer; TimeStep: Integer; var SATMin, S
     begin
      If ModelGridObsClimate[c,2] <= ModelGridPLASIMClimate[c,2] then
       begin
+
        PPTNMin:= (PPTNMin /
                   ModelGridPLASIMClimate[c,2]) *
                   ModelGridObsClimate[c,2];
@@ -1147,20 +1161,20 @@ Procedure TPaleoClimate.GetClimCell(c: Integer; TimeStep: Integer; var SATMin, S
 
 
 
-// For testing purposes one may decide to plot the raw climatology or emulated data
-{
+ // For testing purposes one may decide to plot the raw climatology or emulated data
+ {
   SATMin:= ModelGridPLASIMClimate[c,0];
   SATMax:= ModelGridPLASIMClimate[c,1];
   PPTNMin:= ModelGridPLASIMClimate[c,2];
   PPTNMax:= ModelGridPLASIMClimate[c,3];
-}
-{
+ }
+ {
   SATMin:= ModelGridObsClimate[c,0];
   SATMax:= ModelGridObsClimate[c,1];
   PPTNMin:= ModelGridObsClimate[c,2];
   PPTNMax:= ModelGridObsClimate[c,3];
-}
-{
+ }
+ {
   SATMin:= ModelGridPLASIMClimate[c,0] - ModelGridObsClimate[c,0];
   SATMax:= ModelGridPLASIMClimate[c,1] - ModelGridObsClimate[c,1];
   If SATMax > +20 then
@@ -1182,18 +1196,18 @@ Procedure TPaleoClimate.GetClimCell(c: Integer; TimeStep: Integer; var SATMin, S
     PPTNMin:= + 2000;
   If PPTNMin < -2000 then
     PPTNMin:= -2000;
-}
+ }
 
 
 
 
-//{ // Capping PPTN at 2000mm / season
+ //{ // Capping PPTN at 2000mm / season
   If PPTNMin > 2000 then
     PPTNMin:= 2000;
 
   If PPTNMax > 2000 then
     PPTNMax:= 2000;
-//}
+ //}
 
    // Multiplicative anomalies for NPP
    If not IsNaN(ModelGridObsClimate[c,4]) then
@@ -1218,7 +1232,7 @@ Procedure TPaleoClimate.GetClimCell(c: Integer; TimeStep: Integer; var SATMin, S
     begin
      NPP:= NaN;
     end;
- end;
+end;
 
 // Interpolate the entire time series, for all cells of the model grid
 Procedure TPaleoClimate.GetClimAtTime(TimeKya: Double;
