@@ -13,7 +13,7 @@ comando de terminal para compilar normalmente:
 
 **ubuntu**:
 Codigo em C:
-    `~ g++ code_in_C-C++/Procedimentos.cc code_in_C-C++/PaleoData.cpp CompressLib/decompressData.c -lz -lm -o Prog.exe -std=c++14`
+    `~ g++ code_in_C-C++/Procedimentos.cc code_in_C-C++/PaleoData.cpp CompressLib/decompressData.c -lz -lm -o Prog.exe -std=c++11 -O3 -march=native`
 Codigo em Delphi:
     `~ fpc LibPaleoData2.pas PaleoData.dpr -oprog.exe -Mdelphi && rm *.o *.ppu`
 **Windows**:
@@ -23,7 +23,7 @@ Codigo em Delphi:
 comando de terminal para usar o Debugger:
 
 ubuntu:
-    `~ g++ code_in_C-C++/Procedimentos.cc code_in_C-C++/PaleoData.cpp CompressLib/decompressData.c -lz -lm -o Prog.exe -std=c++14 -g -fno-inline-functions -DGLIBCXX_DEBUG`
+    `~ g++ code_in_C-C++/Procedimentos.cc code_in_C-C++/PaleoData.cpp CompressLib/decompressData.c -lz -lm -o Prog.exe -std=c++11 -g -fno-inline-functions -DGLIBCXX_DEBUG`
 
 Windows:
 

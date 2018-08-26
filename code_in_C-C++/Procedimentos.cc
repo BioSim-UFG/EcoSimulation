@@ -430,19 +430,24 @@ void TPaleoClimate::getClimCell(int c, double timeKya, float *SATMin, float *SAT
 			}
 
 			distNext = timeKya - ((int)timeKya);
-      		distPrev = 1 - distNext;
+      		distPrev = 1.0 - distNext;
 
+			/*
       		*SATMin =  (lastInterpolation[c].prevSATMin * distPrev)  + (lastInterpolation[c].nextSATMin * distNext);
       		*SATMax =  (lastInterpolation[c].prevSATMax * distPrev)  + (lastInterpolation[c].nextSATMax * distNext);
       		*PPTNMin = (lastInterpolation[c].prevPPTNMin * distPrev) + (lastInterpolation[c].nextPPTNMin * distNext);
       		*PPTNMax = (lastInterpolation[c].prevPPTNMax * distPrev) + (lastInterpolation[c].nextPPTNMax * distNext);
       		*NPP = (lastInterpolation[c].prevNPP * distPrev) + (lastInterpolation[c].nextNPP * distNext);
-    	}
+			*/
+			*SATMin = distNext * (lastInterpolation[c].prevSATMin + lastInterpolation[c].nextSATMin);
+			*SATMax =  distNext * (lastInterpolation[c].prevSATMax + lastInterpolation[c].nextSATMax );
+      		*PPTNMin = distNext * (lastInterpolation[c].prevPPTNMin + lastInterpolation[c].nextPPTNMin );
+      		*PPTNMax = distNext * (lastInterpolation[c].prevPPTNMax +lastInterpolation[c].nextPPTNMax );
+			*NPP = distNext * (lastInterpolation[c].prevNPP + lastInterpolation[c].nextNPP );
+		}
 	}
 }
 
-
-		/************************* BUG: Tradução Errada *************************************/
 void TPaleoClimate::getClimCell(int c, int timeStep,  float *SATMin, float *SATMax, float *PPTNMin, float *PPTNMax, float *NPP){
 	int t;
 	double tmp1,tmp2;
@@ -457,7 +462,6 @@ void TPaleoClimate::getClimCell(int c, int timeStep,  float *SATMin, float *SATM
 		t = ((int)timeStep);		
 		firstInterpolation = false;
 	}
-
 	// A special call to the interpolation function, to set up the prediction of present climate by PLASIM in the model grid
 	else{
 		t = PLASIMnTime - 1;
@@ -473,14 +477,14 @@ void TPaleoClimate::getClimCell(int c, int timeStep,  float *SATMin, float *SATM
 		*PPTNMax = NAN;
 		*PPTNMin = NAN;
 		// qual numero deve ser usado para inicializar?
-		*NPP = 0;
+		*NPP = 0.0f;
 
 		return;
 	}
 	else{
 		// If there are no PLASIM cells to the left
 		// So consider only the value at the cell to the right
-		if (wLon[c] == 0){
+		if (wLon[c] == 0.0f){
 			tmp1 = PLASIMDataSATMax[adjLeft[c] + 1][adjDown[c]][t];		//cell at the south
 			tmp2 = PLASIMDataSATMax[adjLeft[c] + 1][adjDown[c] - 1][t]; //cell at the north
 			*SATMax = tmp1 * wLat[c] + tmp2 * (1.0f - wLat[c]);
@@ -501,7 +505,7 @@ void TPaleoClimate::getClimCell(int c, int timeStep,  float *SATMin, float *SATM
 			tmp2 = PLASIMDataNPP[adjLeft[c] + 1][adjDown[c] - 1][t];
 			*NPP = tmp1 * wLat[c] + tmp2 * (1.0f - wLat[c]);
 		}
-		else if (wLon[c] == 1){															// If there are no cells to the right
+		else if (wLon[c] == 1.0f){															// If there are no cells to the right
 																	// consider only the cell to the left
 			tmp1 = PLASIMDataSATMax[adjLeft[c]][adjDown[c]][t];		// cell at the south
 			tmp2 = PLASIMDataSATMax[adjLeft[c]][adjDown[c] - 1][t]; // cell at the north
@@ -563,9 +567,9 @@ void TPaleoClimate::getClimCell(int c, int timeStep,  float *SATMin, float *SATM
 		}
 
 		// Zero Precipitation value if the emulated precipitation was negative
-		if (*PPTNMax < 0)	*PPTNMax = 0.04f; // minimum observed value in current climatology
-		if (*PPTNMin < 0)	*PPTNMin = 0.0f;
-		if (NPP < 0)	NPP = 0;
+		if (*PPTNMax < 0.0f)	*PPTNMax = 0.04f; // minimum observed value in current climatology
+		if (*PPTNMin < 0.0f)	*PPTNMin = 0.0f;
+		if (*NPP < 0.0f)	*NPP = 0.0f;
 	}
 
 	// A first call to Interpolate is necessary to calculate the raw PLASIM prediction of climate at present time
@@ -589,35 +593,33 @@ void TPaleoClimate::getClimCell(int c, int timeStep,  float *SATMin, float *SATM
 
 	// If SATMax is less than SatMin, then calculate the average
 	if( *SATMax < *SATMin ){
-		*SATMax = (*SATMax + *SATMin) /2;
-		*SATMin = *SATMax;
-	} 
+		*SATMin = *SATMax = (*SATMax + *SATMin) /2;
+	}
 
 	// Multiplicative anomalies for precipitation
-	if( modelGridPLASIMClimate[c ][3 ] > 0 ){
+	if( modelGridPLASIMClimate[c ][3 ] > 0.0f ){
 		if(modelGridObsClimate[c ][3 ] <= modelGridPLASIMClimate[c ][3 ] )
 			*PPTNMax = (*PPTNMax / modelGridPLASIMClimate[c ][3 ]) * modelGridObsClimate[c ][3 ];
 		else
 			*PPTNMax = *PPTNMax - modelGridPLASIMClimate[c ][3 ] + modelGridObsClimate[c ][3 ];
 	}
 	else{
-		*PPTNMax = 0;
+		*PPTNMax = 0.0f;
 	}
 
-	if(modelGridPLASIMClimate[c ][2 ] > 0){
+	if(modelGridPLASIMClimate[c ][2 ] > 0.0f){
 		if(modelGridObsClimate[c ][2 ] <= modelGridPLASIMClimate[c ][2 ])
 			*PPTNMin = (*PPTNMin / modelGridPLASIMClimate[c ][2 ]) * modelGridObsClimate[c ][2 ];
 		else
 			*PPTNMin = *PPTNMin - modelGridPLASIMClimate[c ][2 ] + modelGridObsClimate[c ][2 ]; 
 	}
 	else{
-		*PPTNMin = 0;
+		*PPTNMin = 0.0f;
 	}
 
 	// If PPTNMax is less than PPTNMin, then calculate the average
 	if(*PPTNMax < *PPTNMin){
-		*PPTNMax = (*PPTNMax + *PPTNMin) / 2;
-		*PPTNMin = *PPTNMax;
+		*PPTNMin = *PPTNMax = (*PPTNMax + *PPTNMin) / 2;
 	}
 
  /*
@@ -660,18 +662,15 @@ void TPaleoClimate::getClimCell(int c, int timeStep,  float *SATMin, float *SATM
  }
  */
 
- // Capping PPTN at 2000mm / season
-	if(*PPTNMin > 2000)		*PPTNMin = 2000;
-	if(*PPTNMax > 2000)		*PPTNMax = 2000;
-	
-	// Multiplicative anomalies for NPP
-	if(!isnan(modelGridObsClimate[c][4])){
-		if(modelGridPLASIMClimate[c][4] > 0)
-			*NPP = (*NPP / modelGridPLASIMClimate[c][4]) * modelGridObsClimate[c][4];
-		else
-			*NPP = 0;
+	// Capping PPTN at 2000mm / season
+	if (*PPTNMin > 2000)		*PPTNMin = 2000;
+	if (*PPTNMax > 2000)		*PPTNMax = 2000;
 
-		if(*NPP < 0 )	*NPP = 0;
+	// Multiplicative anomalies for NPP
+	if (!isnan(modelGridObsClimate[c][4])){
+
+		*NPP = (modelGridObsClimate[c][4] > 0) ? ((*NPP / modelGridPLASIMClimate[c][4]) * modelGridObsClimate[c][4]) : 0;
+		if (*NPP < 0)	*NPP = 0;
 	}
 	else{
 		*NPP = NAN;

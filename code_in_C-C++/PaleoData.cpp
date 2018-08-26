@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string>
 #include <string.h>
+#include <time.h>
 
 using namespace std;
 using namespace SimEco;
@@ -114,6 +115,7 @@ int main(){
 		s = stod(input_str);
 	}
 
+
 	//creates a new Object of class TPaleoClimate
 	TPaleoClimate paleoClimate(("input/"+paleoClimFile).c_str(), ("input/"+presentClimFile).c_str(), numero_de_linhas, true);
 	printf(GRN("\tObjeto " BOLD("<TPaleoClimate>") " criado\n"));		// ~DebugLog
@@ -133,6 +135,9 @@ int main(){
 	printf(GRN("\tArquivos de saida abertos com sucesso\n")); // ~DebugLog
 
 	
+	clock_t startClock, endClock;
+
+	startClock = clock();
 	try
 	{	//o que é nt?
 		int nt = (b - e) / s;
@@ -198,6 +203,11 @@ int main(){
 	}
 
 	printf(GRN("\tArquivos de saida escritos com sucesso\n")); // ~DebugLog
+
+	endClock = clock();
+
+	printf(MAG("Total clocks: "));printf(YEL("%lu\n"), endClock-startClock);
+	printf(MAG("Total Time:   "));printf(YEL("%lf s\n"), (double)(endClock-startClock)/CLOCKS_PER_SEC);
 
 	arq_outMinTemp.close();
 	arq_outMaxTemp.close();
