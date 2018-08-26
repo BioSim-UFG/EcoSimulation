@@ -208,7 +208,7 @@ begin
    For c:= 0 to Length(PaleoClimate.ModelGridLat)-1 do
     begin
      PaleoClimate.GetClimCell(c, b, SATMin, SATMax, PPTNMin, PPTNMax, NPP);
-
+    
      Write(OutMinTemp, SATMin:0:3);
      Write(OutMaxTemp, SATMax:0:3);
      Write(OutMinPPTN, PPTNMin:0:3);
