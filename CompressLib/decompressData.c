@@ -36,7 +36,7 @@ int main(){
     // aqui termina a decompressão
 
 
-    //***imprimindo resultado para checar se está tudo certo***
+    // ***imprimindo resultado para checar se está tudo certo***
 
     //imprime endereço da stream e o tamanho dela (em bytes)
     printf("%p - %lu\n",dest_stream, stream_size );     

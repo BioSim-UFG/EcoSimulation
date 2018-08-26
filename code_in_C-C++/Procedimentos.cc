@@ -34,8 +34,6 @@ também, usar biblioteca de matrizes para realizar operações de forma mais fac
 
 */
 
-int TPaleoClimate::getCellsLen() { return modelGridnCells; }
-
 TPaleoClimate::TPaleoClimate(const char *PLASIMFile, const char *presentClimateFile, int modelGridnCells, bool projectAnnomalies = true)
 {
 	int PLASIM_nLat, PLASIM_nLong;
@@ -681,7 +679,7 @@ void TPaleoClimate::getClimCell(int c, int timeStep,  float *SATMin, float *SATM
 }
 // Interpolate the entire time series, for all cells of the model grid
 //como ambos getClimAtTime fazem a mesma verificação de tamanho ela pode ser transformada em função
-void TPaleoClimate::getClimAtTime(double timeKya, TSngVector SATMin, TSngVector SATMax, TSngVector PPTNMin, TSngVector PPTNMax, TSngVector NPP){
+void TPaleoClimate::getClimAtTime(double timeKya, TSngVector &SATMin, TSngVector &SATMax, TSngVector &PPTNMin, TSngVector &PPTNMax, TSngVector &NPP){
 	int c;
 
 	if( SATMax.size() != modelGridnCells)		SATMax.resize(modelGridnCells);
@@ -695,7 +693,7 @@ void TPaleoClimate::getClimAtTime(double timeKya, TSngVector SATMin, TSngVector 
 	}
 }
 
-void TPaleoClimate::getClimAtTime(int timeStep, TSngVector SATMin, TSngVector SATMax, TSngVector PPTNMin, TSngVector PPTNMax, TSngVector NPP ){
+void TPaleoClimate::getClimAtTime(int timeStep, TSngVector &SATMin, TSngVector &SATMax, TSngVector &PPTNMin, TSngVector &PPTNMax, TSngVector &NPP ){
 	int c;
 
 	if(SATMax.size() != modelGridnCells )		SATMax.resize(modelGridnCells);
@@ -746,7 +744,7 @@ void TPaleoClimate::getClimGrid(int timeStep, PSngVector envVec, PSngVector NPPV
 
 
 void TPaleoClimate::getClimTimeSeries(double startTime, double endTime, double timeResolution, 
-									TSngMatrix SATMin, TSngMatrix SATMax, TSngMatrix PPTNMin, TSngMatrix PPTNMax, TSngMatrix NPP){
+									TSngMatrix &SATMin, TSngMatrix &SATMax, TSngMatrix &PPTNMin, TSngMatrix &PPTNMax, TSngMatrix &NPP){
 
 	int k, c, nSteps;
 	double tSpan, t;
@@ -778,7 +776,7 @@ void TPaleoClimate::getClimTimeSeries(double startTime, double endTime, double t
 }
 
 void TPaleoClimate::getClimTimeSeries(double timeResolution,
-									TSngMatrix SATMin, TSngMatrix SATMax, TSngMatrix PPTNMin, TSngMatrix PPTNMax, TSngMatrix NPP){
+									TSngMatrix &SATMin, TSngMatrix &SATMax, TSngMatrix &PPTNMin, TSngMatrix &PPTNMax, TSngMatrix &NPP){
 
 	getClimTimeSeries(5000, 0, timeResolution, SATMin, SATMax, PPTNMin, PPTNMax, NPP);
 }

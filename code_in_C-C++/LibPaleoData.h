@@ -86,17 +86,17 @@ namespace SimEco{
 
 
 		// Interpolate the entire time series, for all cells of the model grid
-		void getClimAtTime(double timeKya, TSngVector SATMin, TSngVector SATMax, TSngVector PPTNMin, TSngVector PPTNMax, TSngVector NPP);
-		void getClimAtTime(int timeStep, TSngVector SATMin, TSngVector SATMax, TSngVector PPTNMin, TSngVector PPTNMax, TSngVector NPP);
+		void getClimAtTime(double timeKya, TSngVector &SATMin, TSngVector &SATMax, TSngVector &PPTNMin, TSngVector &PPTNMax, TSngVector &NPP);
+		void getClimAtTime(int timeStep, TSngVector &SATMin, TSngVector &SATMax, TSngVector &PPTNMin, TSngVector &PPTNMax, TSngVector &NPP);
 
 		void getClimGrid(int timeStep, PSngVector envVec, PSngVector NPPVec);
 		// Interpolate the entire time series, for all cells of the model grid
 		void getClimTimeSeries(double startTime, double endTime, double timeResolution,
-							TSngMatrix SATMin, TSngMatrix SATMax, TSngMatrix PPTNMin, TSngMatrix PPTNMax, TSngMatrix NPP);
+							TSngMatrix &SATMin, TSngMatrix &SATMax, TSngMatrix &PPTNMin, TSngMatrix &PPTNMax, TSngMatrix &NPP);
 		void getClimTimeSeries(double timeResolution,
-							TSngMatrix SATMin, TSngMatrix SATMax, TSngMatrix PPTNMin, TSngMatrix PPTNMax, TSngMatrix NPP);
+							TSngMatrix &SATMin, TSngMatrix &SATMax, TSngMatrix &PPTNMin, TSngMatrix &PPTNMax, TSngMatrix &NPP);
 
-		int getCellsLen();
+		int getCellsLen(){ return this->modelGridnCells; }
 	
 	};
 
