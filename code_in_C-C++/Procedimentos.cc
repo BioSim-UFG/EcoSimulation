@@ -193,7 +193,7 @@ TPaleoClimate::TPaleoClimate(const char *PLASIMFile, const char *presentClimateF
 	modelGridObsClimate = vector<vector<double>>(modelGridnCells);
 	for (int i = 0; i < modelGridnCells; i++)	//creio q pode tirar esse for daqui
 	{
-		modelGridObsClimate[i] = vector<double>(GRID_COLS);
+		modelGridObsClimate[i] = vector<double>(GRID_COLS-2);
 	}
 
 	readGrid(modelGrid_arq);
@@ -294,11 +294,14 @@ TPaleoClimate::TPaleoClimate(const char *PLASIMFile, const char *presentClimateF
 void TPaleoClimate::readGrid(FILE *arq){
 	for (int i = 0; i < modelGridnCells; i++) {
 		//le as duas primeira colunas (de longitude de latitude)
+
 		fscanf(arq,"%f", &modelGridLong[i]);		//copiando apenas a primeira coluna
 		fscanf(arq,"\t%f", &modelGridLat[i]);		//copiando apenas a segunda coluna
 		//le o restante das colunas
-		for(int j=2; j < GRID_COLS; j++){
-			fscanf(arq,"\t%lf", &modelGridObsClimate[i][j] );
+		for(int j=0; j < GRID_COLS-2; j++){
+			double aux;
+			fscanf(arq,"\t%lf", &aux);
+			modelGridObsClimate[i][j] = aux;
 		}
 		fscanf(arq,"\n");
 	}

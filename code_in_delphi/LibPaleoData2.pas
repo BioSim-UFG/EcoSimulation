@@ -403,6 +403,28 @@ Function Float2Str(const Value: Double;
 
 
 
+procedure print_array(source: array of single);overload;
+ var
+  i : Integer;
+ begin
+   for i:=0 to length(source)-1 do
+    begin
+      write(source[i]);
+      write(' ');
+    end;
+ end;
+
+ procedure print_array(source: array of double);overload;
+ var
+  i : Integer;
+ begin
+   for i:=0 to length(source)-1 do
+    begin
+      write(source[i]);
+      write(' ');
+    end;
+ end;
+
 
 
 Constructor TPaleoClimate.Create(PLASIMFile,
@@ -433,7 +455,7 @@ Constructor TPaleoClimate.Create(PLASIMFile,
    //FreeAndNil(ZipStream);
 
   //foi usado apenas no inicio para poder descomprimir e salvar num arquivo
-  my_decompress_to_file(Pcchar(PCHAR(PLASIMFile)), Pcchar(PCHAR('Decompressed.Stream')));   //compilar e executar apenas uma vez, então comentar essa linha
+  //my_decompress_to_file(Pcchar(PCHAR(PLASIMFile)), Pcchar(PCHAR('Decompressed.Stream')));   //compilar e executar apenas uma vez, então comentar essa linha
 
    Stream:= TMemoryStream.Create;
    Stream.Position:= 0;
@@ -448,6 +470,10 @@ Constructor TPaleoClimate.Create(PLASIMFile,
    For i:= 0 to PLASIMnLong-1 do
      Stream.Read(PLASIMLongs[i], SizeOf(Single));
 
+
+
+
+
    Stream.Read(PLASIMnLat, SizeOf(Integer));
    SetLength(PLASIMLats, PLASIMnLat);
    For i:= 0 to PLASIMnLat-1 do
@@ -459,6 +485,7 @@ Constructor TPaleoClimate.Create(PLASIMFile,
 
    // PLASIMNTimeOffset = 1 if PLASIMnTime = 5001, or PLASIMNTimeOffset = 10 if PLASIMnTime = 50001
    PLASIMnTimeOffset:= Trunc((PLASIMnTime-1) / 5000);
+
 
 
 
@@ -541,13 +568,15 @@ Constructor TPaleoClimate.Create(PLASIMFile,
    // The order of environmental variables must be: SAT_Min, SAT_Max, PPTN_Min, PPTN_Max
 
    ModelGridObsClimate:= OpenSimple(PresentClimateFile);
-      writeln('538');
 
    ModelGridLong:= DoubleToSingle(Col(ModelGridObsClimate, 0));
    ModelGridObsClimate:= DelCol(ModelGridObsClimate, 0);
 
    ModelGridLat:= DoubleToSingle(Col(ModelGridObsClimate, 0));
    ModelGridObsClimate:= DelCol(ModelGridObsClimate, 0);
+  
+
+  //print_array(ModelGridObsClimate[0]);
 
 
 {// Ad hoc here!
