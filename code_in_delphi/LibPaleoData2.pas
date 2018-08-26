@@ -17,8 +17,10 @@ uses
 Type
   ppcuchar = ^pcuchar;
 
-  procedure pas_decompress(fileName: pcchar; bytesStream: ppcuchar ;totalBytes: pcsize_t) ;cdecl;external;
-  function ptr_to_int(ptr: pointer): cint;cdecl;external;
+
+      //essas 3 funções nao sao usadas mais ( com exeção da ultima, dependendo do caso).
+  //procedure pas_decompress(fileName: pcchar; bytesStream: ppcuchar ;totalBytes: pcsize_t) ;cdecl;external;
+  //function ptr_to_int(ptr: pointer): cint;cdecl;external;
   function my_decompress_to_file(sourceName, destName: pcchar):Integer; cdecl; external;
 
 Type
@@ -131,13 +133,14 @@ implementation
 
 
 
-
+// alterada, correção de indices
 // Fun��es do Thiago tiradas de LibFiles
 Function OpenSimple(FileName: String): TDblMatrix;
  var
   InputFile: TextFile;
   i, j: Integer;
   StrTempVar: String;
+  dblAux: Double;
  begin
   AssignFile(InputFile, FileName);
   FileMode:= fmOpenRead;
@@ -152,14 +155,16 @@ Function OpenSimple(FileName: String): TDblMatrix;
     ReadLn(InputFile, StrTempVar);
     If EOF(InputFile) then
       Break;
-
+      
     i:= i + 1;
     SetLength(Result, i, 7);
 
     j:= 0;
     While not Eoln(Inputfile) do
      begin
-      Read(InputFile, Result[i,j]);
+      //Read(InputFile, Result[i,j]); //o indice estava errado
+      Read(InputFile, Result[i-1,j]);
+
       j:= j + 1;
      end;
    end;
@@ -399,86 +404,6 @@ Function Float2Str(const Value: Double;
 
 
 
-//procedure ZDecompressStream(inStream, outStream: TStream);
-
-procedure Descomprimir(ArquivoZip: TFileName; saida: TMemoryStream);
-var
-   NomeSaida: string;
-   FileEntrada, FileOut: TFileStream;
-   Descompressor: TDecompressionStream;
-   NumArq, I, Len,Size: Integer;
-   Fim: Byte;
-
-begin
-     FileEntrada := TFileStream.Create(ArquivoZip, fmOpenRead and fmShareExclusive);
-     Descompressor := TDecompressionStream.Create(FileEntrada);
-     Descompressor.Read(NumArq,SizeOf(Integer));
-
-     try
-        I:=0;
-        While I < NumArq  do begin
-          write('I = ');write(I);
-           Descompressor.Read(Len,SizeOf(UInt64));
-           SetLength(NomeSaida, Len);
-           writeln(Len);
-           writeln('linha 414');
-           Descompressor.Read(NomeSaida[1],Len);
-           Descompressor.Read(Size,SizeOf(Integer));
-           //FileOut := TFileStream.Create(IncludeTrailingBackslash(DiretorioDestino) + NomeSaida, fmCreate or fmShareExclusive);
-           //try
-           //   FileOut.CopyFrom(Descompressor,Size);
-           //   finally
-           //   FileOut.Free;
-           //end;
-           saida.read(Descompressor, sizeOf(Integer));
-           Descompressor.Read(Fim, SizeOf(Byte));
-           Inc(I);
-        end;
-        finally
-        FreeAndNil(Descompressor);
-        FreeAndNil(FileEntrada);
-  end;
-
-end;
-
-procedure DecompressFiles(const Filename:string ; saida: TMemoryStream);
-var
-  Dest,S: String;
-  Decompr: TDecompressionStream;
-  InFile, OutFile: TFilestream;
-  I,L,C: Integer;
-begin
-  //Dest   := IncludeTrailingPathDelimiter(DestDirectory);
-  InFile := TFileStream.Create(Filename,fmOpenRead);
-  try
-{ number of files }
-InFile.Read(C,SizeOf(C));
-for I := 1 to C do
-begin
-  { read filename }
-  //InFile.Read(L,SizeOf(L));
-  //SetLength(S,L);
-  //InFile.Read(S[1],L);
-  { read filesize }
-  InFile.Read(L,SizeOf(L));
-  { Decompress the files and store it }
-  //S := Dest+S; //include the path
-  //OutFile := TFileStream.Create(Dest+S,fmCreate);
-  Decompr := TDecompressionStream.Create(InFile);
-  try
-saida.CopyFrom(Decompr,L);
-  finally
-//OutFile.Free;
-Decompr.Free;
-  end;
-end;
-  finally
-InFile.Free;
-  end;
-end;
-
-
-
 
 Constructor TPaleoClimate.Create(PLASIMFile,
                                  PresentClimateFile: String;
@@ -507,12 +432,13 @@ Constructor TPaleoClimate.Create(PLASIMFile,
    //DecompressFiles(PLASIMFile, Stream);
    //FreeAndNil(ZipStream);
 
-
-  my_decompress_to_file(Pcchar(PCHAR(PLASIMFile)), Pcchar(PCHAR('Temp.Stream')));
+  //foi usado apenas no inicio para poder descomprimir e salvar num arquivo
+  my_decompress_to_file(Pcchar(PCHAR(PLASIMFile)), Pcchar(PCHAR('Decompressed.Stream')));   //compilar e executar apenas uma vez, então comentar essa linha
 
    Stream:= TMemoryStream.Create;
    Stream.Position:= 0;
-   Stream.LoadFromFile('Temp.Stream');
+   //nessa versao do codigo, já le um arquivo que está descomprimido
+   Stream.LoadFromFile('Decompressed.Stream');
 
 
 
@@ -522,7 +448,6 @@ Constructor TPaleoClimate.Create(PLASIMFile,
    For i:= 0 to PLASIMnLong-1 do
      Stream.Read(PLASIMLongs[i], SizeOf(Single));
 
-  writeln('517');
    Stream.Read(PLASIMnLat, SizeOf(Integer));
    SetLength(PLASIMLats, PLASIMnLat);
    For i:= 0 to PLASIMnLat-1 do
@@ -534,7 +459,6 @@ Constructor TPaleoClimate.Create(PLASIMFile,
 
    // PLASIMNTimeOffset = 1 if PLASIMnTime = 5001, or PLASIMNTimeOffset = 10 if PLASIMnTime = 50001
    PLASIMnTimeOffset:= Trunc((PLASIMnTime-1) / 5000);
-
 
 
 
@@ -617,6 +541,7 @@ Constructor TPaleoClimate.Create(PLASIMFile,
    // The order of environmental variables must be: SAT_Min, SAT_Max, PPTN_Min, PPTN_Max
 
    ModelGridObsClimate:= OpenSimple(PresentClimateFile);
+      writeln('538');
 
    ModelGridLong:= DoubleToSingle(Col(ModelGridObsClimate, 0));
    ModelGridObsClimate:= DelCol(ModelGridObsClimate, 0);
