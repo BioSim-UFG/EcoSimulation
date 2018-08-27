@@ -1,6 +1,6 @@
 # EcoSimulation
 
-Use a aba _Issues_ para reportar bugs e problemas no código. **E ajude sempre que puder**.
+Use a aba _Issues_ para reportar bugs e problemas no código. Ajude sempre que puder :).
 
 Também comente no Código no formato " `// ~BUG: ....` ", para facilitar a localização
 
