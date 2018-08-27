@@ -15,17 +15,18 @@ Codigo em C:
     `~ make **mode**`
 Substituir *mode* pelo modo desejado, opções:
 
-* `default`: compila da forma padrão, sem otimização (-O0);<br/>
+- **`default`**: compila da forma padrão, sem otimização (-O0);<br/>
     nao informar o modo é equivalente a selecionar `default`;
-* `opt1`: compila programa otimizando-o no nivel 3, as flags `-O1 -march=native -Wno-unused-result` são adicionadas a compilação;
-* `opt2`: compila programa otimizando-o no nivel 2, as flags `-O2 -march=native -Wno-unused-result` são adicionadas a compilação;
-* `opt3`: compila programa otimizando-o no nivel 1, as flags `-O3 -march=native -Wno-unused-result` são adicionadas a compilação;<br/>
+- **`opt1`**: compila programa otimizando-o no nivel 3, as flags `-O1 -march=native -Wno-unused-result` são adicionadas a compilação;
+- **`opt2`**: compila programa otimizando-o no nivel 2, as flags `-O2 -march=native -Wno-unused-result` são adicionadas a compilação;
+- **`opt3`**: compila programa otimizando-o no nivel 1, as flags `-O3 -march=native -Wno-unused-result` são adicionadas a compilação;<br/>
     Caso tenha compilado default ou outro nivel de opt na ultima vez, use o modo all optX, para assim recompilar os arquivos .o, no nivel X desejado;
-* `debug`: compila programa com flags `-g -fno-inline-functions -DGLIBCXX_DEBUG`, habilitando o uso de um Debugger;
-* `fast`: equivale ao modo `opt3`;
-* `all`: "toca" todos os aquivos fontes, fazendo com que o proximo *make* compile todos os arquivos fontes;
-* `clear`: deleta todos os aquivos .o;
-<br/>dicas:<br/>usar `make all <modo>` para forçar compilação de todos aquivos, ao mudar de um modo para outro, exemplo: `make all default`
+- **`debug`**: compila programa com flags `-g -fno-inline-functions -DGLIBCXX_DEBUG`, habilitando o uso de um Debugger;
+- **`fast`**: equivale ao modo `opt3`;
+- **`all`**: "toca" todos os aquivos fontes, fazendo com que o proximo *make* compile todos os arquivos fontes;
+- **`clear`**: deleta todos os aquivos .o;<br/>
+
+**dicas**:<br/>usar `make all <modo>` para forçar compilação de todos aquivos, ao mudar de um modo para outro, exemplo: `make all default`
 
 
 
