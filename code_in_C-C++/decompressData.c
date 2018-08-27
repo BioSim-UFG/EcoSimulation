@@ -94,48 +94,8 @@ int main(){
 
  /******** retirado e adaptado de: https://zlib.net/zlib_how.html e https://zlib.net/manual.html ****************/
 
-/* Decompress from file source to stream_dest (byte array) until source ends or EOF.
-
-   inf() returns Z_OK on success, Z_MEM_ERROR if memory could not be
-   allocated for processing, Z_DATA_ERROR if the deflate data is
-   invalid or incomplete, Z_VERSION_ERROR if the version of zlib.h and
-   the version of the library linked do not match, or Z_ERRNO if there
-   is an error reading or writing the files. 
-
-See header file por parameters details
-
-   */
-
-void pas_decompress(char *name, byte **stream ,size_t *resulting_total_size){
-    FILE *arq=fopen(name,"rb");
-    if(arq==NULL){
-        printf("nao foi possivelo abrir o arquivo\n");
-        return;
-    }
-    printf("arquivo %s aberto\n", name);
-
-    size_t size;
 
 
-    if(my_decompress(arq, stream, &size)!=Z_OK){
-        printf("nao foi possivel descompactar o arquivo\n");
-        return;
-    }
-    *resulting_total_size = size;
-    printf("strem addr = %p\n", *stream);
-    printf("Decompressed! _ %lu Bytes\n", *resulting_total_size);
-
-    for (int i = 0; i < 100; i++)
-        printf("stream[%d] = %d\n", i, ((int *)stream)[i]);
-
-    fclose(arq);
-    return;
-}
-
-int ptr_to_int(byte *ptr){
-    printf("addr recebido = %p = %d", ptr, ((int *)ptr)[0]);
-    return *((int*)ptr);
-}
 
 /* Decompress from file source to file dest until stream ends or EOF.
    inf() returns Z_OK on success, Z_MEM_ERROR if memory could not be
@@ -209,9 +169,18 @@ int my_decompress_to_file(char source_str[], char dest_str[]){
     fclose(dest);
     fclose(source);
     return ret == Z_STREAM_END ? Z_OK : Z_DATA_ERROR;
-
 }
 
+/* Decompress from file source to stream_dest (byte array) until source ends or EOF.
+
+   inf() returns Z_OK on success, Z_MEM_ERROR if memory could not be
+   allocated for processing, Z_DATA_ERROR if the deflate data is
+   invalid or incomplete, Z_VERSION_ERROR if the version of zlib.h and
+   the version of the library linked do not match, or Z_ERRNO if there
+   is an error reading or writing the files. 
+
+See header file por parameters details
+*/
 int my_decompress(FILE *source, byte **dest_stream, size_t *resulting_total_size){
 
     int ret;

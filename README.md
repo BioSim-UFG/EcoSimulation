@@ -11,16 +11,34 @@ se nao tiver, pode usar alguma acima da 4.8.1, e alterar a flag da compilação 
 
 comando de terminal para compilar normalmente:
 
+
+
 **ubuntu**:
 Codigo em C:
-    `~ g++ code_in_C-C++/Procedimentos.cc code_in_C-C++/PaleoData.cpp CompressLib/decompressData.c -lz -lm -o Prog.exe -std=c++11 -O3 -march=native`
+    `~ make *mode*`
+Substituir *mode* pelo modo desejado, opções:
+
+`default`: compila da forma padrão, sem otimização (-O0);   nao informar o modo é equivalente a selecionar `default`
+`opt1`: compila programa otimizando-o no nivel 3, as flags `-O1 -march=native -Wno-unused-result` são adicionadas a compilação;
+`opt2`: compila programa otimizando-o no nivel 2, as flags `-O2 -march=native -Wno-unused-result` são adicionadas a compilação;
+`opt3`: compila programa otimizando-o no nivel 1, as flags `-O3 -march=native -Wno-unused-result` são adicionadas a compilação;
+Caso tenha compilado default ou outro nivel de opt na ultima vez, use o modo all optX, para assim recompilar os arquivos .o, no nivel X desejado;
+
+`debug`: compila programa com flags `-g -fno-inline-functions -DGLIBCXX_DEBUG`, habilitando o uso de um Debugger;
+`fast`: equivale ao modo `opt3`;
+`all`: "toca" todos os aquivos fontes, fazendo com que o proximo *make* compile todos os arquivos fontes;
+`clear`: deleta todos os aquivos .o;
+dicas:
+    usar `make all <modo>` para forçar compilação de todos aquivos, ao mudar de um modo para outro, exemplo: `make all default`
+
+
+
 Codigo em Delphi:
     `~ fpc LibPaleoData2.pas PaleoData.dpr -oprog.exe -Mdelphi && rm *.o *.ppu`
 **Windows**:
-
 ?
 
-comando de terminal para usar o Debugger:
+comando de terminal para usar o Debugger:   `//obsoleto, usar make all debug`
 
 ubuntu:
     `~ g++ code_in_C-C++/Procedimentos.cc code_in_C-C++/PaleoData.cpp CompressLib/decompressData.c -lz -lm -o Prog.exe -std=c++11 -g -fno-inline-functions -DGLIBCXX_DEBUG`

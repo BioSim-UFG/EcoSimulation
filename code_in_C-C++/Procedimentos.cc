@@ -1,5 +1,5 @@
 #include "LibPaleoData.h"
-#include "../CompressLib/decompressData.h"
+#include "decompressData.h"
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>

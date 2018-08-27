@@ -1,0 +1,70 @@
+SHELL = /bin/sh
+CC=gcc				#C compiler
+CPPC=g++			#C++ compiler
+CFLAGS=-lz -lm -std=c++11		#standard g++ flags
+NVC=nvcc
+NVFLAGS=-use_fast_math -O2		#CUDA compiler flags
+PSC=fpc			#pascal compiler
+PFLAGS=-Fl/usr/local/cuda/lib64 -Mdelphi	#pascal compiler flags
+
+ECHOMSG=
+
+
+	# src dir
+SRCDIR=code_in_C-C++
+LDIR=$(SRCDIR)/Lib_x86_64
+
+	# object files ( .o)
+ODIR = $(LDIR)
+_OBJ = decompressData.o Procedimentos.o PaleoData.o
+OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
+
+	# headers
+_DEPS = color.h LibPaleoData.h decompressData.h
+DEPS = $(patsubst %,$(SRCDIR)/%,$(_DEPS))
+
+$(LDIR)/%.o: $(SRCDIR)/%.c $(DEPS)
+	@$(CPPC) $< -c -o $@ $(CFLAGS) $(EXTFLG)
+	@echo Compiling $(subst $(SRCDIR)/,'',$<)
+
+$(LDIR)/%.o: $(SRCDIR)/%.cpp $(DEPS)
+	@$(CPPC) $< -c -o $@ $(CFLAGS) $(EXTFLG)
+	@echo Compiling $(subst $(SRCDIR)/,'',$<)
+
+$(LDIR)/%.o: $(SRCDIR)/%.cc $(DEPS)
+	@$(CPPC) $< -c -o $@ $(CFLAGS) $(EXTFLG)
+	@echo Compiling $(subst $(SRCDIR)/,'',$<)
+
+# normal compiling mode
+
+default: ECHOMSG += 'Normal compiling mode\n'
+default: $(OBJ)
+	@$(CPPC) $^ -o Prog.exe $(CFLAGS)$(EXTFLG)
+	@printf $(ECHOMSG)
+	@echo 'All compiled'
+
+#fast, optimized compiling mode
+fast: opt3
+opt3: EXTFLG = -O3 -march=native -Wno-unused-result
+opt3: ECHOMSG = "fast, optimized compiling mode level 3\n"
+opt3: default
+
+opt2: EXTFLG = -O2 -march=native -Wno-unused-result
+opt2: ECHOMSG = "fast, optimized compiling mode level 2\n"
+opt2: default
+
+opt1: EXTFLG = -O1 -march=native -Wno-unused-result
+opt1: ECHOMSG = "fast, optimized compiling mode level 1\n"
+opt1: default
+
+debug: EXTFLG = -g -fno-inline-functions -DGLIBCXX_DEBUG
+debug: ECHOMSG = "Debugging compiling mode \n"
+debug: default
+
+all:
+	@touch	$(SRCDIR)/*
+	@echo 'touching all src files'
+
+clear: 
+	@find -name '*.o' -delete
+	@echo 'deleted .o files'
