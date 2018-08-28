@@ -2,25 +2,25 @@ SHELL = /bin/sh
 CC=gcc				#C compiler
 CPPC=g++			#C++ compiler
 CFLAGS=-lz -lm -std=c++11		#standard g++ flags
-NVC=nvcc
+NVC=nvcc			#CUDA compiler
 NVFLAGS=-use_fast_math -O2		#CUDA compiler flags
-PSC=fpc			#pascal compiler
+PSC=fpc				#pascal compiler
 PFLAGS=-Fl/usr/local/cuda/lib64 -Mdelphi	#pascal compiler flags
 
 ECHOMSG= ''
 
 
 # src dir
-SRCDIR=code_in_C-C++
+SRCDIR=code_in_C++
 LDIR=$(SRCDIR)/Lib_x86_64
 
 # object files ( .o)
 ODIR = $(LDIR)
-_OBJ = decompressData.o Procedimentos.o PaleoData.o
+_OBJ = decompressData.o PaleoClimate.o Interpolation.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 # headers
-_DEPS = color.h LibPaleoData.h decompressData.h
+_DEPS = color.h PaleoClimate.h decompressData.h
 DEPS = $(patsubst %,$(SRCDIR)/%,$(_DEPS))
 
 #target .c files
@@ -36,13 +36,12 @@ $(LDIR)/%.o: $(SRCDIR)/%.cc $(DEPS)
 	@$(CPPC) $< -c -o $@ $(CFLAGS) $(EXTFLG)
 	@echo Compiling $(subst $(SRCDIR)/,'',$<)
 #target .cu files
-$(LDIR)/%.o: $(SRCDIR)/%.cc $(DEPS)
-	@$(CPPC) $< -c -o $@ $(CFLAGS) $(EXTFLG)
+$(LDIR)/%.o: $(SRCDIR)/%.cu $(DEPS)
+	@$(NVC) $< -c -o $@ $(NVFLAGS) $(EXTFLG)
 	@echo Compiling $(subst $(SRCDIR)/,'',$<)
 
+
 # normal compiling mode
-
-
 default: ECHOMSG := 'Normal compiling mode\n'
 default: $(OBJ)
 	@$(CPPC) $^ -o Prog.exe $(CFLAGS)$(EXTFLG)
