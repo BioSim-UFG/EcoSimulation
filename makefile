@@ -7,37 +7,43 @@ NVFLAGS=-use_fast_math -O2		#CUDA compiler flags
 PSC=fpc			#pascal compiler
 PFLAGS=-Fl/usr/local/cuda/lib64 -Mdelphi	#pascal compiler flags
 
-ECHOMSG=
+ECHOMSG= ''
 
 
-	# src dir
+# src dir
 SRCDIR=code_in_C-C++
 LDIR=$(SRCDIR)/Lib_x86_64
 
-	# object files ( .o)
+# object files ( .o)
 ODIR = $(LDIR)
 _OBJ = decompressData.o Procedimentos.o PaleoData.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
-	# headers
+# headers
 _DEPS = color.h LibPaleoData.h decompressData.h
 DEPS = $(patsubst %,$(SRCDIR)/%,$(_DEPS))
 
+#target .c files
 $(LDIR)/%.o: $(SRCDIR)/%.c $(DEPS)
 	@$(CPPC) $< -c -o $@ $(CFLAGS) $(EXTFLG)
 	@echo Compiling $(subst $(SRCDIR)/,'',$<)
-
+#target .cpp files
 $(LDIR)/%.o: $(SRCDIR)/%.cpp $(DEPS)
 	@$(CPPC) $< -c -o $@ $(CFLAGS) $(EXTFLG)
 	@echo Compiling $(subst $(SRCDIR)/,'',$<)
-
+#target .cc files
+$(LDIR)/%.o: $(SRCDIR)/%.cc $(DEPS)
+	@$(CPPC) $< -c -o $@ $(CFLAGS) $(EXTFLG)
+	@echo Compiling $(subst $(SRCDIR)/,'',$<)
+#target .cu files
 $(LDIR)/%.o: $(SRCDIR)/%.cc $(DEPS)
 	@$(CPPC) $< -c -o $@ $(CFLAGS) $(EXTFLG)
 	@echo Compiling $(subst $(SRCDIR)/,'',$<)
 
 # normal compiling mode
 
-default: ECHOMSG += 'Normal compiling mode\n'
+
+default: ECHOMSG := 'Normal compiling mode\n'
 default: $(OBJ)
 	@$(CPPC) $^ -o Prog.exe $(CFLAGS)$(EXTFLG)
 	@printf $(ECHOMSG)
