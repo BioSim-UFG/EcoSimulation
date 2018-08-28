@@ -19,83 +19,8 @@ int l2b_endian(int num){
 }
 
 
-//testando descompressão
-int main(){
-
-	FILE *source, *dest;
-    byte *dest_stream=NULL;     //array de bytes a que terá os dados do arquivo descomprimido
-    unsigned long stream_size=0;
-
-	source = fopen("./TestePrimes.StreamZip", "rb");	//abre o arquivo fonte( comprimido)
-	
-
-	if (my_decompress(source,&dest_stream, &stream_size) != Z_OK)	//realiza a decompressão
-        printf("Erro ao descompimir arquivo!!!!\n");
-
-    fclose(source);
-    // aqui termina a decompressão
-
-
-    // ***imprimindo resultado para checar se está tudo certo***
-
-    //imprime endereço da stream e o tamanho dela (em bytes)
-    printf("%p - %lu\n",dest_stream, stream_size );     
-    for(int i=0;i< 1020;i++){
-        printf("%i  ", ((int*)dest_stream)[i] );    //imprime stream como array de int's
-    }
-
-	return 0;
-}
-
-*/
-/*
-
-//testando compressão
-int main(){
-	int source[1020];
-	source[0] = 2;		source[1] = 3;	source[2] = 4;		source[3] = 7;
-	source[4] = 11;		source[5] = 13;	source[6] = 17;		source[7] = 19;
-	source[8] = 23;		source[9] = 31;	source[10] = 37;	source[11] = 41;
-	source[12] = 43;	source[13] = 47;	source[14] = 53;	source[15] = 59;
-	source[16] = 61;	source[17] = 67;	source[18] = 71;	source[19] = 73;
-
-	for(int i=1; i<= 1000; i++)
-		source[i+19] = i;
-	
-
-	FILE *dest = fopen("saida.StreamZip","wb");
-
-	my_compress((byte *)source, dest, 1020*sizeof(int));
-
-	fclose(dest);
-
-	//terminou compressão e salvou no arquivo destino
-
-
-	//agora abrindo arquivo comprimido, descomprimindo-o e verificando os valores
-
-	FILE *source_arq;
-    byte *dest_stream=NULL;     //array de bytes a que terá os dados do arquivo descomprimido
-    unsigned long stream_size=0;
-	source_arq = fopen("saida.StreamZip", "rb");	//abre o arquivo fonte( comprimido)
-	
-	if (my_decompress(source_arq,&dest_stream, &stream_size) != Z_OK)	//realiza a decompressão
-        printf("Erro ao descompimir arquivo!!!!\n");
-
-    fclose(source_arq);
-
-    for(int i=0;i< 1020;i++){
-        printf("%i  ", ((int*)dest_stream)[i] );    //imprime stream como array de int's
-    }
-}
-*/
-
-
 
  /******** retirado e adaptado de: https://zlib.net/zlib_how.html e https://zlib.net/manual.html ****************/
-
-
-
 
 /* Decompress from file source to file dest until stream ends or EOF.
    inf() returns Z_OK on success, Z_MEM_ERROR if memory could not be

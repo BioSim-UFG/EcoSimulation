@@ -16,7 +16,7 @@
 
 
 #define CHUNK 256000		//size of buffer in bytes
-#define COMPRESSION_LEVEL 9	//de -1 a 9 -> -1 = Z_DEFAULT_COMPRESSION ( que é igual a 6)
+#define COMPRESSION_LEVEL 6	//de -1 a 9 -> -1 = Z_DEFAULT_COMPRESSION ( que é igual a 6)
 
 
 typedef unsigned char byte;
@@ -33,7 +33,7 @@ typedef unsigned char byte;
 int my_decompress(FILE *source, byte **dest_stream, size_t *final_size);
 int my_decompress_to_file(char source_str[], char dest_str[]);
 
-	/*
+/*
 	source 		-> ponteiro para arquivo fonte a ser lido
 	dest 		-> ponteiro para arquivo destino a ser escrito
 */

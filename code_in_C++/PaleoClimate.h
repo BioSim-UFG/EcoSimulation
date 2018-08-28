@@ -11,14 +11,13 @@ using namespace std;
 
 namespace SimEco{
 
-	class TPaleoClimate;
+	class PaleoClimate;
 
 	// definindo o time temporariamente. Interpretei o nome do tipo no arquivo pascal para o mais proximo em C++
 	typedef vector<float> TSngVector;
 	typedef vector<TSngVector> TSngMatrix;	// aka, vector<vector<float>>
 	typedef TSngVector* PSngVector;
 	typedef vector<vector<double>> TDblMatrix;
-	typedef TPaleoClimate* PPaleoClimate;
 
 
 	typedef struct{
@@ -37,7 +36,7 @@ namespace SimEco{
 	float roundTo(float number, int precision);
 
 
-	class TPaleoClimate {
+	class PaleoClimate {
 
 	  private:
 		int modelGridnCells;
@@ -69,7 +68,7 @@ namespace SimEco{
 
 	  	// Create the class by opening the PLASIM file and the present-day climatology data as baseline
 	  	//cellsLen is the number of cells in the presentClimateFile, equivalent to the number of lines
-		TPaleoClimate(const char *PLASIMFile, const char *presentClimateFile, int modelGridnCells, bool projectAnnomalies);
+		PaleoClimate(const char *PLASIMFile, const char *presentClimateFile, int modelGridnCells, bool projectAnnomalies);
 
 		/****metodos****/
 

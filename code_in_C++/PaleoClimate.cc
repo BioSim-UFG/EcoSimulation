@@ -1,4 +1,4 @@
-#include "LibPaleoData.h"
+#include "PaleoClimate.h"
 #include "decompressData.h"
 #include <math.h>
 #include <stdlib.h>
@@ -34,8 +34,7 @@ também, usar biblioteca de matrizes para realizar operações de forma mais fac
 
 */
 
-TPaleoClimate::TPaleoClimate(const char *PLASIMFile, const char *presentClimateFile, int modelGridnCells, bool projectAnnomalies = true)
-{
+PaleoClimate::PaleoClimate(const char *PLASIMFile, const char *presentClimateFile, int modelGridnCells, bool projectAnnomalies = true){
 	int PLASIM_nLat, PLASIM_nLong;
 
 	FILE *ZStream_compressed;
@@ -288,7 +287,7 @@ TPaleoClimate::TPaleoClimate(const char *PLASIMFile, const char *presentClimateF
 
 }
 
-void TPaleoClimate::readGrid(FILE *arq){
+void PaleoClimate::readGrid(FILE *arq){
 	for (int i = 0; i < modelGridnCells; i++) {
 		//le as duas primeira colunas (de longitude de latitude)
 
@@ -305,7 +304,7 @@ void TPaleoClimate::readGrid(FILE *arq){
 }
 
 
-void TPaleoClimate::getClimCell(int c, double timeKya, float *SATMin, float *SATMax, float *PPTNMin, float *PPTNMax, float *NPP){
+void PaleoClimate::getClimCell(int c, double timeKya, float *SATMin, float *SATMax, float *PPTNMin, float *PPTNMax, float *NPP){
 
 	int timeInt, i;
 	int timeIntPrev, timeIntNext;
@@ -448,7 +447,7 @@ void TPaleoClimate::getClimCell(int c, double timeKya, float *SATMin, float *SAT
 	}
 }
 
-void TPaleoClimate::getClimCell(int c, int timeStep,  float *SATMin, float *SATMax, float *PPTNMin, float *PPTNMax, float *NPP){
+void PaleoClimate::getClimCell(int c, int timeStep,  float *SATMin, float *SATMax, float *PPTNMin, float *PPTNMax, float *NPP){
 	int t;
 	double tmp1,tmp2;
 	bool firstInterpolation;
@@ -678,7 +677,7 @@ void TPaleoClimate::getClimCell(int c, int timeStep,  float *SATMin, float *SATM
 }
 // Interpolate the entire time series, for all cells of the model grid
 //como ambos getClimAtTime fazem a mesma verificação de tamanho ela pode ser transformada em função
-void TPaleoClimate::getClimAtTime(double timeKya, TSngVector &SATMin, TSngVector &SATMax, TSngVector &PPTNMin, TSngVector &PPTNMax, TSngVector &NPP){
+void PaleoClimate::getClimAtTime(double timeKya, TSngVector &SATMin, TSngVector &SATMax, TSngVector &PPTNMin, TSngVector &PPTNMax, TSngVector &NPP){
 	int c;
 
 	if( SATMax.size() != modelGridnCells)		SATMax.resize(modelGridnCells);
@@ -692,7 +691,7 @@ void TPaleoClimate::getClimAtTime(double timeKya, TSngVector &SATMin, TSngVector
 	}
 }
 
-void TPaleoClimate::getClimAtTime(int timeStep, TSngVector &SATMin, TSngVector &SATMax, TSngVector &PPTNMin, TSngVector &PPTNMax, TSngVector &NPP ){
+void PaleoClimate::getClimAtTime(int timeStep, TSngVector &SATMin, TSngVector &SATMax, TSngVector &PPTNMin, TSngVector &PPTNMax, TSngVector &NPP ){
 	int c;
 
 	if(SATMax.size() != modelGridnCells )		SATMax.resize(modelGridnCells);
@@ -710,7 +709,7 @@ void TPaleoClimate::getClimAtTime(int timeStep, TSngVector &SATMin, TSngVector &
 // EnvVec is a single array containing four environmental variables for the entire grid
 // Thus, the length of EnvVec is four times the number of grid cells
 // The order is regular: For each grid cell, SATMin, SATMax, PPTNMin, PPTN
-void TPaleoClimate::getClimGrid(int timeStep, PSngVector envVec, PSngVector NPPVec){
+void PaleoClimate::getClimGrid(int timeStep, PSngVector envVec, PSngVector NPPVec){
 	//TSngVector tmpEnvVec, tmpNPPVec;
 	TSngVector *tmpEnvVec, *tmpNPPVec;
 	int c;
@@ -742,7 +741,7 @@ void TPaleoClimate::getClimGrid(int timeStep, PSngVector envVec, PSngVector NPPV
 }
 
 
-void TPaleoClimate::getClimTimeSeries(double startTime, double endTime, double timeResolution, 
+void PaleoClimate::getClimTimeSeries(double startTime, double endTime, double timeResolution, 
 									TSngMatrix &SATMin, TSngMatrix &SATMax, TSngMatrix &PPTNMin, TSngMatrix &PPTNMax, TSngMatrix &NPP){
 
 	int k, c, nSteps;
@@ -774,7 +773,7 @@ void TPaleoClimate::getClimTimeSeries(double startTime, double endTime, double t
 	}
 }
 
-void TPaleoClimate::getClimTimeSeries(double timeResolution,
+void PaleoClimate::getClimTimeSeries(double timeResolution,
 									TSngMatrix &SATMin, TSngMatrix &SATMax, TSngMatrix &PPTNMin, TSngMatrix &PPTNMax, TSngMatrix &NPP){
 
 	getClimTimeSeries(5000, 0, timeResolution, SATMin, SATMax, PPTNMin, PPTNMax, NPP);

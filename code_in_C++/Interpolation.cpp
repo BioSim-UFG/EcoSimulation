@@ -1,4 +1,4 @@
-#include "LibPaleoData.h"
+#include "PaleoClimate.h"
 #include "decompressData.h"
 #include "color.h"
 #include <iostream>
@@ -116,9 +116,9 @@ int main(){
 	}
 
 
-	//creates a new Object of class TPaleoClimate
-	TPaleoClimate paleoClimate(("input/"+paleoClimFile).c_str(), ("input/"+presentClimFile).c_str(), numero_de_linhas, true);
-	printf(GRN("\tObjeto " BOLD("<TPaleoClimate>") " criado\n"));		// ~DebugLog
+	//creates a new Object of class PaleoClimate
+	PaleoClimate paleoClimate(("input/"+paleoClimFile).c_str(), ("input/"+presentClimFile).c_str(), numero_de_linhas, true);
+	printf(GRN("\tObjeto " BOLD("<PaleoClimate>") " criado\n"));		// ~DebugLog
 
 	fstream arq_outMinTemp, arq_outMaxTemp, arq_outMinPPTN, arq_outMaxPPTN, arq_outNPP;
 	fstream arq_teste;
