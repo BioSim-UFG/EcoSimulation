@@ -11,11 +11,12 @@ ECHOMSG= ''
 
 
 # src dir
-SRCDIR=code_in_C++
-LDIR=$(SRCDIR)/Lib_x86_64
+SRCDIR = src#current dir
+# Binary dir
+BDIR = bin
 
 # object files ( .o)
-ODIR = $(LDIR)
+ODIR = $(BDIR)
 _OBJ = decompressData.o PaleoClimate.o Interpolation.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
@@ -24,19 +25,19 @@ _DEPS = color.h PaleoClimate.h decompressData.h
 DEPS = $(patsubst %,$(SRCDIR)/%,$(_DEPS))
 
 #target .c files
-$(LDIR)/%.o: $(SRCDIR)/%.c $(DEPS)
+$(BDIR)/%.o: $(SRCDIR)/%.c $(DEPS)
 	@$(CPPC) $< -c -o $@ $(CFLAGS) $(EXTFLG)
 	@echo Compiling $(subst $(SRCDIR)/,'',$<)
 #target .cpp files
-$(LDIR)/%.o: $(SRCDIR)/%.cpp $(DEPS)
+$(BDIR)/%.o: $(SRCDIR)/%.cpp $(DEPS)
 	@$(CPPC) $< -c -o $@ $(CFLAGS) $(EXTFLG)
 	@echo Compiling $(subst $(SRCDIR)/,'',$<)
 #target .cc files
-$(LDIR)/%.o: $(SRCDIR)/%.cc $(DEPS)
+$(BDIR)/%.o: $(SRCDIR)/%.cc $(DEPS)
 	@$(CPPC) $< -c -o $@ $(CFLAGS) $(EXTFLG)
 	@echo Compiling $(subst $(SRCDIR)/,'',$<)
 #target .cu files
-$(LDIR)/%.o: $(SRCDIR)/%.cu $(DEPS)
+$(BDIR)/%.o: $(SRCDIR)/%.cu $(DEPS)
 	@$(NVC) $< -c -o $@ $(NVFLAGS) $(EXTFLG)
 	@echo Compiling $(subst $(SRCDIR)/,'',$<)
 
@@ -67,7 +68,7 @@ debug: ECHOMSG = "Debugging compiling mode \n"
 debug: default
 
 all:
-	@touch	$(SRCDIR)/*
+	@touch $(SRCDIR)/*
 	@echo 'touching all src files'
 
 clear: 
