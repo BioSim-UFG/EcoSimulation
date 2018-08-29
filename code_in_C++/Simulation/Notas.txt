@@ -1,0 +1,16 @@
+De acordo com a implementação feita até o momento, a relação dos objetos funciona da seguinte forma:
+
+O objeto 'Simulation' irá servir como uma 'thread' que executa sua prória simulação de mundo.
+
+Dentro de 'Simulation' guarda-se um vetor de espécies e de células representando:
+    
+    Espécies: As espécies vivas que estão na simulação 
+    Células : As células que são relevantes naquele TimeStep ( células que contém espécies e células com até uma certa distancia geograficas das não vazias)
+
+Em relação aos objetos Espécie e Célula:
+
+Espécie:
+    Contém a localização atual dela na grid ( um ponteiro para o objeto célula)
+
+Célula:
+    Mantém a quantidade de Espécies vivas naquele espaço
