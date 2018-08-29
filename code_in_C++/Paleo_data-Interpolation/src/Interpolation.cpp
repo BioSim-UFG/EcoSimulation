@@ -12,6 +12,9 @@
 using namespace std;
 using namespace SimEco;
 
+const char input_path[] = "../../input/";
+const char output_path[]= "../../output/";
+
 int main(){
 
 	string presentClimFile, paleoClimFile, r;
@@ -117,17 +120,17 @@ int main(){
 
 
 	//creates a new Object of class PaleoClimate
-	PaleoClimate paleoClimate(("input/"+paleoClimFile).c_str(), ("input/"+presentClimFile).c_str(), numero_de_linhas, true);
+	PaleoClimate paleoClimate((input_path + paleoClimFile).c_str(), (input_path + presentClimFile).c_str(), numero_de_linhas, true);
 	printf(GRN("\tObjeto " BOLD("<PaleoClimate>") " criado\n"));		// ~DebugLog
 
 	fstream arq_outMinTemp, arq_outMaxTemp, arq_outMinPPTN, arq_outMaxPPTN, arq_outNPP;
 	fstream arq_teste;
 	try{
-		arq_outMinTemp.open( "output/"+outSuffix+ "-MinTemp.txt", ios::trunc | ios::out);
-		arq_outMaxTemp.open( "output/"+outSuffix+ "-MaxTemp.txt", ios::trunc | ios::out);
-		arq_outMinPPTN.open( "output/"+outSuffix+ "-MinPPTN.txt", ios::trunc | ios::out);
-		arq_outMaxPPTN.open( "output/"+outSuffix+ "-MaxPPTN.txt", ios::trunc | ios::out);
-		arq_outNPP.open("output/"+outSuffix+ " - NPP.txt", ios::trunc | ios::out);
+		arq_outMinTemp.open( output_path+outSuffix+ " - MinTemp.txt", ios::trunc | ios::out);
+		arq_outMaxTemp.open( output_path+outSuffix+ " - MaxTemp.txt", ios::trunc | ios::out);
+		arq_outMinPPTN.open( output_path+outSuffix+ " - MinPPTN.txt", ios::trunc | ios::out);
+		arq_outMaxPPTN.open( output_path+outSuffix+ " - MaxPPTN.txt", ios::trunc | ios::out);
+		arq_outNPP.open(output_path + outSuffix + " - NPP.txt", ios::trunc | ios::out);
 	}catch (const fstream::failure &e){
 		printf(RED("Erro ao abrir arquivo de saida %s\n"), e.what()); // ~DebugLog
 		exit(1);
