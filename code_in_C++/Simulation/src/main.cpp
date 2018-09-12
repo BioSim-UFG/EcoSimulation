@@ -7,9 +7,10 @@
 
 int main(){
     SimEco::Simulation *simulacao;
-    
     //simulação = new SimEco::Simulation();
 
+    simulacao = new
+    simulacao[0] = new
 
     printf(LGTGRN("Simulação Criada\n"));
     
