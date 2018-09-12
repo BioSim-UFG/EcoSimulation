@@ -19,6 +19,8 @@ namespace SimEco{
         float dispCapRiver; //Capacity of dispersion over river barriers
         float dispCapTopo; //Capacity of dispersion over topographic heterogeneity
 
+        //ideia para achar espécia, um MAP
+
       public:
         Specie();
         ~Specie();
