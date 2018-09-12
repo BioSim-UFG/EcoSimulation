@@ -9,6 +9,15 @@ namespace SimEco{
 
 
     Grid::~Grid(){
+    }
+
+    Grid::setSpecies(Specie* sp, uint sp_num){
+        int i = 0;
+
+        while(i != sp_num || species.size() <= NUM_TOTAL_SPECIES ){
+            species.back() = sp[i]; 
+        }
+        
 
     }
 

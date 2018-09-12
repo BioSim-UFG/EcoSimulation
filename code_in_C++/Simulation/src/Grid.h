@@ -24,6 +24,7 @@ namespace SimEco
         Grid();
         ~Grid();    
 
+        void setSpecies();
 
         // A continuous value of suitability (from N species at one cell) --> é a função que ja fizemos em GPU, por isso precisa dos dados do nicho das especies
         void getCellSuitabilities(array<NicheValue, NUM_TOTAL_SPECIES> &niches);
