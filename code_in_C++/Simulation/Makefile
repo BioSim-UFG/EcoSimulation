@@ -11,17 +11,17 @@ ECHOMSG= ''
 
 
 # src dir
-SRCDIR = src#current dir
+SRCDIR = src
 # Binary dir
 BDIR = bin
 
 # object files ( .o)
 ODIR = $(BDIR)
-_OBJ = decompressData.o PaleoClimate.o Interpolation.o
+_OBJ = Cell.o Simulation.o Specie.o main.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 # headers
-_DEPS = color.h PaleoClimate.h decompressData.h
+_DEPS = color.h Cell.h Simulation.h Specie.h Grid.h SimTypes.h
 DEPS = $(patsubst %,$(SRCDIR)/%,$(_DEPS))
 
 #target .c files
