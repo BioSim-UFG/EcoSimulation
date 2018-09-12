@@ -47,7 +47,7 @@ default: ECHOMSG := 'Normal compiling mode\n'
 default: $(OBJ)
 	@$(CPPC) $^ -o Prog.exe $(CFLAGS)$(EXTFLG)
 	@printf $(ECHOMSG)
-	@echo 'All compiled'
+	@echo 'Done'
 
 #fast, optimized compiling mode
 fast: opt3

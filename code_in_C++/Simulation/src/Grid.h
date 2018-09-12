@@ -4,6 +4,7 @@
 #include "SimTypes.h"
 
 #define NUM_TOTAL_CELLS 20
+#define NUM_TOTAL_SPECIES 1
 
 
 using namespace std;
@@ -11,15 +12,19 @@ using namespace std;
 namespace SimEco
 {
     class Grid{
-        //talvez tenha que mudar de 'Cell&'' para 'Cell *', por questões de compatibilidade com GPU ( CUDA)
+
+        array<Specie *, NUM_TOTAL_SPECIES> species;
         array<Cell *, NUM_TOTAL_CELLS> cells;        //array de referencias para celulas da grid
-        array<float, (NUM_TOTAL_CELLS * NUM_ENV_VARS)> envVec;        // Store a single vector, with four entries for each grid cell (nGridCells * 4), containing Min/Max SAT, and Min/Max PPTN
-        array<float, NUM_TOTAL_CELLS> NPPVec;                       // Sotre a single vector, with one entry for each grid cell, containing NPP value for each grid cell
+        array<float, (NUM_TOTAL_CELLS * NUM_ENV_VARS)> envVec;  // Store a single vector, with four entries for each grid cell (nGridCells * 4), containing Min/Max SAT, and Min/Max PPTN
+        array<float, NUM_TOTAL_CELLS> NPPVec;                   // Sotre a single vector, with one entry for each grid cell, containing NPP value for each grid cell
     
 
-        public:
-        // A continuous value of suitability --> é a função que ja fizemos em GPU, por isso precisa dos dados do nicho das especies
-        void getCellSuitabilities(array<NicheValue, NUM_TOTAL_CELLS> niches);
+      public:
+
+        // A continuous value of suitability (from N species at one cell) --> é a função que ja fizemos em GPU, por isso precisa dos dados do nicho das especies
+        void getCellSuitabilities(array<NicheValue, NUM_TOTAL_SPECIES> &niches);
+        // A continuous value of suitability from one specie at N cells
+        void getSpecieSuitabilities(array<EnvValue, NUM_TOTAL_CELLS> &climas);
     };
 }
 

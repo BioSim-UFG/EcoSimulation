@@ -2,11 +2,16 @@
 #include "Grid.h"
 #include "Simulation.h"
 #include "Specie.h"
+#include "color.h"
 
 
 int main(){
-    SimEco::Simulation *simulacao = new SimEco::Simulation();
+    SimEco::Simulation *simulacao;
+    
+    //simulação = new SimEco::Simulation();
 
+
+    printf(LGTGRN("Simulação Criada\n"));
     
 
     return 0;
