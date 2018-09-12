@@ -6,10 +6,11 @@
 
 using namespace SimEco;
 
-int main(){
+int main(int argc,char const *argv[]){
     Simulation *simulacao;
     Grid *grid;
-
+    Specie *founders;
+    FILE *entrada;
     
 
 
@@ -25,3 +26,4 @@ int main(){
 
     return 0;
 }
+

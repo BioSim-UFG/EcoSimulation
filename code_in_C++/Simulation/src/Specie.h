@@ -12,7 +12,7 @@ namespace SimEco{
         Cell *celulaQueTo;        //pointer to current Cell
         float curSize;          //number of members/population;    Mas pra que float???  10.5 animais?
         float growth;           //taxa de crescimento
-
+        float dispTx            //taxa de dispersão
 
         //dispersion Capacities
         float dispCapGeo;  //Capacity of dispersion over geographic distance

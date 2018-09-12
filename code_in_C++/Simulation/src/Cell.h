@@ -23,7 +23,7 @@ namespace SimEco
          e também por ser assim que os dados são acessados e tratados na GPU*/
          
         //Climate climate;        // Environmental variables for each cell
-        static Climate* cell_climates;  //aqui vai ser um vetor com todos os dados das celulas
+        static Climate* cell_climates;  //aqui vai ser um vetor com todos os dados das celulas de min/max e NPP
         Connectivity conn;       //cell connectivity with the other cells
 
         Cell();
@@ -44,8 +44,6 @@ namespace SimEco
         //void getGridClim(int timeStep, pPaleoClimate paleoClimate , pGrid grid , pSngVector envVec, pSngVector NPPVec );
     };
 
-
-    
 
 } // SimEco
 
