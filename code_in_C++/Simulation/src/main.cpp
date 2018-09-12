@@ -4,13 +4,21 @@
 #include "Specie.h"
 #include "color.h"
 
+using namespace SimEco;
 
 int main(){
-    SimEco::Simulation *simulacao;
-    //simulação = new SimEco::Simulation();
+    Simulation *simulacao;
+    Grid *grid;
 
-    simulacao = new
-    simulacao[0] = new
+    
+
+
+    grid = new Grid();
+    simulacao = new Simulation();
+    
+    
+    
+
 
     printf(LGTGRN("Simulação Criada\n"));
     
