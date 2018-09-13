@@ -1,5 +1,8 @@
 code_in_C++/Simulation/Prog.exe
-code_in_C++/Simulation/bin/*
+code_in_C++/Simulation/bin/Cell.o
+code_in_C++/Simulation/bin/Simulation.o
+code_in_C++/Simulation/bin/Specie.o
+code_in_C++/Simulation/bin/main.o
 code_in_delphi/paleo_data/Decompressed.Stream
 DummyHex2566 - Output*
 xPLASIM.All3DMats.Single.Zip.Stream
