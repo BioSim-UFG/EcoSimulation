@@ -1,6 +1,9 @@
 code_in_C++/Simulation/Prog.exe
-.vscode/settings.json
 code_in_C++/Simulation/bin/*
+code_in_delphi/paleo_data/Decompressed.Stream
 DummyHex2566 - Output*
 xPLASIM.All3DMats.Single.Zip.Stream
 Prog.exe
+.vscode/settings.json
+.vscode/c_cpp_properties.json
+.vscode/launch.json
