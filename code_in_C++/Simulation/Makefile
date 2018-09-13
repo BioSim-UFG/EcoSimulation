@@ -17,7 +17,7 @@ BDIR = bin
 
 # object files ( .o)
 ODIR = $(BDIR)
-_OBJ = Cell.o Simulation.o Specie.o main.o
+_OBJ = Cell.o Simulation.o Specie.o main.o Grid.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 # headers
