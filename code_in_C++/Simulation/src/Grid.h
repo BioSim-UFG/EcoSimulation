@@ -2,6 +2,7 @@
 #define GRID_H
 
 #include "SimTypes.h"
+#include "Specie.h"
 
 #define NUM_TOTAL_CELLS 20
 #define NUM_TOTAL_SPECIES 1
@@ -24,9 +25,9 @@ namespace SimEco
      public:
 
         Grid();
-        ~Grid();    
+        ~Grid();
 
-        void addSpecies();
+        void addSpecies(Specie *sp, uint sp_num);
 
         // A continuous value of suitability (from N species at one cell) --> é a função que ja fizemos em GPU, por isso precisa dos dados do nicho das especies
         void getCellSuitabilities(array<NicheValue, NUM_TOTAL_SPECIES> &niches);

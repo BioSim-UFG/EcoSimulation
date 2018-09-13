@@ -2,7 +2,6 @@
 
 namespace SimEco{
 
-    
-
-
+    Specie::Specie(){}
+    Specie::~Specie() {}
 }

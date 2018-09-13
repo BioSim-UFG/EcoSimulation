@@ -1,3 +1,4 @@
+#include "SimTypes.h"
 #include "Cell.h"
 #include "Grid.h"
 #include "Simulation.h"
@@ -15,7 +16,7 @@ int main(int argc,char const *argv[]){
 
 
     grid = new Grid();
-    simulacao = new Simulation();
+    simulacao = new Simulation(*grid, founders);
     
     
     
