@@ -14,3 +14,28 @@ Espécie:
 
 Célula:
     Mantém a quantidade de Espécies vivas naquele espaço
+
+
+****************************************************************************************************
+
+Um resumo da arquitetura:
+
+O sistema da simulação é baseado em três grandes grupos principais.
+    A Grid 
+    A célula 
+    A espécie
+    
+Uma contém a outra de cima para baixo ( com a Grid sendo o maior), dentro da Grid vê-se um formato baseado em matriz,
+o conjunto de vetores são para reduzir o tamanho dessa matriz e acessar os valores na grid de forma que:
+    o primeiro vetor (chamado de cells) representa a posição de uma célula na matriz, representa o valor da célula , o valor 
+que a determina.
+    O segundo vetor vai representar a linha (left pair) e coluna (right pair) em que a célula estaria na matriz.
+
+Dentro da célula existe a min-max de temperatura e precipitação assim como o NPP dentro de cell_climates; 
+Além da conectividade dentro de conn.
+
+Sobre as espécies:
+    Ela tem o conhecimento do lugar ( célula) em que está, qual a capacidade de dispersão dela nos ambientes de conectividade 
+da célula ( atualmente geografia, topografia e hidrografia).
+
+
