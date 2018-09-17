@@ -15,8 +15,8 @@ namespace SimEco
 
 
         public:
-        unsigned int id;
-        float area;
+        unsigned int id;        //talvez desnecessário...
+        //float area;         //provavel tb que nao precise
         int numSpecies = 0;       //quantidade de Especies nessa celula
 
         /* coloquei um vetor da classe ( nao objeto) para melhor acesso e perfomance,

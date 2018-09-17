@@ -8,12 +8,6 @@ namespace SimEco{
         std::vector<unsigned int> num;
         std::vector< std::pair<unsigned int, unsigned int> > pos;
 
-        
-
-
-
     };
-
-
 
 }
