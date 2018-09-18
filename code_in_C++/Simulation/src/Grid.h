@@ -17,8 +17,9 @@ namespace SimEco
         array<Specie *, NUM_TOTAL_SPECIES> species;
 
         //matriz esparça compactada ( ver cusparse)
-        array<unsigned int, NUM_TOTAL_CELLS> cells;
-        array< pair<unsigned int, unsigned int>, NUM_TOTAL_CELLS > cellPos;
+        array<Cell, NUM_TOTAL_CELLS> cells;
+        array<Connectivity, NUM_TOTAL_CELLS> distanceMatrix;
+        array< pair<unsigned int, unsigned int>, NUM_TOTAL_CELLS > indexMatrix;
 
         //array<Cell *, NUM_TOTAL_CELLS> cells;        //array de referencias para celulas da grid
        // array<float, (NUM_TOTAL_CELLS * NUM_ENV_VARS)> envVec;  // Store a single vector, with four entries for each grid cell (nGridCells * 4), containing Min/Max SAT, and Min/Max PPTN

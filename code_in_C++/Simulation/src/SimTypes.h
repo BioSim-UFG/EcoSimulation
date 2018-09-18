@@ -30,9 +30,9 @@ namespace SimEco
     }Climate;
 
     typedef struct{
-        vector<float> Geo;              // Degree of connectivity (1 / distance) between this cell and all other cells, based on geographic distance
-        vector<float> Topo;              // Degree of connectivity (1 / distance) between this cell and all other cells, based on topographic heterogeneity
-        vector<float> Rivers;              // Degree of connectivity (1 / distance) between this cell and all other cells, based on river network
+        float Geo;              // Degree of connectivity (1 / distance) between this cell and all other cells, based on geographic distance
+        float Topo;              // Degree of connectivity (1 / distance) between this cell and all other cells, based on topographic heterogeneity
+        float Rivers;              // Degree of connectivity (1 / distance) between this cell and all other cells, based on river network
     }Connectivity;
 
 }
