@@ -34,9 +34,6 @@ namespace SimEco
         //Function GetLocalSuitability(LocalEnv: TEnvValues; Niche: TNicheValues): Single;
         */
 
-        // A continuous value of suitability (from N species at one cell) --> é a função que ja fizemos em GPU, por isso precisa dos dados do nicho das especies
-        void getCellSuitabilities(array<NicheValue, 1> niches);
-
         //EnvValue é da celula, e NicheValue é da especie( nicho da especie)
         bool IsLocalTolerance(EnvValue LocalEnv, NicheValue Niche);                 // -> mas isso já nao é calculado na suitability ?
 

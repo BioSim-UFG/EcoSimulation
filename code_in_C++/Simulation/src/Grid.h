@@ -16,9 +16,10 @@ namespace SimEco
 
         array<Specie *, NUM_TOTAL_SPECIES> species;
 
-        //matriz esparça compactada ( ver cusparse)
+        //matriz esparça compactada ( ver CUsparse)
         array<Cell, NUM_TOTAL_CELLS> cells;
-        array<Connectivity, NUM_TOTAL_CELLS> distanceMatrix;
+
+        array<Connectivity, NUM_TOTAL_CELLS> ConnectivityMatrix;
         array< pair<unsigned int, unsigned int>, NUM_TOTAL_CELLS > indexMatrix;
 
         //array<Cell *, NUM_TOTAL_CELLS> cells;        //array de referencias para celulas da grid
