@@ -8,11 +8,10 @@ namespace SimEco{
 
     class Specie{
         array<NicheValue, NUM_ENV_VARS> niche;        //niche of the specie
-        //int curCellIdx;         //current Cell Index
+
         Cell *celulaQueTo;        //pointer to current Cell
         float curSize;          //number of members/population;    Mas pra que float???  10.5 animais?
         float growth;           //taxa de crescimento
-        //float dispTx;            //taxa de dispersão // não sei se é necessário já que tem as capacidades de dispersão individual
 
         //dispersion Capacities
         float dispCapGeo;  //Capacity of dispersion over geographic distance
@@ -26,13 +25,6 @@ namespace SimEco{
         ~Specie();
     
     };
-
-    /* FOUNDER PRA Q ?????????????????
-    class Founder: Specie{
-        int seedCell;             //Starting cell of the founder
-
-    }
-    */
 
 }
 

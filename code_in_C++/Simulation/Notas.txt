@@ -27,7 +27,7 @@ O sistema da simulação é baseado em três grandes grupos principais.
     
 Uma contém a outra de cima para baixo ( com a Grid sendo o maior), dentro da Grid vê-se um formato baseado em matriz,
 o conjunto de vetores são para reduzir o tamanho dessa matriz e acessar os valores na grid de forma que:
-    o primeiro vetor (chamado de cells) representa a posição de uma célula na matriz, representa o valor da célula , o valor 
+    o primeiro vetor (chamado de cells) representa uma célula na matriz, representa o valor da célula , o valor 
 que a determina.
     O segundo vetor vai representar a linha (left pair) e coluna (right pair) em que a célula estaria na matriz.
 

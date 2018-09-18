@@ -2,7 +2,7 @@
 #define GRID_H
 
 #include "SimTypes.h"
-#include <vector>
+#include <array>
 
 #define NUM_TOTAL_CELLS 20
 #define NUM_TOTAL_SPECIES 1
@@ -17,8 +17,8 @@ namespace SimEco
         array<Specie *, NUM_TOTAL_SPECIES> species;
 
         //matriz esparça compactada ( ver cusparse)
-        vector<unsigned int> cells;
-        vector< pair<unsigned int, unsigned int> > cellPos;
+        array<unsigned int, NUM_TOTAL_CELLS> cells;
+        array< pair<unsigned int, unsigned int>, NUM_TOTAL_CELLS > cellPos;
 
         //array<Cell *, NUM_TOTAL_CELLS> cells;        //array de referencias para celulas da grid
        // array<float, (NUM_TOTAL_CELLS * NUM_ENV_VARS)> envVec;  // Store a single vector, with four entries for each grid cell (nGridCells * 4), containing Min/Max SAT, and Min/Max PPTN
@@ -35,8 +35,8 @@ namespace SimEco
         void addSpecies();
 
         void addCell(Cell &novaCelula);
-        void addCell(vector<Cell> &novasCelulas);    //pega o vector novasCelulas e copia/passa os elementos para a Grid
-        void setCells(vector<Cell> &celulas);
+        void addCells(array<Cell, NUM_TOTAL_CELLS> &novasCelulas);    //pega o vector novasCelulas e copia/passa os elementos para a Grid
+        void setCells(array<Cell, NUM_TOTAL_CELLS> &celulas);       //seta (sobrescreve) o vetor de cells
 
         // A continuous value of suitability (from N species at one cell) --> é a função que ja fizemos em GPU, por isso precisa dos dados do nicho das especies
         void getCellSuitabilities(array<NicheValue, NUM_TOTAL_SPECIES> &niches);
