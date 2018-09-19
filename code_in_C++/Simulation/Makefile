@@ -1,13 +1,13 @@
 SHELL = /bin/sh
 CC=gcc				#C compiler
 CPPC=g++			#C++ compiler
-CFLAGS=-lz -lm -std=c++11		#standard g++ flags
+CFLAGS=-lz -lm -std=c++14		#standard g++ flags
 NVC=nvcc			#CUDA compiler
 NVFLAGS=-use_fast_math -O2		#CUDA compiler flags
 PSC=fpc				#pascal compiler
 PFLAGS=-Fl/usr/local/cuda/lib64 -Mdelphi	#pascal compiler flags
 
-ECHOMSG= ''
+ECHOMSG := "Normal compiling mode\n"
 
 
 # src dir
@@ -43,7 +43,7 @@ $(BDIR)/%.o: $(SRCDIR)/%.cu $(DEPS)
 
 
 # normal compiling mode
-default: ECHOMSG := "Normal compiling mode\n"
+#default: ECHOMSG := "Normal compiling mode\n"
 default: $(OBJ)
 	@echo "$(BL_YELLOW)Linking files$(NC)"
 	@$(CPPC) $^ -o Prog.exe $(CFLAGS)$(EXTFLG)
@@ -51,7 +51,7 @@ default: $(OBJ)
 	@echo "${BL_GREEN}Done${NC}"
 
 #fast, optimized compiling mode
-fast: opt3
+fast: opt2
 opt3: EXTFLG = -O3 -march=native -Wno-unused-result
 opt3: ECHOMSG = "fast, optimized compiling mode level 3\n"
 opt3: default
