@@ -16,30 +16,24 @@ namespace SimEco
 
         public:
         unsigned int id;        //talvez desnecessário...
-        //float area;         //provavel tb que nao precise
-        int numSpecies = 0;       //quantidade de Especies nessa celula
+        
+        size_t numSpecies = 0;       //quantidade de Especies nessa celula
+        Specie *speciesInside;
 
         /* coloquei um vetor da classe ( nao objeto) para melhor acesso e perfomance,
          e também por ser assim que os dados são acessados e tratados na GPU*/
          
-        //Climate climate;        // Environmental variables for each cell
         static Climate* cell_climates;  //aqui vai ser um vetor com todos os dados das celulas de min/max e NPP
         Connectivity conn;       //cell connectivity with the other cells
 
         Cell();
         ~Cell();
 
-        /* melhor nao ter uma função que calcula a suitability de apenas uma celula ( falta de paralelismo)
-        // A continuous value of suitability
-        //Function GetLocalSuitability(LocalEnv: TEnvValues; Niche: TNicheValues): Single;
-        */
-
         //EnvValue é da celula, e NicheValue é da especie( nicho da especie)
         bool IsLocalTolerance(EnvValue LocalEnv, NicheValue Niche);                 // -> mas isso já nao é calculado na suitability ?
 
-        //PARA QUE ESSA COISA?????????????????????????????? :D
-        //void getGridClim(int timeStep, pPaleoClimate paleoClimate , pGrid grid , pSngVector envVec, pSngVector NPPVec );
-    };
+        
+};
 
 
 } // SimEco

@@ -1,8 +1,9 @@
 #ifndef SIMTYPES_H
 #define SIMTYPES_H
 
-#include <array>
 #include <vector>
+#include <array>
+#include <utility>
 
 #define NUM_ENV_VARS 2
 
@@ -33,7 +34,7 @@ namespace SimEco
         float Geo;              // Degree of connectivity (1 / distance) between this cell and all other cells, based on geographic distance
         float Topo;              // Degree of connectivity (1 / distance) between this cell and all other cells, based on topographic heterogeneity
         float Rivers;              // Degree of connectivity (1 / distance) between this cell and all other cells, based on river network
-    }Connectivity;
+    }Connectivity, Dispersion;
 
 }
 

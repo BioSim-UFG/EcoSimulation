@@ -1,6 +1,7 @@
 #ifndef SIMULATION_H
 #define SIMULATION_H
-// Pode ser implementado como um objeto, e a simulação na main executada como varios objetos do tiṕo simulation
+// Pode ser implementado como um objeto, e a simulação na main executada
+// como varios objetos do tipo simulation
 
 #include "SimTypes.h"
 #include "Grid.h"
@@ -13,11 +14,11 @@ namespace SimEco{
 
     class Simulation{
 
-        Grid &_grid;
-        Specie founders[NUM_TOTAL_SPECIES];
+		Grid &_grid;		//referencia para a grid
+		Specie *founders;	//referencia para array de especies ( fundadoras nesse caso)
 
       public:
-        Simulation(Grid &grid, Specie founders[NUM_TOTAL_SPECIES]);
+        Simulation(Grid &grid, Specie *founders);
 
         
     

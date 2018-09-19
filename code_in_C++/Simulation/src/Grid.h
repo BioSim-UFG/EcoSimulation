@@ -2,7 +2,8 @@
 #define GRID_H
 
 #include "SimTypes.h"
-#include <array>
+#include "Cell.h"
+
 
 #define NUM_TOTAL_CELLS 20
 #define NUM_TOTAL_SPECIES 1
@@ -17,8 +18,6 @@ namespace SimEco
         array<Specie *, NUM_TOTAL_SPECIES> species;
 
         //matriz esparça compactada ( ver CUsparse)
-        array<Cell, NUM_TOTAL_CELLS> cells;
-
         array<Connectivity, NUM_TOTAL_CELLS> ConnectivityMatrix;
         array< pair<unsigned int, unsigned int>, NUM_TOTAL_CELLS > indexMatrix;
 
@@ -34,7 +33,7 @@ namespace SimEco
         Grid();
         ~Grid();    
 
-        void addSpecies();
+        void addSpecies(Specie sp[], size_t sp_num);
 
         void addCell(Cell &novaCelula);
         void addCells(array<Cell, NUM_TOTAL_CELLS> &novasCelulas);    //pega o vector novasCelulas e copia/passa os elementos para a Grid
