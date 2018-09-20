@@ -31,6 +31,20 @@ da célula ( atualmente geografia, topografia e hidrografia).
 			 DummyHex2566 - Connectances - Rivers.Single.Zip
 	respectivamente, todas encontradas na pasta 'input'.
 
+
+
+- o  arquivo 'xPLASIM.All3DMats.Single.Zip.Stream' contem as series climaticas temporais, 
+    que ao passar por o programa de interpolação, gera os arquivos da pasta output, isto é:
+        DummyHex2566 - Output - MaxPPTN.txt, 
+        DummyHex2566 - Output - MinPPTN.txt,
+        DummyHex2566 - Output - MaxTemp.txt,
+        DummyHex2566 - Output - MinTemp.txt,
+        DummyHex2566 - Output - NPP.txt
+
+    que poderão ser usadas para as varivaeis climaticas das celulas
+
+
+
 	
 
 
