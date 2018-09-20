@@ -1,20 +1,3 @@
-De acordo com a implementação feita até o momento, a relação dos objetos funciona da seguinte forma:
-
-O objeto 'Simulation' irá servir como uma 'thread' que executa sua prória simulação de mundo.
-
-Dentro de 'Simulation' guarda-se um vetor de espécies e de células representando:
-    
-    Espécies: As espécies vivas que estão na simulação 
-    Células : As células que são relevantes naquele TimeStep ( células que contém espécies e células com até uma certa distancia geograficas das não vazias)
-
-Em relação aos objetos Espécie e Célula:
-
-Espécie:
-    Contém a localização atual dela na grid ( um ponteiro para o objeto célula)
-
-Célula:
-    Mantém a quantidade de Espécies vivas naquele espaço
-
 
 ****************************************************************************************************
 
@@ -37,5 +20,18 @@ Além da conectividade dentro de conn.
 Sobre as espécies:
     Ela tem o conhecimento do lugar ( célula) em que está, qual a capacidade de dispersão dela nos ambientes de conectividade 
 da célula ( atualmente geografia, topografia e hidrografia).
+
+***************************************************************************************************
+    Sobre a entrada de dados ( matrizes e listas):
+
+--> MATRIZ DE CONECTIVIDADE:
+    há três matrizes de conectividade, uma Geográfica, outra Topológica e outra hidrografica(rios),
+	 que são DummyHex2566 - Connectances - Geo.Single.Zip, 
+	 		 DummyHex2566 - Connectances - Topo.Single.Zip
+			 DummyHex2566 - Connectances - Rivers.Single.Zip
+	respectivamente, todas encontradas na pasta 'input'.
+
+	
+
 
 
