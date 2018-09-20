@@ -64,6 +64,10 @@ int main(int argc,char const *argv[]){
     FILE *founders_input;
 
     founders_input = fopen("../../input/SpecieData.txt", "r");
+    if (founders_input == NULL){
+        perror(RED("Nao foi possivel abrir SpecieData.txt"));
+        exit(1);    
+    }
     carrega_founders(founders, founders_input);
 	fclose(founders_input);
 
@@ -72,6 +76,9 @@ int main(int argc,char const *argv[]){
 
 	int numero_de_passos = 51; // 50 tempos + tempo zero
 	Cell::cell_climates = new Climate*[numero_de_passos];
+    for(size_t i=0; i<numero_de_passos; i++){
+        Cell::cell_climates[i] = new Climate;
+    }
 
     //falta carregar conectividade das celulas e serie temporal das celulas
     minTemp_src = fopen("../../output/DummyHex2566 - Output - MinTemp.txt", "r");
