@@ -17,7 +17,7 @@ BDIR = bin
 
 # object files ( .o)
 ODIR = $(BDIR)
-_OBJ = Cell.o Simulation.o Specie.o main.o Grid.o
+_OBJ = Cell.o Simulation.o Specie.o main.o Grid.o decompressData.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 # headers
@@ -27,19 +27,19 @@ DEPS = $(patsubst %,$(SRCDIR)/%,$(_DEPS))
 #target .c files
 $(BDIR)/%.o: $(SRCDIR)/%.c $(DEPS)
 	@$(CPPC) $< -c -o $@ $(CFLAGS) $(EXTFLG)
-	@echo "${GREEN}Compiling ${RED}$(subst $(SRCDIR)/,'',$<) ${NC}"
+	@echo "${GREEN}Compiling ${RED}$(subst $(SRCDIR)/,,$<) ${NC}"
 #target .cpp files
 $(BDIR)/%.o: $(SRCDIR)/%.cpp $(DEPS)
 	@$(CPPC) $< -c -o $@ $(CFLAGS) $(EXTFLG)
-	@echo "${GREEN}Compiling ${RED}$(subst $(SRCDIR)/,,$<) ${NC}"
+	@echo "${GREEN}Compiling ${YELLOW}$(subst $(SRCDIR)/,,$<) ${NC}"
 #target .cc files
 $(BDIR)/%.o: $(SRCDIR)/%.cc $(DEPS)
 	@$(CPPC) $< -c -o $@ $(CFLAGS) $(EXTFLG)
-	@echo "${GREEN}Compiling ${RED}$(subst $(SRCDIR)/,'',$<) ${NC}"
+	@echo "${GREEN}Compiling ${YELLOW}$(subst $(SRCDIR)/,,$<) ${NC}"
 #target .cu files
 $(BDIR)/%.o: $(SRCDIR)/%.cu $(DEPS)
 	@$(NVC) $< -c -o $@ $(NVFLAGS) $(EXTFLG)
-	@echo "${GREEN}Compiling ${PURPLE}$(subst $(SRCDIR)/,'',$<) ${NC}"
+	@echo "${GREEN}Compiling ${PURPLE}$(subst $(SRCDIR)/,,$<) ${NC}"
 
 
 # normal compiling mode

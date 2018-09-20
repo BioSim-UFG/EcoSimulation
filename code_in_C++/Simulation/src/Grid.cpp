@@ -1,81 +1,155 @@
 #include "Grid.h"
 #include "Specie.h"
 
+#include "decompressData.h"
+#include "color.h"
+
 using namespace std;
 
 namespace SimEco{
 
-    Grid::Grid(){ matrixSize = 0; }
+	Connectivity *Grid::connectivityMatrix = NULL;
+	pair<int, int> *Grid::indexMatrix = NULL;
+	int Grid::matrixSize = 0;
 
-    Grid::Grid(Cell cells[], size_t cellSize){
-        matrixSize = 0;
-        setCells(cells, cellSize);
-    }
+	array<Cell, NUM_TOTAL_CELLS> Grid::cells;
 
-    Grid::~Grid(){
-        for(auto &i: species) free(i);
-        
-        free(ConnectivityMatrix);
-        free(indexMatrix);
-    }
+	Grid::Grid(){
+		matrixSize = 0;
+	}
 
-    void Grid::setCells(Cell cells[], size_t size){
-        copy(cells, cells + size, this->cells.begin());
-    }
+	Grid::~Grid(){
+		for(auto &i: species) free(i);
+	}
 
-    //recebe e compacta matriz de adjacencia
-    void Grid::setCellsConnectivity(Connectivity *adjMatrix, size_t size){
-        size_t pos=0;
+	void Grid::setCells(Cell cells[], size_t size){
+		copy(cells, cells + size, Grid::cells.begin());
+	}
 
-        for(size_t i=0; i<size; i++){
-            for(size_t j=0; j<size; j++){
-                //temos um problema: o valor de distancia geologica pode ser descartável, mas de outra não
-                if (adjMatrix[i * size + j].Geo == 0 && adjMatrix[i * size + j].River==0 && adjMatrix[i * size + j].Topo==0)
-                    continue;
+	//recebe e compacta matriz de adjacencia
+	void Grid::setCellsConnectivity(Connectivity *adjMatrix, size_t size){
+		size_t pos=0;
 
-                ConnectivityMatrix[pos] = adjMatrix[i * size + j];
-                indexMatrix[pos] = {i, j};
-                pos++;
-            }
-        }
-        matrixSize = pos;
-    }
+		for(size_t i=0; i<size; i++){
+			for(size_t j=0; j<size; j++){
+				//temos um problema: o valor de distancia geologica pode ser descartável, mas de outra não
+				if (adjMatrix[i * size + j].Geo == 0 && adjMatrix[i * size + j].River==0 && adjMatrix[i * size + j].Topo==0)
+					continue;
 
-    void Grid::addSpecies(Specie sp[], size_t sp_num){
-        int i = 0;
+				connectivityMatrix[pos] = adjMatrix[i * size + j];
+				indexMatrix[pos] = {i, j};
+				pos++;
+			}
+		}
+		matrixSize = pos;
+	}
 
-        while(i <= NUM_TOTAL_SPECIES && i < species.size() ){
-            species.back() = &sp[i];
-            i++;
-        }
-    }
+	void Grid::addSpecies(Specie sp[], size_t sp_num){
+		int i = 0;
 
-    void Grid::load_CellsClimate(FILE *minTemp_src, FILE *maxTemp_src, FILE *minPptn_src, FILE *maxPptn_src, FILE *NPP_src,
-                             size_t timeSteps)
-    {
+		while(i <= NUM_TOTAL_SPECIES && i < species.size() ){
+			species.back() = &sp[i];
+			i++;
+		}
+	}
 
-        fscanf(minTemp_src, "%*[^\n]\n"); //ignora a primeira linha
-        fscanf(maxTemp_src, "%*[^\n]\n"); //ignora a primeira linha
-        fscanf(minPptn_src, "%*[^\n]\n"); //ignora a primeira linha
-        fscanf(maxPptn_src, "%*[^\n]\n"); //ignora a primeira linha
-        fscanf(NPP_src, "%*[^\n]\n");     //ignora a primeira linha
+	void Grid::load_CellsClimate(FILE *minTemp_src, FILE *maxTemp_src, FILE *minPptn_src, FILE *maxPptn_src, FILE *NPP_src,
+							 size_t timeSteps)
+	{
 
-        for (size_t i = 0; i < NUM_TOTAL_CELLS; i++)
-        {
+		fscanf(minTemp_src, "%*[^\n]\n"); //ignora a primeira linha
+		fscanf(maxTemp_src, "%*[^\n]\n"); //ignora a primeira linha
+		fscanf(minPptn_src, "%*[^\n]\n"); //ignora a primeira linha
+		fscanf(maxPptn_src, "%*[^\n]\n"); //ignora a primeira linha
+		fscanf(NPP_src, "%*[^\n]\n");     //ignora a primeira linha
 
-            for (int j = timeSteps - 1; j >= 0; j--)
-            {
-                fscanf(minTemp_src, "%f", &(Cell::cell_climates[i][j].envValues[climVar::Temp].minimum));
-                fscanf(maxTemp_src, "%f", &(Cell::cell_climates[i][j].envValues[climVar::Temp].maximum));
-                fscanf(minPptn_src, "%f", &(Cell::cell_climates[i][j].envValues[climVar::Pptn].minimum));
-                fscanf(maxPptn_src, "%f", &(Cell::cell_climates[i][j].envValues[climVar::Pptn].maximum));
-                fscanf(NPP_src, "%f", &(Cell::cell_climates[i][j].NPP));
-            }
-            fscanf(minTemp_src, "%*[^\n]\n");
-            fscanf(maxTemp_src, "%*[^\n]\n");
-            fscanf(minPptn_src, "%*[^\n]\n");
-            fscanf(maxPptn_src, "%*[^\n]\n");
-            fscanf(NPP_src, "%*[^\n]\n");
-        }
-    }
+		for (size_t i = 0; i < NUM_TOTAL_CELLS; i++){
+
+			for (int j = timeSteps - 1; j >= 0; j--){
+				fscanf(minTemp_src, "%f", &(Cell::cell_climates[i][j].envValues[climVar::Temp].minimum));
+				fscanf(maxTemp_src, "%f", &(Cell::cell_climates[i][j].envValues[climVar::Temp].maximum));
+				fscanf(minPptn_src, "%f", &(Cell::cell_climates[i][j].envValues[climVar::Pptn].minimum));
+				fscanf(maxPptn_src, "%f", &(Cell::cell_climates[i][j].envValues[climVar::Pptn].maximum));
+				fscanf(NPP_src, "%f", &(Cell::cell_climates[i][j].NPP));
+			}
+			fscanf(minTemp_src, "%*[^\n]\n");
+			fscanf(maxTemp_src, "%*[^\n]\n");
+			fscanf(minPptn_src, "%*[^\n]\n");
+			fscanf(maxPptn_src, "%*[^\n]\n");
+			fscanf(NPP_src, "%*[^\n]\n");
+		}
+	}
+
+	void Grid::load_CellsConnectivity(FILE *geo_src, FILE *topo_src, FILE *rivers_src){
+		byte *geobuffer = NULL, *topobuffer = NULL, *riversbuffer = NULL;
+		size_t geoSize = 0, topoSize = 0, riversSize = 0;
+
+		int compressedMat_size = 0;
+
+		my_decompress(geo_src, &geobuffer, &geoSize);
+		my_decompress(topo_src, &topobuffer, &topoSize);
+		my_decompress(rivers_src, &riversbuffer, &riversSize);
+
+		int num_cells = ((int*)geobuffer)[0];
+		if( num_cells != ((int*)topobuffer)[0] || num_cells != ((int*)riversbuffer)[0]){
+			printf(LGTYEL("AVISO! numero de células nos arquivos de conectividade diferem. Utilizando o menor"));
+			num_cells = min(((int *)topobuffer)[0], num_cells);
+			num_cells = min(((int *)riversbuffer)[0], num_cells);
+		}
+		printf("Numero de células: %i", num_cells);
+		geobuffer += sizeof(int);       
+		topobuffer += sizeof(int);
+		riversbuffer += sizeof(int);
+
+
+
+		/* EXPLICAÇÃO:
+			Aqui eu aloco um bloco, de tamanho N, de elementos para a matriz compactada,
+			então, caso os elementos já alocados não sejam suficientes (numero de elementos < tamanho atual da matriz compactada),
+			é alocado um novo bloco de N elementos, e continua-se a criar a matriz compactada.
+			E assim se repete caso necessaŕio ( caso precise de mais elementos)
+
+			No final usa-se o realloc para deixar a memoria alocada igual ao tamanho da matriz, isto é, deixamos alocados apenas 
+			o necessário.
+		*/	
+
+		size_t block_size = (num_cells/5);		//tamanho do bloco (quantidade de elementos) que será realocado quando necessário
+		size_t blocksAllocated = 0;
+
+		blocksAllocated += 1;
+
+		connectivityMatrix = (Connectivity*)realloc(connectivityMatrix, (blocksAllocated * block_size) * sizeof(Connectivity) );
+		indexMatrix = (pair<int, int> *)realloc(indexMatrix, (blocksAllocated * block_size) * sizeof(pair<int, int>));
+
+
+		for(int i=0; i<num_cells; i++){
+			//lê/descarta int que possui  número de colunas
+			geobuffer += sizeof(int); topobuffer += sizeof(int); riversbuffer += sizeof(int);
+			float *geoConn = (float*)geobuffer;
+			float *topoConn = (float*)topobuffer;
+			float *riversConn = (float*)riversbuffer;
+
+			for(int j=0; j<num_cells; j++){
+				//se a conectividade de todos os tipos forem despreziveis
+				if(geoConn[j] < connThreshold && topoConn[j] < connThreshold && riversConn[j] < connThreshold)
+					continue;
+
+				// se o numero de elementos alocados for insuficiente, realoca mais um bloco
+				if( blocksAllocated*block_size < compressedMat_size){
+					blocksAllocated++;
+					connectivityMatrix = (Connectivity *)realloc(connectivityMatrix, (blocksAllocated * block_size) * sizeof(Connectivity));
+					indexMatrix = (pair<int, int> *)realloc(indexMatrix, (blocksAllocated * block_size) * sizeof(pair<int, int>));
+				}
+
+				connectivityMatrix[compressedMat_size] = {geoConn[j], topoConn[j], riversConn[j]};
+				indexMatrix[compressedMat_size] = {i, j};
+				compressedMat_size++;
+			}
+			
+		}
+
+		//realloca matriz compactada para tamanho certo/preciso
+		connectivityMatrix = (Connectivity *)realloc(connectivityMatrix, compressedMat_size * sizeof(Connectivity));
+		indexMatrix = (pair<int, int> *)realloc(indexMatrix, compressedMat_size * sizeof(pair<int, int>));
+	}
 }

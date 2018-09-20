@@ -15,19 +15,20 @@ namespace SimEco
 {
     class Grid{
 
+     public:
         array<Specie *, NUM_TOTAL_SPECIES> species;
         
-        array<Cell, NUM_TOTAL_CELLS> cells;
+        static array<Cell, NUM_TOTAL_CELLS> cells;
 
-        Connectivity *ConnectivityMatrix;   //matriz esparça compactada ( ver CUsparse)
-        pair<size_t, size_t> *indexMatrix;
-        size_t matrixSize;
+        static Connectivity *connectivityMatrix;   //matriz esparça compactada ( ver CUsparse)
+        static pair<int, int> *indexMatrix;
+        static int matrixSize;
 
  
-     public:
+
+        constexpr static float connThreshold = 0.001f;
 
         Grid();
-        Grid(Cell cells[], size_t cellSize);
         ~Grid();    
 
         void addSpecies(Specie sp[], size_t sp_num);
@@ -40,6 +41,8 @@ namespace SimEco
 
         static void load_CellsClimate(FILE *minTemp_src, FILE *maxTemp_src, FILE *minPptn_src, FILE *maxPptn_src, FILE *NPP_src,
                                 size_t timeSteps);
+
+        static void load_CellsConnectivity(FILE *geo_src, FILE *topo_src, FILE *rivers_src);
 
         // A continuous value of suitability (from N species at one cell) --> é a função que ja fizemos em GPU, por isso precisa dos dados do nicho das especies
         void getCellSuitabilities(array<NicheValue, NUM_TOTAL_SPECIES> &niches);
