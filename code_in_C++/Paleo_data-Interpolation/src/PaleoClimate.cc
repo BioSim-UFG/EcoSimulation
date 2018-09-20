@@ -69,14 +69,10 @@ namespace SimEco
 		}
 
 
-		//PLASIM_nLong = (int)(stream[0]);	//obtendo a quantidade da dados de Longitude
 		// ~BUG CORRIGIDO: antes, se o inteiro que queremos obter for maior que a capacidade de um Byte, teremos um valor errado
 		PLASIM_nLong = *((int*)stream);	//obtendo a quantidade da dados de Longitude
 		cur_pos += sizeof(int);
-		//PLASIMLongs = vector<float>(PLASIM_nLat);
 		PLASIMLongs.resize(PLASIM_nLong);
-		//memcpy(PLASIMLongs, stream+cur_pos, PLASIM_nLong * sizeof(float));	//lendo a longitude
-		//PLASIMLongs.assign( ((int*)stream)+1, ((int*)stream)+1+PLASIM_nLong);	// ~BUG CORRIGIDO:o assign estava sendo feito com interpretação de inteiro, que tem outra representação na CPU.
 		PLASIMLongs.assign((float *)(stream + cur_pos), ((float *)(stream + cur_pos)) + PLASIM_nLong); //lendo a longitude
 		cur_pos += PLASIM_nLong * sizeof(float);
 
@@ -92,7 +88,6 @@ namespace SimEco
 
 		// Original PLASIM data starts at 5.000.000 ya (5 million years ago, 5Mya), and may have different temporal resolutions (1ky or 100y)
 		// For this class, user can either specify time as an integer (in that case, the time step), or actual time (in that case, kya)
-		//PLASIMnTime = (int)(stream[cur_pos]);
 		PLASIMnTime = *((int *)(stream+cur_pos));
 		cur_pos += sizeof(int);
 
@@ -117,7 +112,6 @@ namespace SimEco
 		// Read PLASIM Maximum Temperature
 		PLASIMDataSATMax = vector<TSngMatrix>(PLASIM_nLong); //SATmax -> Surface Air Temperature Max ( maxima do ano -> verão)
 		for(int i=0; i<PLASIM_nLong; i++){
-			//PLASIMDataSATMax[i] = vector<TSngVector>(PLASIM_nLat);
 			PLASIMDataSATMax[i].resize(PLASIM_nLat);
 			for(int j=0; j<PLASIM_nLat; j++){
 				PLASIMDataSATMax[i][j] = vector<float>((float*)(stream+cur_pos), ((float*)(stream+cur_pos)) + PLASIMnTime);
