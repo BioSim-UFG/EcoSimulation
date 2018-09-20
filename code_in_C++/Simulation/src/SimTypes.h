@@ -18,8 +18,8 @@ namespace SimEco
     class Simulation;
 
     typedef struct{
-        float maximum;          // Annual maxima per cell, in a given time, for a given variable
         float minimum;          // Annual minima per cell, in a given time, for a given variable
+        float maximum;          // Annual maxima per cell, in a given time, for a given variable
     }EnvValue, NicheValue;
 
     //EnvValue se refere a celula, e NicheValue à especie

@@ -10,7 +10,6 @@
 using namespace SimEco;
 
 
-
 void carrega_founders(Specie founders[], FILE *src){
     Dispersion dispersionCapacity;
     array<NicheValue, NUM_ENV_VARS> niche;
@@ -26,6 +25,24 @@ void carrega_founders(Specie founders[], FILE *src){
 	}
 }
 
+void carrega_CellClimate(FILE *minTemp_src, FILE *maxTemp_src, FILE *minPptn_src, FILE *maxPptn_src, FILE *NPP_src, 
+						size_t num_cells, size_t timeSteps)
+{
+
+	fscanf(minTemp_src, "*[^\n]\n"); //ignora a primeira linha
+	fscanf(maxTemp_src, "*[^\n]\n"); //ignora a primeira linha
+	fscanf(minPptn_src, "*[^\n]\n"); //ignora a primeira linha
+	fscanf(maxPptn_src, "*[^\n]\n"); //ignora a primeira linha
+	fscanf(NPP_src, "*[^\n]\n"); //ignora a primeira linha
+
+	for(size_t i=0; i < num_cells; i++){
+
+		for(size_t j=timeSteps-1; j>=0; j--){
+			fscanf(minTemp_src, "%f", &(Cell::cell_climates[i][j].envValues[0].minimum) );
+		}
+    }
+}
+
 
 int main(int argc,char const *argv[]){
     Simulation *simulacao;
@@ -38,8 +55,6 @@ int main(int argc,char const *argv[]){
 
     /*  *************IMPORTANTE**************
         ~~~~~NOTA: O que percebi:
-        - o Arquivo 'DummyHex2566 - Coords and CLim.txt'  contém as coordenadas e variaveis ( temp e precp) do tempo zero
-            então podemos usar isso para obter as coordenadas (explicação do pq nao usar as variaveis a seguir).
 
         - o  arquivo 'xPLASIM.All3DMats.Single.Zip.Stream' contem as series climaticas temporais, 
         que ao passar por o programa de interpolação, gera os arquivos da pasta output, isto é:
@@ -55,11 +70,14 @@ int main(int argc,char const *argv[]){
 
     founders_input = fopen("../../input/SpecieData.txt", "r");
     carrega_founders(founders, founders_input);
+	fclose(founders_input);
 
     //falta carregar conectividade das celulas e serie temporal das celulas
+	int numero_de_passos = 51; // 50 tempos + tempo zero
+	//Cell::cell_climates = new Climate*[numero_de_passos];
+	Cell::cell_climates =(Climate**) malloc(sizeof(Climate*) * numero_de_passos);//  new Climate *[numero_de_passos];
 
-
-    grid = new Grid();
+	grid = new Grid();
     grid->addSpecies(founders, NUM_TOTAL_SPECIES);
 
 

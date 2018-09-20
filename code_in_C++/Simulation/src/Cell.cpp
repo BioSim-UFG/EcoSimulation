@@ -1,7 +1,9 @@
 #include "Cell.h"
 
+
 namespace SimEco
 {
+	Climate** Cell::cell_climates;
     //unsigned int Cell::totalCells = 0;
 
     Cell::Cell(){
