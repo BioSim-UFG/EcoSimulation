@@ -16,10 +16,10 @@ void carrega_founders(Specie founders[], FILE *src){
 
     fscanf(src, "%*[^\n]\n");  //pula primeira linha
 	for(int i=0; i<NUM_TOTAL_SPECIES; i++){
-
         //lê valores do nicho e de capacidade de dispersão
         fscanf(src, "%f %f %f %f", &niche[0].minimum, &niche[0].maximum, &niche[1].minimum, &niche[1].maximum);
         fscanf(src, "%f %f %f", &dispersionCapacity.Geo, &dispersionCapacity.Topo, &dispersionCapacity.River);
+        fscanf(src, "\n");
 
         founders[i] = *new Specie(dispersionCapacity, niche);
 	}
@@ -31,9 +31,8 @@ void carrega_founders(Specie founders[], FILE *src){
 int main(int argc,char const *argv[]){
     Simulation *simulacao;
     Grid *grid;
-
     Specie *founders = (Specie *)malloc(sizeof(Specie) * NUM_TOTAL_SPECIES); /*vetor de classes */
-    //FILE *historicoClimas_input;
+
     FILE *minTemp_src, *maxTemp_src, *minPptn_src, *maxPptn_src, *NPP_src;   //climas de todas as celulas em todos os tempos
     FILE *cellsConectivity_input;
     FILE *founders_input;
