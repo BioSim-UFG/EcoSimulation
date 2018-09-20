@@ -26,7 +26,7 @@ void carrega_founders(Specie founders[], FILE *src){
 }
 
 void carrega_CellClimate(FILE *minTemp_src, FILE *maxTemp_src, FILE *minPptn_src, FILE *maxPptn_src, FILE *NPP_src, 
-						size_t num_cells, size_t timeSteps)
+						size_t timeSteps)
 {
 
 	fscanf(minTemp_src, "*[^\n]\n"); //ignora a primeira linha
@@ -35,11 +35,20 @@ void carrega_CellClimate(FILE *minTemp_src, FILE *maxTemp_src, FILE *minPptn_src
 	fscanf(maxPptn_src, "*[^\n]\n"); //ignora a primeira linha
 	fscanf(NPP_src, "*[^\n]\n"); //ignora a primeira linha
 
-	for(size_t i=0; i < num_cells; i++){
+	for(size_t i=0; i < NUM_TOTAL_CELLS; i++){
 
 		for(size_t j=timeSteps-1; j>=0; j--){
-			fscanf(minTemp_src, "%f", &(Cell::cell_climates[i][j].envValues[0].minimum) );
+			fscanf(minTemp_src, "%f", &(Cell::cell_climates[i][j].envValues[climVar::Temp].minimum) );
+            fscanf(maxTemp_src, "%f", &(Cell::cell_climates[i][j].envValues[climVar::Temp].maximum) );
+            fscanf(minPptn_src, "%f", &(Cell::cell_climates[i][j].envValues[climVar::Pptn].minimum) );
+            fscanf(maxPptn_src, "%f", &(Cell::cell_climates[i][j].envValues[climVar::Pptn].maximum) );
+            fscanf(NPP_src, "%f", &(Cell::cell_climates[i][j].NPP) );
 		}
+        fscanf(minTemp_src, "\n");
+        fscanf(maxTemp_src, "\n");
+        fscanf(minPptn_src, "\n");
+        fscanf(maxPptn_src, "\n");
+        fscanf(NPP_src, "\n");
     }
 }
 
@@ -49,35 +58,37 @@ int main(int argc,char const *argv[]){
     Grid *grid;
 
     Specie *founders = (Specie *)malloc(sizeof(Specie) * NUM_TOTAL_SPECIES); /*vetor de classes */
-    FILE *historicoClimas_input;
+    //FILE *historicoClimas_input;
+    FILE *minTemp_src, *maxTemp_src, *minPptn_src, *maxPptn_src, *NPP_src;   //climas de todas as celulas em todos os tempos
     FILE *cellsConectivity_input;
     FILE *founders_input;
-
-    /*  *************IMPORTANTE**************
-        ~~~~~NOTA: O que percebi:
-
-        - o  arquivo 'xPLASIM.All3DMats.Single.Zip.Stream' contem as series climaticas temporais, 
-        que ao passar por o programa de interpolação, gera os arquivos da pasta output, isto é:
-            DummyHex2566 - Output - MaxPPTN.txt, 
-            DummyHex2566 - Output - MinPPTN.txt,
-            DummyHex2566 - Output - MaxTemp.txt,
-            DummyHex2566 - Output - MinTemp.txt,
-            DummyHex2566 - Output - NPP.txt
-
-        que poderão ser usadas para as varivaeis climaticas das celulas
-
-    */
 
     founders_input = fopen("../../input/SpecieData.txt", "r");
     carrega_founders(founders, founders_input);
 	fclose(founders_input);
 
-    //falta carregar conectividade das celulas e serie temporal das celulas
-	int numero_de_passos = 51; // 50 tempos + tempo zero
-	//Cell::cell_climates = new Climate*[numero_de_passos];
-	Cell::cell_climates =(Climate**) malloc(sizeof(Climate*) * numero_de_passos);//  new Climate *[numero_de_passos];
 
-	grid = new Grid();
+    /* Inicializando Células */
+
+	int numero_de_passos = 51; // 50 tempos + tempo zero
+	Cell::cell_climates = new Climate*[numero_de_passos];
+
+    //falta carregar conectividade das celulas e serie temporal das celulas
+    minTemp_src = fopen("../../output/DummyHex2566 - Output - MinTemp.txt", "r");
+    maxTemp_src = fopen("../../output/DummyHex2566 - Output - MaxTemp.txt", "r");
+    minPptn_src = fopen("../../output/DummyHex2566 - Output - MinPPTN.txt", "r");
+    maxPptn_src = fopen("../../output/DummyHex2566 - Output - MaxPPTN.txt", "r");
+    NPP_src = fopen("../../output/DummyHex2566 - Output - NPP.txt", "r");
+
+    carrega_CellClimate(minTemp_src, maxTemp_src, minPptn_src ,maxPptn_src, NPP_src, numero_de_passos);
+
+    fclose(minTemp_src);    fclose(maxTemp_src);
+	fclose(minPptn_src);    fclose(maxPptn_src);
+    fclose(NPP_src);
+    
+    /*Inicializando Grid */
+
+    grid = new Grid();
     grid->addSpecies(founders, NUM_TOTAL_SPECIES);
 
 

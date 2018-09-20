@@ -5,7 +5,7 @@
 #include "Cell.h"
 #include <utility>
 
-#define NUM_TOTAL_CELLS 20
+#define NUM_TOTAL_CELLS 2566
 #define NUM_TOTAL_SPECIES 1
 
 

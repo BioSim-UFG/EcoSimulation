@@ -24,9 +24,11 @@ namespace SimEco
 
     //EnvValue se refere a celula, e NicheValue à especie
     typedef struct{
-        array<EnvValue, NUM_ENV_VARS> envValues;    // Temperature and precipitation -> max and min for both
+        array<EnvValue, NUM_ENV_VARS> envValues;    // Temperature and precipitation -> min and max for both
         float NPP;
     }Climate;
+
+    enum climVar{Temp=0, Pptn=1};
 
     typedef struct{
         float Geo;              // Degree of connectivity (1 / distance) between this cell and all other cells, based on geographic distance
