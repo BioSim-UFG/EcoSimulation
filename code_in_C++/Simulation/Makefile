@@ -27,19 +27,19 @@ DEPS = $(patsubst %,$(SRCDIR)/%,$(_DEPS))
 #target .c files
 $(BDIR)/%.o: $(SRCDIR)/%.c $(DEPS)
 	@$(CPPC) $< -c -o $@ $(CFLAGS) $(EXTFLG)
-	@echo Compiling $(subst $(SRCDIR)/,'',$<)
+	@echo "${GREEN}Compiling ${RED}$(subst $(SRCDIR)/,'',$<) ${NC}"
 #target .cpp files
 $(BDIR)/%.o: $(SRCDIR)/%.cpp $(DEPS)
 	@$(CPPC) $< -c -o $@ $(CFLAGS) $(EXTFLG)
-	@echo "Compiling ${RED}$(subst $(SRCDIR)/,,$<) ${NC}"
+	@echo "${GREEN}Compiling ${RED}$(subst $(SRCDIR)/,,$<) ${NC}"
 #target .cc files
 $(BDIR)/%.o: $(SRCDIR)/%.cc $(DEPS)
 	@$(CPPC) $< -c -o $@ $(CFLAGS) $(EXTFLG)
-	@echo "Compiling ${RED}$(subst $(SRCDIR)/,'',$<) ${NC}"
+	@echo "${GREEN}Compiling ${RED}$(subst $(SRCDIR)/,'',$<) ${NC}"
 #target .cu files
 $(BDIR)/%.o: $(SRCDIR)/%.cu $(DEPS)
 	@$(NVC) $< -c -o $@ $(NVFLAGS) $(EXTFLG)
-	@echo "Compiling ${PURPLE}$(subst $(SRCDIR)/,'',$<) ${NC}"
+	@echo "${GREEN}Compiling ${PURPLE}$(subst $(SRCDIR)/,'',$<) ${NC}"
 
 
 # normal compiling mode
@@ -64,7 +64,7 @@ opt1: EXTFLG = -O1 -march=native -Wno-unused-result
 opt1: ECHOMSG = "fast, optimized compiling mode level 1\n"
 opt1: default
 
-debug: EXTFLG = -g -fno-inline-functions -DGLIBCXX_DEBUG
+debug: EXTFLG = -ggdb3 -O0 -fno-inline-functions -DGLIBCXX_DEBUG
 debug: ECHOMSG = "Debugging compiling mode \n"
 debug: default
 

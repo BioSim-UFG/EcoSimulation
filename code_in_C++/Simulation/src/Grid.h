@@ -38,6 +38,9 @@ namespace SimEco
         void setCells(Cell celulas[], size_t size);    //seta as celulas
         void setCellsConnectivity(Connectivity *adjMatrix, size_t size);    //passa a matriz de adjacencia, e lá dentro compacta ela
 
+        static void load_CellsClimate(FILE *minTemp_src, FILE *maxTemp_src, FILE *minPptn_src, FILE *maxPptn_src, FILE *NPP_src,
+                                size_t timeSteps);
+
         // A continuous value of suitability (from N species at one cell) --> é a função que ja fizemos em GPU, por isso precisa dos dados do nicho das especies
         void getCellSuitabilities(array<NicheValue, NUM_TOTAL_SPECIES> &niches);
         // A continuous value of suitability from one specie at N cells

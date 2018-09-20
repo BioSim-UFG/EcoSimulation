@@ -25,32 +25,7 @@ void carrega_founders(Specie founders[], FILE *src){
 	}
 }
 
-void carrega_CellClimate(FILE *minTemp_src, FILE *maxTemp_src, FILE *minPptn_src, FILE *maxPptn_src, FILE *NPP_src, 
-						size_t timeSteps)
-{
 
-	fscanf(minTemp_src, "*[^\n]\n"); //ignora a primeira linha
-	fscanf(maxTemp_src, "*[^\n]\n"); //ignora a primeira linha
-	fscanf(minPptn_src, "*[^\n]\n"); //ignora a primeira linha
-	fscanf(maxPptn_src, "*[^\n]\n"); //ignora a primeira linha
-	fscanf(NPP_src, "*[^\n]\n"); //ignora a primeira linha
-
-	for(size_t i=0; i < NUM_TOTAL_CELLS; i++){
-
-		for(size_t j=timeSteps-1; j>=0; j--){
-			fscanf(minTemp_src, "%f", &(Cell::cell_climates[i][j].envValues[climVar::Temp].minimum) );
-            fscanf(maxTemp_src, "%f", &(Cell::cell_climates[i][j].envValues[climVar::Temp].maximum) );
-            fscanf(minPptn_src, "%f", &(Cell::cell_climates[i][j].envValues[climVar::Pptn].minimum) );
-            fscanf(maxPptn_src, "%f", &(Cell::cell_climates[i][j].envValues[climVar::Pptn].maximum) );
-            fscanf(NPP_src, "%f", &(Cell::cell_climates[i][j].NPP) );
-		}
-        fscanf(minTemp_src, "\n");
-        fscanf(maxTemp_src, "\n");
-        fscanf(minPptn_src, "\n");
-        fscanf(maxPptn_src, "\n");
-        fscanf(NPP_src, "\n");
-    }
-}
 
 
 int main(int argc,char const *argv[]){
@@ -63,41 +38,74 @@ int main(int argc,char const *argv[]){
     FILE *cellsConectivity_input;
     FILE *founders_input;
 
+	/*******INICIALIZANDO ESPECIES FOUNDERS*********/
+
+    printf(GRN("Abrindo SpecieData.txt ..."));
     founders_input = fopen("../../input/SpecieData.txt", "r");
     if (founders_input == NULL){
-        perror(RED("Nao foi possivel abrir SpecieData.txt"));
+        perror(RED("Erro ao abrir SpecieData.txt"));
         exit(1);    
     }
+    printf(GRN(" OK!\n"));
+
+    printf(GRN("Lendo dados dos Founders ..."));
     carrega_founders(founders, founders_input);
-	fclose(founders_input);
+    printf(GRN(" OK!\n"));
+    fclose(founders_input);
 
+    /*****************INICIALIZANDO GRID *****************/
 
-    /* Inicializando Células */
+        /**** lendo Serie Climatica das Células ****/
 
-	int numero_de_passos = 51; // 50 tempos + tempo zero
-	Cell::cell_climates = new Climate*[numero_de_passos];
-    for(size_t i=0; i<numero_de_passos; i++){
-        Cell::cell_climates[i] = new Climate;
+    int numero_de_passos = 51; // 50 tempos + tempo zero
+	Cell::cell_climates = new Climate*[NUM_TOTAL_CELLS];
+    for(size_t i=0; i<NUM_TOTAL_CELLS; i++){
+        Cell::cell_climates[i] = new Climate[numero_de_passos];
     }
 
     //falta carregar conectividade das celulas e serie temporal das celulas
-    minTemp_src = fopen("../../output/DummyHex2566 - Output - MinTemp.txt", "r");
-    maxTemp_src = fopen("../../output/DummyHex2566 - Output - MaxTemp.txt", "r");
-    minPptn_src = fopen("../../output/DummyHex2566 - Output - MinPPTN.txt", "r");
-    maxPptn_src = fopen("../../output/DummyHex2566 - Output - MaxPPTN.txt", "r");
-    NPP_src = fopen("../../output/DummyHex2566 - Output - NPP.txt", "r");
 
-    carrega_CellClimate(minTemp_src, maxTemp_src, minPptn_src ,maxPptn_src, NPP_src, numero_de_passos);
+    printf(GRN("Abrindo arquivos de serie Climatica ..."));
+    minTemp_src = fopen("../../output/DummyHex2566 - Output - MinTemp.txt", "r");
+    if(minTemp_src == NULL){
+        perror(RED("Erro ao abrir output/DummyHex2566 - Output - MinTemp.txt"));
+        exit(1);
+    }
+    maxTemp_src = fopen("../../output/DummyHex2566 - Output - MaxTemp.txt", "r");
+    if(maxTemp_src == NULL){
+        perror(RED("Erro ao abrir output/DummyHex2566 - Output - MaxTemp.txt"));
+        exit(1);
+    }
+    minPptn_src = fopen("../../output/DummyHex2566 - Output - MinPPTN.txt", "r");
+    if(minPptn_src == NULL){
+        perror(RED("Erro ao abrir output/DummyHex2566 - Output - MinPPTN.txt"));
+        exit(1);
+    }
+    maxPptn_src = fopen("../../output/DummyHex2566 - Output - MaxPPTN.txt", "r");
+    if(maxPptn_src == NULL){
+        perror(RED("Erro ao abrir output/DummyHex2566 - Output - MaxPPTN.txt"));
+        exit(1);
+    }
+    NPP_src = fopen("../../output/DummyHex2566 - Output - NPP.txt", "r");
+    if(NPP_src == NULL){
+        perror(RED("Erro ao abrir output/DummyHex2566 - Output - NPP.txt"));
+        exit(1);
+    }
+
+    printf(GRN(" OK!\n"));
+    Grid::load_CellsClimate(minTemp_src, maxTemp_src, minPptn_src, maxPptn_src, NPP_src, numero_de_passos);
 
     fclose(minTemp_src);    fclose(maxTemp_src);
 	fclose(minPptn_src);    fclose(maxPptn_src);
     fclose(NPP_src);
     
-    /*Inicializando Grid */
+    
 
     grid = new Grid();
     grid->addSpecies(founders, NUM_TOTAL_SPECIES);
 
+
+	/*********INICIANDO SIMULAÇÃO***********/
 
     simulacao = new Simulation(*grid, founders);
     
@@ -106,6 +114,13 @@ int main(int argc,char const *argv[]){
 
 
     printf(LGTGRN("Simulação Criada\n"));
+
+
+    delete[] Cell::cell_climates;
+    delete grid;
+    delete simulacao;
+//possivel free(founders); --> depende se vai fazer isso na grid;
+    free(founders);
     
 
     return 0;

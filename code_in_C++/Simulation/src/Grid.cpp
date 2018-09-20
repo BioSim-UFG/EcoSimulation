@@ -12,7 +12,12 @@ namespace SimEco{
         setCells(cells, cellSize);
     }
 
-    Grid::~Grid(){}
+    Grid::~Grid(){
+        for(auto &i: species) free(i);
+        
+        free(ConnectivityMatrix);
+        free(indexMatrix);
+    }
 
     void Grid::setCells(Cell cells[], size_t size){
         copy(cells, cells + size, this->cells.begin());
@@ -39,10 +44,38 @@ namespace SimEco{
     void Grid::addSpecies(Specie sp[], size_t sp_num){
         int i = 0;
 
-        while(i != sp_num || species.size() <= NUM_TOTAL_SPECIES ){
+        while(i <= NUM_TOTAL_SPECIES && i < species.size() ){
             species.back() = &sp[i];
             i++;
         }
     }
 
+    void Grid::load_CellsClimate(FILE *minTemp_src, FILE *maxTemp_src, FILE *minPptn_src, FILE *maxPptn_src, FILE *NPP_src,
+                             size_t timeSteps)
+    {
+
+        fscanf(minTemp_src, "%*[^\n]\n"); //ignora a primeira linha
+        fscanf(maxTemp_src, "%*[^\n]\n"); //ignora a primeira linha
+        fscanf(minPptn_src, "%*[^\n]\n"); //ignora a primeira linha
+        fscanf(maxPptn_src, "%*[^\n]\n"); //ignora a primeira linha
+        fscanf(NPP_src, "%*[^\n]\n");     //ignora a primeira linha
+
+        for (size_t i = 0; i < NUM_TOTAL_CELLS; i++)
+        {
+
+            for (int j = timeSteps - 1; j >= 0; j--)
+            {
+                fscanf(minTemp_src, "%f", &(Cell::cell_climates[i][j].envValues[climVar::Temp].minimum));
+                fscanf(maxTemp_src, "%f", &(Cell::cell_climates[i][j].envValues[climVar::Temp].maximum));
+                fscanf(minPptn_src, "%f", &(Cell::cell_climates[i][j].envValues[climVar::Pptn].minimum));
+                fscanf(maxPptn_src, "%f", &(Cell::cell_climates[i][j].envValues[climVar::Pptn].maximum));
+                fscanf(NPP_src, "%f", &(Cell::cell_climates[i][j].NPP));
+            }
+            fscanf(minTemp_src, "%*[^\n]\n");
+            fscanf(maxTemp_src, "%*[^\n]\n");
+            fscanf(minPptn_src, "%*[^\n]\n");
+            fscanf(maxPptn_src, "%*[^\n]\n");
+            fscanf(NPP_src, "%*[^\n]\n");
+        }
+    }
 }
