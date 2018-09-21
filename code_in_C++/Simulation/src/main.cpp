@@ -8,6 +8,7 @@
 
 
 #include <iostream>
+#include <chrono>
 
 using namespace SimEco;
 
@@ -39,15 +40,15 @@ int main(int argc,char const *argv[]){
 	FILE *geoConectivity_src, *topoConectivity_src, *riversConectivity_src;
 	FILE *founders_input;
 
-	/*******INICIALIZANDO ESPECIES FOUNDERS*********/
 
-	//printf(GRN("Abrindo SpecieData.txt ..."));
+	/*******INICIALIZANDO ESPECIES FOUNDERS*********/
+	auto start_clock = chrono::high_resolution_clock::now();
+	
 	founders_input = fopen("../../input/SpecieData.txt", "r");
 	if (founders_input == NULL){
 		perror(RED("Erro ao abrir SpecieData.txt"));
 		exit(1);    
 	}
-	//printf(GRN(" OK!\n"));
 
 	printf(GRN("Lendo especies Founders ..."));
 	carrega_founders(founders, founders_input);
@@ -64,9 +65,7 @@ int main(int argc,char const *argv[]){
 		Cell::cell_climates[i] = new Climate[numero_de_passos];
 	}
 
-	//falta carregar conectividade das celulas
 
-	//printf(GRN("Abrindo arquivos de serie Climatica ..."));
 	minTemp_src = fopen("../../output/DummyHex2566 - Output - MinTemp.txt", "r");
 	if(minTemp_src == NULL){
 		perror(RED("Erro ao abrir output/DummyHex2566 - Output - MinTemp.txt"));
@@ -92,7 +91,6 @@ int main(int argc,char const *argv[]){
 		perror(RED("Erro ao abrir output/DummyHex2566 - Output - NPP.txt"));
 		exit(1);
 	}
-	//printf(GRN(" OK!\n"));
 
 	printf(GRN("Lendo serie Climatica ..."));
 	int celulas_lidas1 = Grid::load_CellsClimate(minTemp_src, maxTemp_src, minPptn_src, maxPptn_src, NPP_src, numero_de_passos);
@@ -152,6 +150,12 @@ int main(int argc,char const *argv[]){
 
 	printf(LGTGRN("Simulação Criada\n"));
 
+	auto finish_clock = chrono::high_resolution_clock::now();
+
+	std::chrono::duration<double> elapsed = finish_clock - start_clock;
+
+
+	cout<<"Tempo total: "<<BOLD( WHT( << elapsed.count() <<" s\n"));
 
 	delete[] Cell::cell_climates;
 	delete grid;
