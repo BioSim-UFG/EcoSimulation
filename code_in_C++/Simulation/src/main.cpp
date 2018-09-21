@@ -124,7 +124,7 @@ int main(int argc,char const *argv[]){
 		}
 		Grid::cellsSize = num_cells;
 
-		int i=Grid::matrixSize-1;
+		u_int i=Grid::matrixSize-1;
 		while (Grid::indexMatrix[i].i > num_cells-1)	//acha o índice  da ultima linha da matriz, que é menor que num_cells
 			i--;
 		

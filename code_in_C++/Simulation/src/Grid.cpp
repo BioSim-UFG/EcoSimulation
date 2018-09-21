@@ -11,7 +11,7 @@ namespace SimEco{
 
 	Connectivity *Grid::connectivityMatrix = NULL;
 	matIdx_2D *Grid::indexMatrix = NULL;
-	int Grid::matrixSize = 0;
+	u_int Grid::matrixSize = 0;
 
 	Cell *Grid::cells;
 	int Grid::cellsSize = 0;
@@ -29,14 +29,14 @@ namespace SimEco{
 		cellsSize = size;
 	}
 
-	//recebe e compacta matriz de adjacencia
+	//recebe e compacta matriz de adjacencia		//depois atualizar e deixar como o load_cellsConnectivy()
 	void Grid::setCellsConnectivity(Connectivity *adjMatrix, size_t size){
-		int pos=0;
+		u_int pos=0;
 
 		for(int i=0; i<size; i++){
 			for(int j=0; j<size; j++){
 				//temos um problema: o valor de distancia geologica pode ser descartável, mas de outra não
-				if (adjMatrix[i * size + j].Geo == 0 && adjMatrix[i * size + j].River==0 && adjMatrix[i * size + j].Topo==0)
+				if (adjMatrix[i*size + j].Geo < connThreshold && adjMatrix[i*size + j].River < connThreshold && adjMatrix[i*size + j].Topo < connThreshold)
 					continue;
 
 				connectivityMatrix[pos] = adjMatrix[i * size + j];
@@ -94,7 +94,7 @@ namespace SimEco{
 		byte *geobuffer = NULL, *topobuffer = NULL, *riversbuffer = NULL;
 		size_t geoSize = 0, topoSize = 0, riversSize = 0;
 
-		int compressedMat_size = 0;
+		u_int compressedMat_size = 0;
 		
 		printf("\n");
 		printf(BLU("\tDescomprimindo Streams\n"));

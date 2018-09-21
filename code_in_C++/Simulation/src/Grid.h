@@ -25,7 +25,7 @@ namespace SimEco
 
         static Connectivity *connectivityMatrix;   //matriz esparça compactada ( ver CUsparse)
         static  matIdx_2D *indexMatrix;
-        static int matrixSize;
+        static u_int matrixSize;      //já avisando, 50k x 50k dá um valor maior que MAX_INT, mas unsinged int aguenta
 
  
 
