@@ -1,20 +1,24 @@
 #include "Simulation.h"
 #include "color.h"
+#include "Grid.h"
 #include <iostream>
 #include <cmath>
 #include <memory>
 namespace SimEco{
-	Simulation::Simulation(Grid &grid, Specie founders[], uint foundersPosition[], uint founders_size): _grid(grid), founders(founders), foundersSize(founders_size){
+	Simulation::Simulation(Grid &grid): _grid(grid)/*, founders(founders), foundersSize(founders_size)*/{
 		
 		//aqui faz o trabalho de preparação da simulação, usando a(s) especie(s) fundadora(s)
 
-		//coloca os founders em suas celulas
-		grid.addSpecies(founders, foundersPosition, NUM_TOTAL_SPECIES);
+		cout<<BLU("\tCalculando tempo ZERO\n"); fflush(stdout);
+		for(uint i=0; i<_grid.speciesSize; i++){
+			processFounder_timeZero(_grid.species[i]);
 
-		cout<<BLU("\tCalculando tempo ZERO\n");
-		for(uint i=0; i<founders_size; i++){
-			processFounder_timeZero(founders[i]);
+			//olhando o resultado
+			for(uint j=0; i<_grid.species[i].celula_IdxSize; j++){
+				printf("especie %u - ocupou celula %u\n",i, _grid.species[i].celula_Idx[j]);
+			}
 		}
+
 
 	}
 
@@ -28,33 +32,21 @@ namespace SimEco{
 		float *fitness = calcSpecieFitness(founder, 0);
 
 		//agora, usando os fitness e as conectividades, espalhar o founder pela grid
-		uint last_pos=0;
 
-		//acha a posição da celula do founder
-
-
-
-
-		for(uint cellIdx=0; cellIdx<_grid.cellsSize; cellIdx++){
-
-			//uint i=last_pos;
-			const MatIdx_2D *idxMat = _grid.indexMatrix;
-			//enquanto estiver na linha (da matriz compactada) correspondente a linha 'cellIdx'() da matriz de adjacencia)
-			while( idxMat[last_pos].i <= cellIdx ){
-				//evitando celulas repetidas (pegando os elementos que seriam depois da diagonal da matriz)
-				if(idxMat[last_pos].j <= idxMat[last_pos].i)
-					continue;
-
-				uint col = idxMat[last_pos].j;
-				//verifica se o founder pode ir pra célula do índice 'col'
-
-				//printf("adicionando na celula %u", col);
-				if( fitness[col] > 0.0f )
-					_grid.cells[col].addSpecie(&founder);
-
-				last_pos++;
+		const MatIdx_2D *idxMat = Grid::indexMatrix;
+		uint zipMatPos = Grid::mapLine_to_Compact_Idx[founder.celula_Idx[0]];
+		
+		//enquanto estiver na linha (da matriz compactada) correspondente a linha 'cellIdx'() da matriz de adjacencia)
+		uint lineValue = idxMat[zipMatPos].i;
+		while(idxMat[zipMatPos].i == lineValue){
+			
+			//ocupa essa celula também
+			if(idxMat[zipMatPos].i != idxMat[zipMatPos].j  && fitness[idxMat[zipMatPos].j] > 0.0f){
+				founder.celula_Idx = (uint *)realloc(founder.celula_Idx, sizeof(uint) * (founder.celula_IdxSize+1));
+				founder.celula_Idx[founder.celula_IdxSize++] = idxMat[zipMatPos].j;
 			}
 
+			zipMatPos++;
 		}
 	}
 

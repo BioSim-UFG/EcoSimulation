@@ -16,26 +16,27 @@ using namespace SimEco;
 void carrega_founders(Specie founders[], FILE *src){
 	Dispersion dispersionCapacity;
 	array<NicheValue, NUM_ENV_VARS> niche;
+	uint cellIdx;
 
 	fscanf(src, "%*[^\n]\n");  //pula primeira linha
-	for(int i=0; i<NUM_TOTAL_SPECIES; i++){
+	for(int i=0; i<NUM_FOUNDERS; i++){
 		//lê valores do nicho e de capacidade de dispersão
 		fscanf(src, "%f %f %f %f", &niche[0].minimum, &niche[0].maximum, &niche[1].minimum, &niche[1].maximum);
 		fscanf(src, "%f %f %f", &dispersionCapacity.Geo, &dispersionCapacity.Topo, &dispersionCapacity.River);
+		fscanf(src, "%u", &cellIdx);
 		fscanf(src, "\n");
 
-		founders[i] = *new Specie(dispersionCapacity, niche);
+		founders[i] = *new Specie(niche, dispersionCapacity, cellIdx);
 	}
 }
-
-
 
 
 int main(int argc,char const *argv[]){
 	Simulation *simulacao;
 	Grid *grid;
 	Cell *celulas;	/* vetor de celulas */
-	Specie *founders = new Specie[NUM_TOTAL_SPECIES]; /*vetor de classes */
+	//Specie *founders = new Specie[NUM_FOUNDERS]; /*vetor de classes */
+	Specie *founders = (Specie *)malloc(sizeof(Specie) * NUM_FOUNDERS);
 
 	FILE *minTemp_src, *maxTemp_src, *minPptn_src, *maxPptn_src, *NPP_src;   //climas de todas as celulas em todos os tempos
 	FILE *geoConectivity_src, *topoConectivity_src, *riversConectivity_src;
@@ -119,9 +120,10 @@ int main(int argc,char const *argv[]){
 
 		printf(" novo numero de celulas = %u\n", num_cells);
 		//remove as celulas extras
-		for(int i=num_cells-1; i < celulas_lidas1-1; i++){
+
+		/*for(int i=num_cells-1; i < celulas_lidas1-1; i++){
 			delete &Grid::cells[i];
-		}
+		}*/
 
 		u_int i=Grid::matrixSize-1;
 		while (Grid::indexMatrix[i].i > num_cells-1)	//acha o índice  da ultima linha da matriz, que é menor que num_cells
@@ -134,21 +136,22 @@ int main(int argc,char const *argv[]){
 			Grid::matrixSize = i;
 		}
 	}
+
 	
 	/*********INICIANDO SIMULAÇÃO***********/
-	grid = new Grid(num_cells);
+	grid = new Grid(num_cells, NUM_FOUNDERS);
+
+	//coloca os founders em suas celulas
+	grid->setFounders(founders, NUM_FOUNDERS);
 
 	printf(LGTGRN("Iniciando Simulação \n")); fflush(stdout);
-	uint speciePositions[NUM_TOTAL_SPECIES] = {5};
-	simulacao = new Simulation(*grid, founders, speciePositions, NUM_TOTAL_SPECIES);
-	
+	simulacao = new Simulation(*grid);
 
 
 	auto finish_clock = chrono::high_resolution_clock::now();
 	std::chrono::duration<double> elapsed = finish_clock - start_clock;
 
 	cout<<"Tempo total: "<<BOLD( WHT( << elapsed.count() <<" s\n"));
-
 
 
 	delete[] Cell::cell_climates;

@@ -17,8 +17,8 @@ namespace SimEco{
 
       private:
 		Grid &_grid;		//referencia para a grid
-		Specie *founders;	//referencia para array de especies ( fundadoras nesse caso)
-        uint foundersSize;
+		//Specie *founders;	//referencia para array de especies ( fundadoras nesse caso)
+        //uint foundersSize;
 
 
         constexpr static int nSteps = 5; //precisão do poligono / número de pontos no poligono
@@ -34,9 +34,7 @@ namespace SimEco{
         void NicheCurve(const float MinTol, const float MaxTol, const float MinEnv, const float MaxEnv, poly_t &NichePoly);
 
       public:
-        Simulation(Grid &grid, Specie *founders, uint foundersPosition[], uint founders_size);
-
-        
+        Simulation(Grid &grid);        
     
     };
 

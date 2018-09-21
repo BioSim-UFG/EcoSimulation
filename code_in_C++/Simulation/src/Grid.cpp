@@ -12,25 +12,27 @@ namespace SimEco{
 
 	Connectivity *Grid::connectivityMatrix = NULL;
 	MatIdx_2D *Grid::indexMatrix = NULL;
+	map<uint, uint> Grid::mapLine_to_Compact_Idx;
 	u_int Grid::matrixSize = 0;
 
-	Cell *Grid::cells;
+	//Cell *Grid::cells;
 	int Grid::cellsSize = 0;
 
-	Grid::Grid(uint num_cells){
-		matrixSize = 0;
-		cells = new Cell[num_cells];
+	Grid::Grid(uint num_cells, uint num_species){
+		//cells = new Cell[num_cells];
 		cellsSize = num_cells;
+		species = (Specie *)malloc( sizeof(Specie) * num_species );
+		speciesSize = num_species;
 	}
 
 	Grid::~Grid(){
 		//for(auto &i: species) free(i);
 	}
 
-	void Grid::setCells(Cell *cells, size_t size){
+	/*void Grid::setCells(Cell *cells, size_t size){
 		memcpy(Grid::cells, cells, sizeof(Cell)*size);
 		cellsSize = size;
-	}
+	}*/
 
 	//recebe e compacta matriz de adjacencia		//depois atualizar e deixar como o load_cellsConnectivy()
 	void Grid::setCellsConnectivity(Connectivity *adjMatrix, size_t size){
@@ -50,32 +52,24 @@ namespace SimEco{
 		matrixSize = pos;
 	}
 
-	Cell* Grid::getCellat(uint index){
+	/*Cell* Grid::getCellat(uint index){
 		return index<cellsSize ? &cells[index] : nullptr;
-	}
+	}*/
 
-	void Grid::addSpecies(Specie sp[], uint positions[] ,size_t sp_size){
+	void Grid::setFounders(Specie sp[], size_t sp_size){
 		int i = 0;
-		Cell &celula = this->cells[positions[i]];
-
-		//já é alocado no construtor da célula a capacidade máxima
-		//celula.speciesInside = (Specie **)realloc(celula.speciesInside, (celula.numSpecies+sp_size) * sizeof(Specie *));
-		if(celula.numSpecies+sp_size > Cell::MaxCapacity){
-			printf("Capacidade atingida! func addSpecies()"); fflush(stdout);
-			void *stack[15];
-			size_t size = backtrace(stack, 15);
-			char **result = backtrace_symbols(stack, size);
-			string msg;
-			for(int i=0; i<size; i++)
-				msg.append( string(result[i])+"\n");
-			throw msg;
+		//Cell &celula = this->cells[positions[i]];
+		if(sp_size > speciesSize){
+			species = (Specie *)realloc(species, sizeof(Specie) * sp_size);
+			speciesSize = sp_size;
 		}
-		while(i <= NUM_TOTAL_SPECIES && i < species.size() ){
-			*species.back() = sp[i];
-			celula.speciesInside[celula.numSpecies+i] = &sp[i];	//coloca o ponteiro da especie dentro do array 'speciesInside' da celula
+
+		while(i<sp_size){
+			//celula.speciesInside[celula.numSpecies+i] = &sp[i];	//coloca o ponteiro da especie dentro do array 'speciesInside' da celula
+			species[i] = sp[i];
 			i++;
 		}
-		celula.numSpecies += sp_size;
+		//celula.numSpecies += sp_size;
 	}
 
 	int Grid::load_CellsClimate(FILE *minTemp_src, FILE *maxTemp_src, FILE *minPptn_src, FILE *maxPptn_src, FILE *NPP_src,
@@ -175,6 +169,7 @@ namespace SimEco{
 
 				connectivityMatrix[compressedMat_size] = {geoConn[j], topoConn[j], riversConn[j]};
 				indexMatrix[compressedMat_size] = {i, j};
+				mapLine_to_Compact_Idx.insert({(uint)i, (uint)compressedMat_size});
 				compressedMat_size++;
 			}
 

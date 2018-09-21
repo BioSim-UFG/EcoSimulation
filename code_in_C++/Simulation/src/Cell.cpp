@@ -7,13 +7,12 @@ namespace SimEco
 	//unsigned int Cell::totalCells = 0;
 
 	Cell::Cell(){
-		//id = totalCells++;        //adicionar inicialização
-		speciesInside = NULL;
-		numSpecies = 0;
-		speciesInside = (Specie **)malloc(sizeof(Specie *) * Cell::MaxCapacity);
+		//speciesInside = NULL;
+		//numSpecies = 0;
+		//speciesInside = (Specie **)malloc(sizeof(Specie *) * Cell::MaxCapacity);
 	}
 	Cell::~Cell(){ /*--totalCells;*/ }
-
+	/*
 	void Cell::addSpecie(Specie *specie){
 		if(numSpecies >= MaxCapacity){
 			printf("Capacidade atingida! func addSpecie()"); fflush(stdout);
@@ -26,7 +25,7 @@ namespace SimEco
 			throw __throw_out_of_range;
 		}
 		speciesInside[numSpecies++] = specie;
-	}
+	}*/
 
 	// A continuous value of suitability, é a função que ja fizemos em GPU
 	/*Cell::getLocalSuitabilities(){
