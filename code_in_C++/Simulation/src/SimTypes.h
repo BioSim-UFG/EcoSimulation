@@ -17,6 +17,9 @@ namespace SimEco
 	class Specie;
 	class Simulation;
 
+
+/*******tipos usados nas celulas e especies*******/
+
 	typedef struct{
 		float minimum;          // Annual minima per cell, in a given time, for a given variable
 		float maximum;          // Annual maxima per cell, in a given time, for a given variable
@@ -28,11 +31,6 @@ namespace SimEco
 		float NPP;
 	}Climate;
 
-	typedef struct{
-		int i;
-		int j;
-	}matIdx_2D;
-
 	enum climVar{Temp=0, Pptn=1};
 
 	typedef struct{
@@ -41,6 +39,21 @@ namespace SimEco
 		float River;              // Degree of connectivity (1 / distance) between this cell and all other cells, based on river network
 	}Connectivity, Dispersion;
 
+/****tipos usados na grid*********/
+	typedef struct{
+		int i;
+		int j;
+	}matIdx_2D;
+
+/***tipoes usados na simulação******/
+	typedef struct { 
+    	float x, y; 
+	} vec_t, *vec;
+
+	typedef struct { 
+    	vec v; 
+    	int len;
+	}poly_t, *poly;
 }
 
 #endif

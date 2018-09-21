@@ -5,7 +5,7 @@
 #include "Cell.h"
 #include <utility>
 
-#define NUM_TOTAL_CELLS 2566
+#define MAX_CELLS 2566
 #define NUM_TOTAL_SPECIES 1
 
 
@@ -13,48 +13,48 @@ using namespace std;
 
 namespace SimEco
 {
-    class Grid{
+	class Grid{
 
 
-     public:
-        
-        array<Specie *, NUM_TOTAL_SPECIES> species;
-        
-        static Cell *cells;
-        static int cellsSize;
+	 public:
+		
+		array<Specie *, NUM_TOTAL_SPECIES> species;
+		
+		static Cell *cells;
+		static int cellsSize;
 
-        static Connectivity *connectivityMatrix;   //matriz esparça compactada ( ver CUsparse)
-        static  matIdx_2D *indexMatrix;
-        static u_int matrixSize;      //já avisando, 50k x 50k dá um valor maior que MAX_INT, mas unsinged int aguenta
-
- 
-
-        constexpr static float connThreshold = 0.1f;
-
-        Grid();
-        ~Grid();    
-
-        void addSpecies(Specie sp[], size_t sp_num);
-
-        void addCell(const Cell &novaCelula);
-        void addCells(const array<Cell, NUM_TOTAL_CELLS> &novasCelulas);    //pega o vector novasCelulas e copia/passa os elementos para a Grid
-
-        void setCells(Cell celulas[], size_t size);    //seta as celulas
-        void setCellsConnectivity(Connectivity *adjMatrix, size_t size);    //passa a matriz de adjacencia, e lá dentro compacta ela
+		static Connectivity *connectivityMatrix;   //matriz esparça compactada ( ver CUsparse)
+		static  matIdx_2D *indexMatrix;
+		//troquei int por u_int, pois 50k x 50k dá um valor maior que MAX_INT, mas unsinged int aguenta
+		static u_int matrixSize;
 
 
-        //lê a serie climatica das celulas, e retorna o número de celulas lidas
-        static int load_CellsClimate(FILE *minTemp_src, FILE *maxTemp_src, FILE *minPptn_src, FILE *maxPptn_src, FILE *NPP_src,
-                                size_t timeSteps);
+		constexpr static float connThreshold = 0.1f;
 
-        //lê a conectividade de todas as celulas, e retorna o número de celulas lidas
-        static int load_CellsConnectivity(FILE *geo_src, FILE *topo_src, FILE *rivers_src);
+		Grid(uint num_cells);
+		~Grid();    
 
-        // A continuous value of suitability (from N species at one cell) --> é a função que ja fizemos em GPU, por isso precisa dos dados do nicho das especies
-        void getCellSuitabilities(array<NicheValue, NUM_TOTAL_SPECIES> &niches);
-        // A continuous value of suitability from one specie at N cells
-        void getSpecieSuitabilities(array<EnvValue, NUM_TOTAL_CELLS> &climas);
-    };
+		void putSpecies(Specie sp[], uint positions[], size_t sp_num);
+
+		void addCell(const Cell &novaCelula);
+		void addCells(const array<Cell, MAX_CELLS> &novasCelulas);    //pega o vector novasCelulas e copia/passa os elementos para a Grid
+
+		void setCells(Cell celulas[], size_t size);    //seta as celulas
+		void setCellsConnectivity(Connectivity *adjMatrix, size_t size);    //passa a matriz de adjacencia, e lá dentro compacta ela
+
+
+		//lê a serie climatica das celulas, e retorna o número de celulas lidas
+		static int load_CellsClimate(FILE *minTemp_src, FILE *maxTemp_src, FILE *minPptn_src, FILE *maxPptn_src, FILE *NPP_src,
+								size_t timeSteps);
+
+		//lê a conectividade de todas as celulas, e retorna o número de celulas lidas
+		static int load_CellsConnectivity(FILE *geo_src, FILE *topo_src, FILE *rivers_src);
+
+		// A continuous value of suitability (from N species at one cell) --> é a função que ja fizemos em GPU, por isso precisa dos dados do nicho das especies
+		void getCellSuitabilities(array<NicheValue, NUM_TOTAL_SPECIES> &niches);
+		// A continuous value of suitability from one specie at N cells
+		void getSpecieSuitabilities(array<EnvValue, MAX_CELLS> &climas);
+	};
 }
 
 #endif

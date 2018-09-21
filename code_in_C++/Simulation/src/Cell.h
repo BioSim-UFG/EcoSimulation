@@ -13,8 +13,7 @@ namespace SimEco
 
         public:
         
-        Specie *speciesInside;
-        size_t numSpecies = 0;       //quantidade de Especies nessa celula
+
 
         /* coloquei um vetor da classe ( nao objeto) para melhor acesso e perfomance,
          e também por ser assim que os dados são acessados e tratados na GPU*/
@@ -24,6 +23,9 @@ namespace SimEco
 		  temos uma matriz de N tempos linhas, e K celulas colunas.*/
         static Climate **cell_climates;
         //static const size_t num_cells = NUM_TOTAL_CELLS;
+
+        Specie **speciesInside; //vetor de ponteiros
+        u_int numSpecies;    //quantidade de Especies nessa celula
 
         Cell();
         ~Cell();

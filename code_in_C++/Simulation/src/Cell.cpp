@@ -8,6 +8,8 @@ namespace SimEco
 
     Cell::Cell(){
         //id = totalCells++;        //adicionar inicialização
+        speciesInside = NULL;
+        numSpecies = 0;
     }
     Cell::~Cell(){ /*--totalCells;*/ }
 

@@ -34,7 +34,8 @@ void carrega_founders(Specie founders[], FILE *src){
 int main(int argc,char const *argv[]){
 	Simulation *simulacao;
 	Grid *grid;
-	Specie *founders = (Specie *)malloc(sizeof(Specie) * NUM_TOTAL_SPECIES); /*vetor de classes */
+	Cell *celulas;	/* vetor de celulas */
+	Specie *founders = new Specie[NUM_TOTAL_SPECIES]; /*vetor de classes */
 
 	FILE *minTemp_src, *maxTemp_src, *minPptn_src, *maxPptn_src, *NPP_src;   //climas de todas as celulas em todos os tempos
 	FILE *geoConectivity_src, *topoConectivity_src, *riversConectivity_src;
@@ -60,8 +61,8 @@ int main(int argc,char const *argv[]){
 		/**** lendo Serie Climatica das Celulas ****/
 
 	int numero_de_passos = 51; // 50 tempos + tempo zero
-	Cell::cell_climates = new Climate*[NUM_TOTAL_CELLS];
-	for(size_t i=0; i<NUM_TOTAL_CELLS; i++){
+	Cell::cell_climates = new Climate*[MAX_CELLS];
+	for(size_t i=0; i<MAX_CELLS; i++){
 		Cell::cell_climates[i] = new Climate[numero_de_passos];
 	}
 
@@ -109,14 +110,14 @@ int main(int argc,char const *argv[]){
 	riversConectivity_src = fopen("../../input/DummyHex2566 - Connectances - Rivers.Single.Zip.Stream", "rb");
 	printf(GRN("Lendo conectividade das celulas ..."));	fflush(stdout);
 	int celulas_lidas2 = Grid::load_CellsConnectivity(geoConectivity_src, topoConectivity_src, riversConectivity_src);
-	printf(BOLD(LGTGRN("OK!\n")));
+	printf(BOLD(LGTGRN("\tOK!\n")));
 
 
+	u_int num_cells = min(celulas_lidas1, celulas_lidas2);
 	if(celulas_lidas1 != celulas_lidas2){
 		printf(BOLD(LGTYEL("AVISO! numero de celulas lidas em Serie Climatica e conectividade diferem. Utilizando o menor.")));
-		size_t num_cells = min(celulas_lidas1, celulas_lidas2);
 
-		printf(" novo numero de celulas = %lu\n", num_cells);
+		printf(" novo numero de celulas = %u\n", num_cells);
 
 		//remove as celulas extras
 		for(int i=num_cells-1; i < celulas_lidas1-1; i++){
@@ -136,26 +137,21 @@ int main(int argc,char const *argv[]){
 		}
 	}
 
-
 	/*********INICIANDO SIMULAÇÃO***********/
+	grid = new Grid(num_cells);
 
-	grid = new Grid();
-	grid->addSpecies(founders, NUM_TOTAL_SPECIES);
-
-	simulacao = new Simulation(*grid, founders);
+	printf(LGTGRN("Iniciando Simulação \n"));
+	uint speciePositions[NUM_TOTAL_SPECIES] = {5};
+	simulacao = new Simulation(*grid, founders, speciePositions, NUM_TOTAL_SPECIES);
 	
-	
-	//cout<<"sizeof(Cell): "<<sizeof(Cell)<<" bytes\n";
 
-
-	printf(LGTGRN("Simulação Criada\n"));
 
 	auto finish_clock = chrono::high_resolution_clock::now();
-
 	std::chrono::duration<double> elapsed = finish_clock - start_clock;
 
-
 	cout<<"Tempo total: "<<BOLD( WHT( << elapsed.count() <<" s\n"));
+
+
 
 	delete[] Cell::cell_climates;
 	delete grid;

@@ -12,5 +12,6 @@ namespace SimEco{
 		copy(niche.begin(), niche.end(), this->niche.begin());
 
     }
+	Specie::Specie(){}
     Specie::~Specie(){}
 }

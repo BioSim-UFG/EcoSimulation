@@ -16,16 +16,17 @@ namespace SimEco{
 	Cell *Grid::cells;
 	int Grid::cellsSize = 0;
 
-	Grid::Grid(){
+	Grid::Grid(uint num_cells){
 		matrixSize = 0;
+		cells = new Cell[num_cells];
 	}
 
 	Grid::~Grid(){
-		for(auto &i: species) free(i);
+		//for(auto &i: species) free(i);
 	}
 
-	void Grid::setCells(Cell cells[], size_t size){
-		copy(cells, cells+size, Grid::cells);
+	void Grid::setCells(Cell *cells, size_t size){
+		memcpy(Grid::cells, cells, sizeof(Cell)*size);
 		cellsSize = size;
 	}
 
@@ -47,11 +48,17 @@ namespace SimEco{
 		matrixSize = pos;
 	}
 
-	void Grid::addSpecies(Specie sp[], size_t sp_num){
+	void Grid::putSpecies(Specie sp[], uint positions[] ,size_t sp_size){
 		int i = 0;
 
+
 		while(i <= NUM_TOTAL_SPECIES && i < species.size() ){
-			species.back() = &sp[i];
+			*species.back() = sp[i];
+
+			Cell &celula = cells[positions[i]];
+			celula.speciesInside = (Specie **)realloc(celula.speciesInside, (celula.numSpecies+sp_size) * sizeof(Specie *));
+			celula.speciesInside[celula.numSpecies] = &sp[i];
+
 			i++;
 		}
 	}
@@ -67,7 +74,7 @@ namespace SimEco{
 		fscanf(maxPptn_src, "%*[^\n]\n"); //ignora a primeira linha
 		fscanf(NPP_src, "%*[^\n]\n");     //ignora a primeira linha
 
-		for (i = 0; i < NUM_TOTAL_CELLS; i++){
+		for (i = 0; i < MAX_CELLS; i++){
 
 			for (j = timeSteps - 1; j >= 0; j--){
 				fscanf(minTemp_src, "%f", &(Cell::cell_climates[i][j].envValues[climVar::Temp].minimum));

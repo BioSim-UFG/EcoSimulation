@@ -21,6 +21,7 @@ namespace SimEco{
         //ideia para achar espécie, um MAP
 
         Specie(Dispersion dispCapacity, array<NicheValue, NUM_ENV_VARS> niche);
+        Specie();
         ~Specie();
     
     };
