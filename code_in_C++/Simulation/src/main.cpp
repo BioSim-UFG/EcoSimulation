@@ -41,17 +41,17 @@ int main(int argc,char const *argv[]){
 
 	/*******INICIALIZANDO ESPECIES FOUNDERS*********/
 
-	printf(GRN("Abrindo SpecieData.txt ..."));
+	//printf(GRN("Abrindo SpecieData.txt ..."));
 	founders_input = fopen("../../input/SpecieData.txt", "r");
 	if (founders_input == NULL){
 		perror(RED("Erro ao abrir SpecieData.txt"));
 		exit(1);    
 	}
-	printf(GRN(" OK!\n"));
+	//printf(GRN(" OK!\n"));
 
-	printf(GRN("Lendo dados dos Founders ..."));
+	printf(GRN("Lendo especies Founders ..."));
 	carrega_founders(founders, founders_input);
-	printf(GRN(" OK!\n"));
+	printf(BOLD(LGTGRN("OK!\n")));
 	fclose(founders_input);
 
 	/*****************INICIALIZANDO GRID *****************/
@@ -66,7 +66,7 @@ int main(int argc,char const *argv[]){
 
 	//falta carregar conectividade das celulas
 
-	printf(GRN("Abrindo arquivos de serie Climatica ..."));
+	//printf(GRN("Abrindo arquivos de serie Climatica ..."));
 	minTemp_src = fopen("../../output/DummyHex2566 - Output - MinTemp.txt", "r");
 	if(minTemp_src == NULL){
 		perror(RED("Erro ao abrir output/DummyHex2566 - Output - MinTemp.txt"));
@@ -92,11 +92,11 @@ int main(int argc,char const *argv[]){
 		perror(RED("Erro ao abrir output/DummyHex2566 - Output - NPP.txt"));
 		exit(1);
 	}
+	//printf(GRN(" OK!\n"));
 
-	printf(GRN(" OK!\n"));
 	printf(GRN("Lendo serie Climatica ..."));
-	Grid::load_CellsClimate(minTemp_src, maxTemp_src, minPptn_src, maxPptn_src, NPP_src, numero_de_passos);
-	printf(GRN(" OK!\n"));
+	int celulas_lidas1 = Grid::load_CellsClimate(minTemp_src, maxTemp_src, minPptn_src, maxPptn_src, NPP_src, numero_de_passos);
+	printf(BOLD(LGTGRN("OK!\n")));
 	fclose(minTemp_src);    fclose(maxTemp_src);
 	fclose(minPptn_src);    fclose(maxPptn_src);
 	fclose(NPP_src);
@@ -105,14 +105,38 @@ int main(int argc,char const *argv[]){
 	
 		/**** lendo matriz de adjacencia de Conectividade das Celulas ****/
 
+
 	geoConectivity_src = fopen("../../input/DummyHex2566 - Connectances - Geo.Single.Zip.Stream", "rb");
 	topoConectivity_src = fopen("../../input/DummyHex2566 - Connectances - Topo.Single.Zip.Stream", "rb");
 	riversConectivity_src = fopen("../../input/DummyHex2566 - Connectances - Rivers.Single.Zip.Stream", "rb");
 	printf(GRN("Lendo conectividade das celulas ..."));	fflush(stdout);
-	Grid::load_CellsConnectivity(geoConectivity_src, topoConectivity_src, riversConectivity_src);
-	printf(GRN(" OK!\n"));
+	int celulas_lidas2 = Grid::load_CellsConnectivity(geoConectivity_src, topoConectivity_src, riversConectivity_src);
+	printf(BOLD(LGTGRN("OK!\n")));
 
 
+	if(celulas_lidas1 != celulas_lidas2){
+		printf(BOLD(LGTYEL("AVISO! numero de celulas lidas em Serie Climatica e conectividade diferem. Utilizando o menor.")));
+		size_t num_cells = min(celulas_lidas1, celulas_lidas2);
+
+		printf(" novo numero de celulas = %lu\n", num_cells);
+
+		//remove as celulas extras
+		for(int i=num_cells-1; i < celulas_lidas1-1; i++){
+			delete &Grid::cells[i];
+		}
+		Grid::cellsSize = num_cells;
+
+		int i=Grid::matrixSize-1;
+		while (Grid::indexMatrix[i].i > num_cells-1)	//acha o índice  da ultima linha da matriz, que é menor que num_cells
+			i--;
+		
+		if(i != Grid::matrixSize-1){
+			i+=1;
+			Grid::connectivityMatrix = (Connectivity *)realloc(Grid::connectivityMatrix, i * sizeof(Connectivity));
+			Grid::indexMatrix = (matIdx_2D *)(Connectivity *)realloc(Grid::indexMatrix, i * sizeof(matIdx_2D));
+			Grid::matrixSize = i;
+		}
+	}
 
 
 	/*********INICIANDO SIMULAÇÃO***********/
@@ -132,8 +156,7 @@ int main(int argc,char const *argv[]){
 	delete[] Cell::cell_climates;
 	delete grid;
 	delete simulacao;
-	//possivel free(founders); --> depende se vai fazer isso na grid;
-	free(founders);
+	//possivel free(founders); --> depende se vai fazer isso na grid; --> descobri q faz, e deu um eero KABULOSO
 	free(Grid::connectivityMatrix );
 	free(Grid::indexMatrix);
 

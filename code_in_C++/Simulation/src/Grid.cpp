@@ -1,5 +1,6 @@
 #include "Grid.h"
 #include "Specie.h"
+#include <string.h>
 
 #include "decompressData.h"
 #include "color.h"
@@ -9,10 +10,11 @@ using namespace std;
 namespace SimEco{
 
 	Connectivity *Grid::connectivityMatrix = NULL;
-	pair<int, int> *Grid::indexMatrix = NULL;
+	matIdx_2D *Grid::indexMatrix = NULL;
 	int Grid::matrixSize = 0;
 
-	array<Cell, NUM_TOTAL_CELLS> Grid::cells;
+	Cell *Grid::cells;
+	int Grid::cellsSize = 0;
 
 	Grid::Grid(){
 		matrixSize = 0;
@@ -23,15 +25,16 @@ namespace SimEco{
 	}
 
 	void Grid::setCells(Cell cells[], size_t size){
-		copy(cells, cells + size, Grid::cells.begin());
+		copy(cells, cells+size, Grid::cells);
+		cellsSize = size;
 	}
 
 	//recebe e compacta matriz de adjacencia
 	void Grid::setCellsConnectivity(Connectivity *adjMatrix, size_t size){
-		size_t pos=0;
+		int pos=0;
 
-		for(size_t i=0; i<size; i++){
-			for(size_t j=0; j<size; j++){
+		for(int i=0; i<size; i++){
+			for(int j=0; j<size; j++){
 				//temos um problema: o valor de distancia geologica pode ser descartável, mas de outra não
 				if (adjMatrix[i * size + j].Geo == 0 && adjMatrix[i * size + j].River==0 && adjMatrix[i * size + j].Topo==0)
 					continue;
@@ -53,9 +56,10 @@ namespace SimEco{
 		}
 	}
 
-	void Grid::load_CellsClimate(FILE *minTemp_src, FILE *maxTemp_src, FILE *minPptn_src, FILE *maxPptn_src, FILE *NPP_src,
+	int Grid::load_CellsClimate(FILE *minTemp_src, FILE *maxTemp_src, FILE *minPptn_src, FILE *maxPptn_src, FILE *NPP_src,
 							 size_t timeSteps)
 	{
+		int i, j;
 
 		fscanf(minTemp_src, "%*[^\n]\n"); //ignora a primeira linha
 		fscanf(maxTemp_src, "%*[^\n]\n"); //ignora a primeira linha
@@ -63,9 +67,9 @@ namespace SimEco{
 		fscanf(maxPptn_src, "%*[^\n]\n"); //ignora a primeira linha
 		fscanf(NPP_src, "%*[^\n]\n");     //ignora a primeira linha
 
-		for (size_t i = 0; i < NUM_TOTAL_CELLS; i++){
+		for (i = 0; i < NUM_TOTAL_CELLS; i++){
 
-			for (int j = timeSteps - 1; j >= 0; j--){
+			for (j = timeSteps - 1; j >= 0; j--){
 				fscanf(minTemp_src, "%f", &(Cell::cell_climates[i][j].envValues[climVar::Temp].minimum));
 				fscanf(maxTemp_src, "%f", &(Cell::cell_climates[i][j].envValues[climVar::Temp].maximum));
 				fscanf(minPptn_src, "%f", &(Cell::cell_climates[i][j].envValues[climVar::Pptn].minimum));
@@ -77,30 +81,41 @@ namespace SimEco{
 			fscanf(minPptn_src, "%*[^\n]\n");
 			fscanf(maxPptn_src, "%*[^\n]\n");
 			fscanf(NPP_src, "%*[^\n]\n");
+
+			if (feof(minTemp_src) || feof(maxTemp_src) || feof(minPptn_src) || feof(maxPptn_src) || feof(NPP_src) )
+				break;
+			
 		}
+
+		return i;
 	}
 
-	void Grid::load_CellsConnectivity(FILE *geo_src, FILE *topo_src, FILE *rivers_src){
+	int Grid::load_CellsConnectivity(FILE *geo_src, FILE *topo_src, FILE *rivers_src){
 		byte *geobuffer = NULL, *topobuffer = NULL, *riversbuffer = NULL;
 		size_t geoSize = 0, topoSize = 0, riversSize = 0;
 
 		int compressedMat_size = 0;
-
-		my_decompress(geo_src, &geobuffer, &geoSize);
-		my_decompress(topo_src, &topobuffer, &topoSize);
-		my_decompress(rivers_src, &riversbuffer, &riversSize);
+		
+		printf("\n");
+		printf(BLU("\tDescomprimindo Streams\n"));
+		if( my_decompress(geo_src, &geobuffer, &geoSize) != Z_OK ||
+			my_decompress(topo_src, &topobuffer, &topoSize) != Z_OK ||
+			my_decompress(rivers_src, &riversbuffer, &riversSize) != Z_OK)
+		{
+			printf(RED("\tErro ao descomprimir streams!"));
+			exit(2);
+		}
 
 		int num_cells = ((int*)geobuffer)[0];
 		if( num_cells != ((int*)topobuffer)[0] || num_cells != ((int*)riversbuffer)[0]){
-			printf(LGTYEL("AVISO! numero de células nos arquivos de conectividade diferem. Utilizando o menor"));
+			printf(BOLD(LGTYEL("AVISO! numero de células nos arquivos de conectividade diferem. Utilizando o menor")));
 			num_cells = min(((int *)topobuffer)[0], num_cells);
 			num_cells = min(((int *)riversbuffer)[0], num_cells);
+			printf("Numero de células: %i", num_cells);
 		}
-		printf("Numero de células: %i", num_cells);
 		geobuffer += sizeof(int);       
 		topobuffer += sizeof(int);
 		riversbuffer += sizeof(int);
-
 
 
 		/* EXPLICAÇÃO:
@@ -113,15 +128,10 @@ namespace SimEco{
 			o necessário.
 		*/	
 
-		size_t block_size = (num_cells/5);		//tamanho do bloco (quantidade de elementos) que será realocado quando necessário
-		size_t blocksAllocated = 0;
+		int block_size = (num_cells/5);		//tamanho do bloco (quantidade de elementos) que será realocado quando necessário
+		int blocksAllocated = 0;
 
-		blocksAllocated += 1;
-
-		connectivityMatrix = (Connectivity*)realloc(connectivityMatrix, (blocksAllocated * block_size) * sizeof(Connectivity) );
-		indexMatrix = (pair<int, int> *)realloc(indexMatrix, (blocksAllocated * block_size) * sizeof(pair<int, int>));
-
-
+		printf(BLU("\tCompactando matriz esparsa "));
 		for(int i=0; i<num_cells; i++){
 			//lê/descarta int que possui  número de colunas
 			geobuffer += sizeof(int); topobuffer += sizeof(int); riversbuffer += sizeof(int);
@@ -133,23 +143,31 @@ namespace SimEco{
 				//se a conectividade de todos os tipos forem despreziveis
 				if(geoConn[j] < connThreshold && topoConn[j] < connThreshold && riversConn[j] < connThreshold)
 					continue;
-
+				
 				// se o numero de elementos alocados for insuficiente, realoca mais um bloco
-				if( blocksAllocated*block_size < compressedMat_size){
+				if( blocksAllocated*block_size <= compressedMat_size){
 					blocksAllocated++;
 					connectivityMatrix = (Connectivity *)realloc(connectivityMatrix, (blocksAllocated * block_size) * sizeof(Connectivity));
-					indexMatrix = (pair<int, int> *)realloc(indexMatrix, (blocksAllocated * block_size) * sizeof(pair<int, int>));
+					indexMatrix = (matIdx_2D *)realloc(indexMatrix, (blocksAllocated * block_size) * sizeof(matIdx_2D));
 				}
 
 				connectivityMatrix[compressedMat_size] = {geoConn[j], topoConn[j], riversConn[j]};
 				indexMatrix[compressedMat_size] = {i, j};
 				compressedMat_size++;
 			}
-			
+
+			geobuffer+=sizeof(float)*num_cells; topobuffer+=sizeof(float)*num_cells; riversbuffer+=sizeof(float)*num_cells;
 		}
 
 		//realloca matriz compactada para tamanho certo/preciso
 		connectivityMatrix = (Connectivity *)realloc(connectivityMatrix, compressedMat_size * sizeof(Connectivity));
-		indexMatrix = (pair<int, int> *)realloc(indexMatrix, compressedMat_size * sizeof(pair<int, int>));
+		indexMatrix = (matIdx_2D *)realloc(indexMatrix, compressedMat_size * sizeof(matIdx_2D));
+
+		Grid::matrixSize = compressedMat_size;
+
+		printf(" %i elementos removidos, tamanho final=%i\n", (num_cells * num_cells) - Grid::matrixSize, Grid::matrixSize);
+
+		return num_cells;
 	}
+
 }
