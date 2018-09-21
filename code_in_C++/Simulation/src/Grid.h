@@ -24,7 +24,7 @@ namespace SimEco
 		static int cellsSize;
 
 		static Connectivity *connectivityMatrix;   //matriz esparça compactada ( ver CUsparse)
-		static  matIdx_2D *indexMatrix;
+		static  MatIdx_2D *indexMatrix;
 		//troquei int por u_int, pois 50k x 50k dá um valor maior que MAX_INT, mas unsinged int aguenta
 		static u_int matrixSize;
 
@@ -33,14 +33,13 @@ namespace SimEco
 
 		Grid(uint num_cells);
 		~Grid();    
+		void setCells(Cell celulas[], size_t size);    //seta as celulas
+		void setCellsConnectivity(Connectivity *adjMatrix, size_t size);    //passa a matriz de adjacencia, e lá dentro compacta ela
 
-		void putSpecies(Specie sp[], uint positions[], size_t sp_num);
-
+		void addSpecies(Specie sp[], uint positions[], size_t sp_num);
 		void addCell(const Cell &novaCelula);
 		void addCells(const array<Cell, MAX_CELLS> &novasCelulas);    //pega o vector novasCelulas e copia/passa os elementos para a Grid
 
-		void setCells(Cell celulas[], size_t size);    //seta as celulas
-		void setCellsConnectivity(Connectivity *adjMatrix, size_t size);    //passa a matriz de adjacencia, e lá dentro compacta ela
 
 		Cell* getCellat(uint index);
 

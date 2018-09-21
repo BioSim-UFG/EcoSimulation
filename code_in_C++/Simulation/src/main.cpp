@@ -130,7 +130,7 @@ int main(int argc,char const *argv[]){
 		if(i != Grid::matrixSize-1){
 			i+=1;
 			Grid::connectivityMatrix = (Connectivity *)realloc(Grid::connectivityMatrix, i * sizeof(Connectivity));
-			Grid::indexMatrix = (matIdx_2D *)(Connectivity *)realloc(Grid::indexMatrix, i * sizeof(matIdx_2D));
+			Grid::indexMatrix = (MatIdx_2D *)(Connectivity *)realloc(Grid::indexMatrix, i * sizeof(MatIdx_2D));
 			Grid::matrixSize = i;
 		}
 	}

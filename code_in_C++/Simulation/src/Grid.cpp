@@ -1,6 +1,7 @@
 #include "Grid.h"
 #include "Specie.h"
 #include <string.h>
+#include <execinfo.h>
 
 #include "decompressData.h"
 #include "color.h"
@@ -10,7 +11,7 @@ using namespace std;
 namespace SimEco{
 
 	Connectivity *Grid::connectivityMatrix = NULL;
-	matIdx_2D *Grid::indexMatrix = NULL;
+	MatIdx_2D *Grid::indexMatrix = NULL;
 	u_int Grid::matrixSize = 0;
 
 	Cell *Grid::cells;
@@ -53,19 +54,28 @@ namespace SimEco{
 		return index<cellsSize ? &cells[index] : nullptr;
 	}
 
-	void Grid::putSpecies(Specie sp[], uint positions[] ,size_t sp_size){
+	void Grid::addSpecies(Specie sp[], uint positions[] ,size_t sp_size){
 		int i = 0;
+		Cell &celula = this->cells[positions[i]];
 
-
+		//já é alocado no construtor da célula a capacidade máxima
+		//celula.speciesInside = (Specie **)realloc(celula.speciesInside, (celula.numSpecies+sp_size) * sizeof(Specie *));
+		if(celula.numSpecies+sp_size > Cell::MaxCapacity){
+			printf("Capacidade atingida! func addSpecies()"); fflush(stdout);
+			void *stack[15];
+			size_t size = backtrace(stack, 15);
+			char **result = backtrace_symbols(stack, size);
+			string msg;
+			for(int i=0; i<size; i++)
+				msg.append( string(result[i])+"\n");
+			throw msg;
+		}
 		while(i <= NUM_TOTAL_SPECIES && i < species.size() ){
 			*species.back() = sp[i];
-
-			Cell &celula = cells[positions[i]];
-			celula.speciesInside = (Specie **)realloc(celula.speciesInside, (celula.numSpecies+sp_size) * sizeof(Specie *));
-			celula.speciesInside[celula.numSpecies] = &sp[i];
-
+			celula.speciesInside[celula.numSpecies+i] = &sp[i];	//coloca o ponteiro da especie dentro do array 'speciesInside' da celula
 			i++;
 		}
+		celula.numSpecies += sp_size;
 	}
 
 	int Grid::load_CellsClimate(FILE *minTemp_src, FILE *maxTemp_src, FILE *minPptn_src, FILE *maxPptn_src, FILE *NPP_src,
@@ -160,7 +170,7 @@ namespace SimEco{
 				if( blocksAllocated*block_size <= compressedMat_size){
 					blocksAllocated++;
 					connectivityMatrix = (Connectivity *)realloc(connectivityMatrix, (blocksAllocated * block_size) * sizeof(Connectivity));
-					indexMatrix = (matIdx_2D *)realloc(indexMatrix, (blocksAllocated * block_size) * sizeof(matIdx_2D));
+					indexMatrix = (MatIdx_2D *)realloc(indexMatrix, (blocksAllocated * block_size) * sizeof(MatIdx_2D));
 				}
 
 				connectivityMatrix[compressedMat_size] = {geoConn[j], topoConn[j], riversConn[j]};
@@ -173,7 +183,7 @@ namespace SimEco{
 
 		//realloca matriz compactada para tamanho certo/preciso
 		connectivityMatrix = (Connectivity *)realloc(connectivityMatrix, compressedMat_size * sizeof(Connectivity));
-		indexMatrix = (matIdx_2D *)realloc(indexMatrix, compressedMat_size * sizeof(matIdx_2D));
+		indexMatrix = (MatIdx_2D *)realloc(indexMatrix, compressedMat_size * sizeof(MatIdx_2D));
 
 		Grid::matrixSize = compressedMat_size;
 

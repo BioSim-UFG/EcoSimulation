@@ -24,6 +24,7 @@ namespace SimEco
         static Climate **cell_climates;
         //static const size_t num_cells = NUM_TOTAL_CELLS;
 
+        constexpr static uint MaxCapacity = 1;
         Specie **speciesInside; //vetor de ponteiros
         u_int numSpecies;    //quantidade de Especies nessa celula
 
@@ -32,11 +33,10 @@ namespace SimEco
             return Cell::cell_climates[timeStepIndex];
         }
 
+        void addSpecie(Specie *specie);
+        //void delSpecie(uint index);
         Cell();
         ~Cell();
-
-        //EnvValue é da celula, e NicheValue é da especie( nicho da especie)
-        bool IsLocalTolerance(EnvValue LocalEnv, NicheValue Niche);     // -> mas isso já nao é calculado na suitability ?
 
 };
 

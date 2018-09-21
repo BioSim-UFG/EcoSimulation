@@ -64,7 +64,7 @@ opt1: EXTFLG = -O1 -march=native -Wno-unused-result
 opt1: ECHOMSG = "fast, optimized compiling mode level 1\n"
 opt1: default
 
-debug: EXTFLG = -ggdb3 -O0 -fno-inline-functions -DGLIBCXX_DEBUG
+debug: EXTFLG = -ggdb3 -O0 -fno-inline-functions -DGLIBCXX_DEBUG -rdynamic
 debug: ECHOMSG = "Debugging compiling mode \n"
 debug: default
 

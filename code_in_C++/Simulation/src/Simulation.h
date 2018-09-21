@@ -28,7 +28,7 @@ namespace SimEco{
         constexpr static float ErfD = 0.078108f;
         constexpr static double pi = M_PI;
 
-        void processFounder_timeZero(Specie founder);
+        inline void processFounder_timeZero(Specie &founder);
         //calcula o fitness, e retorna o ponteiro do vetor resultante
         float* calcSpecieFitness(Specie &specie, uint timeStep);
         void NicheCurve(const float MinTol, const float MaxTol, const float MinEnv, const float MaxEnv, poly_t &NichePoly);

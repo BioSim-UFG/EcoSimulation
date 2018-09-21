@@ -43,7 +43,7 @@ namespace SimEco
 	typedef struct{
 		int i;
 		int j;
-	}matIdx_2D;
+	}MatIdx_2D;
 
 /***tipoes usados na simulação******/
 	typedef struct { 

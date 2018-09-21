@@ -9,7 +9,7 @@ namespace SimEco{
 		//aqui faz o trabalho de preparação da simulação, usando a(s) especie(s) fundadora(s)
 
 		//coloca os founders em suas celulas
-		grid.putSpecies(founders, foundersPosition, NUM_TOTAL_SPECIES);
+		grid.addSpecies(founders, foundersPosition, NUM_TOTAL_SPECIES);
 
 		cout<<BLU("\tCalculando tempo ZERO\n");
 		for(uint i=0; i<founders_size; i++){
@@ -18,15 +18,50 @@ namespace SimEco{
 
 	}
 
-	void Simulation::processFounder_timeZero(Specie founder){
-		//aqui chama calcFitness
+
+	/*******************************implementando ainda essa função*********************************/
+
+	//processa o time zero pra uma especie founder especifica
+	inline void Simulation::processFounder_timeZero(Specie &founder){
+		/*aqui chama calcFitness e ela retorna um vetor (dinamicamente alocado lá dentro)
+		  com os fitness da especie com todas as celulas (consquentemente, vetor de tamanho Grid::cellsSize)*/
 		float *fitness = calcSpecieFitness(founder, 0);
 
-		//agora, usando os fitness, espalhar o founder pela grid
+		//agora, usando os fitness e as conectividades, espalhar o founder pela grid
+		uint last_pos=0;
+
+		//acha a posição da celula do founder
 
 
+
+
+		for(uint cellIdx=0; cellIdx<_grid.cellsSize; cellIdx++){
+
+			//uint i=last_pos;
+			const MatIdx_2D *idxMat = _grid.indexMatrix;
+			//enquanto estiver na linha (da matriz compactada) correspondente a linha 'cellIdx'() da matriz de adjacencia)
+			while( idxMat[last_pos].i <= cellIdx ){
+				//evitando celulas repetidas (pegando os elementos que seriam depois da diagonal da matriz)
+				if(idxMat[last_pos].j <= idxMat[last_pos].i)
+					continue;
+
+				uint col = idxMat[last_pos].j;
+				//verifica se o founder pode ir pra célula do índice 'col'
+
+				//printf("adicionando na celula %u", col);
+				if( fitness[col] > 0.0f )
+					_grid.cells[col].addSpecie(&founder);
+
+				last_pos++;
+			}
+
+		}
 	}
 
+
+	/********************************************************************************/
+
+	//calcula o fitness de uma especie em um determinado timeStep (copiei e adaptei a função que tinhamos pra GPU)
 	float* Simulation::calcSpecieFitness(Specie &specie, uint timeStep){
 		float *fitness = new float[_grid.cellsSize];
 
@@ -45,7 +80,7 @@ namespace SimEco{
 		MinPrecpTol = specie.niche[1].minimum;
 		MaxPrecpTol = specie.niche[1].maximum;
 
-		Climate *climates = Cell::getTimeClimates(timeStep);
+		Climate *climates = Cell::getTimeClimates(timeStep);	//pega os climas das celulas de um timeStep
 
 		//calcula o fitness dessa especia pra cada celula da grid
 		for(uint cellIdx=0; cellIdx < Grid::cellsSize; cellIdx++){
@@ -102,6 +137,7 @@ namespace SimEco{
 		return fitness;
 	}
 
+	//cria poligono do nicho já clipado com variaveis do Ambiente ( aka celula) (também copiado e adaptado da GPU)
 	void Simulation::NicheCurve(const float MinTol, const float MaxTol, const float MinEnv, const float MaxEnv, poly_t &nichePoly){
 		// nichePoly must be nSteps+3 long
 		float erfX, erfY;
