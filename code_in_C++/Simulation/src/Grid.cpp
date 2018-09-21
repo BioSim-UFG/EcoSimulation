@@ -19,6 +19,7 @@ namespace SimEco{
 	Grid::Grid(uint num_cells){
 		matrixSize = 0;
 		cells = new Cell[num_cells];
+		cellsSize = num_cells;
 	}
 
 	Grid::~Grid(){
@@ -46,6 +47,10 @@ namespace SimEco{
 			}
 		}
 		matrixSize = pos;
+	}
+
+	Cell* Grid::getCellat(uint index){
+		return index<cellsSize ? &cells[index] : nullptr;
 	}
 
 	void Grid::putSpecies(Specie sp[], uint positions[] ,size_t sp_size){
@@ -138,7 +143,7 @@ namespace SimEco{
 		int block_size = (num_cells/5);		//tamanho do bloco (quantidade de elementos) que será realocado quando necessário
 		int blocksAllocated = 0;
 
-		printf(BLU("\tCompactando matriz esparsa "));
+		printf(BLU("\tCompactando matriz esparsa ")); fflush(stdout);
 		for(int i=0; i<num_cells; i++){
 			//lê/descarta int que possui  número de colunas
 			geobuffer += sizeof(int); topobuffer += sizeof(int); riversbuffer += sizeof(int);
@@ -173,7 +178,7 @@ namespace SimEco{
 		Grid::matrixSize = compressedMat_size;
 
 		printf(" %i elementos removidos, tamanho final=%i\n", (num_cells * num_cells) - Grid::matrixSize, Grid::matrixSize);
-
+		fflush(stdout);
 		return num_cells;
 	}
 

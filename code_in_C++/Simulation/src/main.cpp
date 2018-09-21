@@ -110,7 +110,7 @@ int main(int argc,char const *argv[]){
 	riversConectivity_src = fopen("../../input/DummyHex2566 - Connectances - Rivers.Single.Zip.Stream", "rb");
 	printf(GRN("Lendo conectividade das celulas ..."));	fflush(stdout);
 	int celulas_lidas2 = Grid::load_CellsConnectivity(geoConectivity_src, topoConectivity_src, riversConectivity_src);
-	printf(BOLD(LGTGRN("\tOK!\n")));
+	printf(BOLD(LGTGRN("\tOK!\n")));	fflush(stdout);
 
 
 	u_int num_cells = min(celulas_lidas1, celulas_lidas2);
@@ -118,12 +118,10 @@ int main(int argc,char const *argv[]){
 		printf(BOLD(LGTYEL("AVISO! numero de celulas lidas em Serie Climatica e conectividade diferem. Utilizando o menor.")));
 
 		printf(" novo numero de celulas = %u\n", num_cells);
-
 		//remove as celulas extras
 		for(int i=num_cells-1; i < celulas_lidas1-1; i++){
 			delete &Grid::cells[i];
 		}
-		Grid::cellsSize = num_cells;
 
 		u_int i=Grid::matrixSize-1;
 		while (Grid::indexMatrix[i].i > num_cells-1)	//acha o índice  da ultima linha da matriz, que é menor que num_cells
@@ -136,11 +134,11 @@ int main(int argc,char const *argv[]){
 			Grid::matrixSize = i;
 		}
 	}
-
+	
 	/*********INICIANDO SIMULAÇÃO***********/
 	grid = new Grid(num_cells);
 
-	printf(LGTGRN("Iniciando Simulação \n"));
+	printf(LGTGRN("Iniciando Simulação \n")); fflush(stdout);
 	uint speciePositions[NUM_TOTAL_SPECIES] = {5};
 	simulacao = new Simulation(*grid, founders, speciePositions, NUM_TOTAL_SPECIES);
 	

@@ -27,6 +27,11 @@ namespace SimEco
         Specie **speciesInside; //vetor de ponteiros
         u_int numSpecies;    //quantidade de Especies nessa celula
 
+        //retorna referencia para ponteiro do vetor (vetor de climas do tempo indicado) --> http://www.cplusplus.com/forum/general/85183/
+        static inline Climate *&getTimeClimates(uint timeStepIndex){
+            return Cell::cell_climates[timeStepIndex];
+        }
+
         Cell();
         ~Cell();
 

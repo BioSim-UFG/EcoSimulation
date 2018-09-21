@@ -48,12 +48,28 @@ namespace SimEco
 /***tipoes usados na simulação******/
 	typedef struct { 
     	float x, y; 
-	} vec_t, *vec;
+	} vec_t;
 
 	typedef struct { 
-    	vec v; 
+    	vec_t *v; 
     	int len;
-	}poly_t, *poly;
+
+		inline float area(){
+			float area = 0.0f, d;
+			int j, i;
+
+			if (len > 2) {
+				j = len - 1;
+				for (i = 0; (i < len); i++) {
+					d = (v[j].x + v[i].x);
+					area = area + d * (v[j].y - v[i].y);
+					j = i;
+				}
+				area = -area * 0.5f;
+			}
+			return area;
+		}
+	}poly_t;
 }
 
 #endif
