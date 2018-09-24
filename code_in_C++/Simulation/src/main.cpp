@@ -93,13 +93,22 @@ int main(int argc,char const *argv[]){
 	printf(LGTGRN("Iniciando Simulação \n")); fflush(stdout);
 	simulacao = new Simulation(*grid);
 
+	/*** TESTE ***/
 
+	FILE *teste = fopen("qqrnome.txt","w");
+	for (int i = 0; i < grid->species[0].celulas_IdxSize ; i++){
+		fprintf(teste,"%d ",grid->species[0].celulas_Idx[i]);
+	}
+	fclose(teste);
+	
+	//printf("EU OCUPO %d\n",grid->species[0].celulas_Idx[7]);
 
+		/**** FIM TESTE **/
 
-	/*******FIM DA SIMULAÇÃO***********/
+		/*******FIM DA SIMULAÇÃO***********/
 
-	// finaliza contagem de tempo
-	auto finish_clock = chrono::high_resolution_clock::now();
+		// finaliza contagem de tempo
+		auto finish_clock = chrono::high_resolution_clock::now();
 	std::chrono::duration<double> elapsed = finish_clock - start_clock;
 
 	cout<<"Tempo total: "<<BOLD( WHT( << elapsed.count() <<" s\n"));
