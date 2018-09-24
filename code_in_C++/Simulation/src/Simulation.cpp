@@ -14,8 +14,8 @@ namespace SimEco{
 			processFounder_timeZero(_grid.species[i]);
 
 			//olhando o resultado
-			for(uint j=0; i<_grid.species[i].celula_IdxSize; j++){
-				printf("especie %u - ocupou celula %u\n",i, _grid.species[i].celula_Idx[j]);
+			for(uint j=0; i<_grid.species[i].celulas_IdxSize; j++){
+				printf("especie %u - ocupou celula %u\n",i, _grid.species[i].celulas_Idx[j]);
 			}
 		}
 
@@ -34,7 +34,7 @@ namespace SimEco{
 		//agora, usando os fitness e as conectividades, espalhar o founder pela grid
 
 		const MatIdx_2D *idxMat = Grid::indexMatrix;
-		uint zipMatPos = Grid::mapLine_to_Compact_Idx[founder.celula_Idx[0]];
+		uint zipMatPos = Grid::mapLine_to_Compact_Idx[founder.celulas_Idx[0]];
 		
 		//enquanto estiver na linha (da matriz compactada) correspondente a linha 'cellIdx'() da matriz de adjacencia)
 		uint lineValue = idxMat[zipMatPos].i;
@@ -42,8 +42,8 @@ namespace SimEco{
 			
 			//ocupa essa celula também
 			if(idxMat[zipMatPos].i != idxMat[zipMatPos].j  && fitness[idxMat[zipMatPos].j] > 0.0f){
-				founder.celula_Idx = (uint *)realloc(founder.celula_Idx, sizeof(uint) * (founder.celula_IdxSize+1));
-				founder.celula_Idx[founder.celula_IdxSize++] = idxMat[zipMatPos].j;
+				founder.celulas_Idx = (uint *)realloc(founder.celulas_Idx, sizeof(uint) * (founder.celulas_IdxSize+1));
+				founder.celulas_Idx[founder.celulas_IdxSize++] = idxMat[zipMatPos].j;
 			}
 
 			zipMatPos++;

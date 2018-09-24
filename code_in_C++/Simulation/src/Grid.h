@@ -47,11 +47,11 @@ namespace SimEco
 		Cell* getCellat(uint index);
 
 		//lê a serie climatica das celulas, e retorna o número de celulas lidas
-		static int load_CellsClimate(FILE *minTemp_src, FILE *maxTemp_src, FILE *minPptn_src, FILE *maxPptn_src, FILE *NPP_src,
+		static int setCellsClimate(const char *minTemp_src, const char *maxTemp_src, const char *minPptn_src, const char *maxPptn_src, const char *NPP_src,
 								size_t timeSteps);
 
 		//lê a conectividade de todas as celulas, e retorna o número de celulas lidas
-		static int load_CellsConnectivity(FILE *geo_src, FILE *topo_src, FILE *rivers_src);
+		static int setCellsConnectivity(const char *geo_src, const char *topo_src, const char *rivers_src);
 	};
 }
 

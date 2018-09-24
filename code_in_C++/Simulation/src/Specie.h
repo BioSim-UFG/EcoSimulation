@@ -12,8 +12,8 @@ namespace SimEco{
         array<NicheValue, NUM_ENV_VARS> niche;        //niche of the specie
 
         //NUMCell *celula_ptr;        //pointer to current Cell
-        uint *celula_Idx;        //indice das celulas que esta presente
-        uint celula_IdxSize;
+        uint *celulas_Idx;        //indice das celulas que esta presente
+        uint celulas_IdxSize;
         float curSize;          //number of members/population;    Mas pra que float???  10.5 animais?
         float growth;           //taxa de crescimento
 
@@ -22,7 +22,10 @@ namespace SimEco{
 
         //ideia para achar espécie, um MAP
 
+        //criação de uma espécie numa única célula
         Specie(array<NicheValue, NUM_ENV_VARS> niche, Dispersion dispCapacity, uint CellIdx);
+        //criação de uma especie já espalhada por várias células
+        Specie(array<NicheValue, NUM_ENV_VARS> niche, Dispersion dispCapacity, uint cellIdxs[], uint cellIdxsSize);
         Specie();
         ~Specie();
     

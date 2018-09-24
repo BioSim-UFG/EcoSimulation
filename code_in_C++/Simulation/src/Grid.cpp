@@ -72,55 +72,86 @@ namespace SimEco{
 		//celula.numSpecies += sp_size;
 	}
 
-	int Grid::load_CellsClimate(FILE *minTemp_src, FILE *maxTemp_src, FILE *minPptn_src, FILE *maxPptn_src, FILE *NPP_src,
+	int Grid::setCellsClimate(const char *minTemp_src, const char *maxTemp_src, const char *minPptn_src, const char *maxPptn_src, const char *NPP_src,
 							 size_t timeSteps)
 	{
+
+		FILE *minTemp_arq = fopen(minTemp_src, "r");
+		FILE *maxTemp_arq = fopen(maxTemp_src, "r");
+		FILE *minPptn_arq = fopen(minPptn_src, "r");
+		FILE *maxPptn_arq = fopen(maxPptn_src, "r");
+		FILE *NPP_arq = fopen(NPP_src, "r");
+
+		if (minTemp_arq == NULL){ printf(RED("Erro ao abrir %s\n"), minTemp_src); 	exit(1); }
+		if (maxTemp_arq == NULL){ printf(RED("Erro ao abrir %s\n"), maxTemp_src); 	exit(1); }
+		if (minPptn_arq == NULL){ printf(RED("Erro ao abrir %s\n"), minPptn_src); 	exit(1); }
+		if (maxPptn_arq == NULL){ printf(RED("Erro ao abrir %s\n"), maxPptn_src); 	exit(1); }
+		if (NPP_arq == NULL){ printf(RED("Erro ao abrir %s\n"), NPP_src); 		exit(1); }
+
 		int i, j;
 
-		fscanf(minTemp_src, "%*[^\n]\n"); //ignora a primeira linha
-		fscanf(maxTemp_src, "%*[^\n]\n"); //ignora a primeira linha
-		fscanf(minPptn_src, "%*[^\n]\n"); //ignora a primeira linha
-		fscanf(maxPptn_src, "%*[^\n]\n"); //ignora a primeira linha
-		fscanf(NPP_src, "%*[^\n]\n");     //ignora a primeira linha
+		fscanf(minTemp_arq, "%*[^\n]\n"); //ignora a primeira linha
+		fscanf(maxTemp_arq, "%*[^\n]\n"); //ignora a primeira linha
+		fscanf(minPptn_arq, "%*[^\n]\n"); //ignora a primeira linha
+		fscanf(maxPptn_arq, "%*[^\n]\n"); //ignora a primeira linha
+		fscanf(NPP_arq, "%*[^\n]\n");     //ignora a primeira linha
 
 		for (i = 0; i < MAX_CELLS; i++){
 
 			for (j = timeSteps - 1; j >= 0; j--){
-				fscanf(minTemp_src, "%f", &(Cell::cell_climates[i][j].envValues[climVar::Temp].minimum));
-				fscanf(maxTemp_src, "%f", &(Cell::cell_climates[i][j].envValues[climVar::Temp].maximum));
-				fscanf(minPptn_src, "%f", &(Cell::cell_climates[i][j].envValues[climVar::Pptn].minimum));
-				fscanf(maxPptn_src, "%f", &(Cell::cell_climates[i][j].envValues[climVar::Pptn].maximum));
-				fscanf(NPP_src, "%f", &(Cell::cell_climates[i][j].NPP));
+				fscanf(minTemp_arq, "%f", &(Cell::cell_climates[i][j].envValues[climVar::Temp].minimum));
+				fscanf(maxTemp_arq, "%f", &(Cell::cell_climates[i][j].envValues[climVar::Temp].maximum));
+				fscanf(minPptn_arq, "%f", &(Cell::cell_climates[i][j].envValues[climVar::Pptn].minimum));
+				fscanf(maxPptn_arq, "%f", &(Cell::cell_climates[i][j].envValues[climVar::Pptn].maximum));
+				fscanf(NPP_arq, "%f", &(Cell::cell_climates[i][j].NPP));
 			}
-			fscanf(minTemp_src, "%*[^\n]\n");
-			fscanf(maxTemp_src, "%*[^\n]\n");
-			fscanf(minPptn_src, "%*[^\n]\n");
-			fscanf(maxPptn_src, "%*[^\n]\n");
-			fscanf(NPP_src, "%*[^\n]\n");
+			fscanf(minTemp_arq, "%*[^\n]\n");
+			fscanf(maxTemp_arq, "%*[^\n]\n");
+			fscanf(minPptn_arq, "%*[^\n]\n");
+			fscanf(maxPptn_arq, "%*[^\n]\n");
+			fscanf(NPP_arq, "%*[^\n]\n");
 
-			if (feof(minTemp_src) || feof(maxTemp_src) || feof(minPptn_src) || feof(maxPptn_src) || feof(NPP_src) )
+			if (feof(minTemp_arq) || feof(maxTemp_arq) || feof(minPptn_arq) || feof(maxPptn_arq) || feof(NPP_arq) )
 				break;
 			
 		}
 
+		fclose(minTemp_arq);
+		fclose(maxTemp_arq);
+		fclose(minPptn_arq);
+		fclose(maxPptn_arq);
+		fclose(NPP_arq);
+
 		return i;
 	}
 
-	int Grid::load_CellsConnectivity(FILE *geo_src, FILE *topo_src, FILE *rivers_src){
+	int Grid::setCellsConnectivity(const char *geoConectivity_src, const char *topoConectivity_src, const char *riversConectivity_src){
 		byte *geobuffer = NULL, *topobuffer = NULL, *riversbuffer = NULL;
 		size_t geoSize = 0, topoSize = 0, riversSize = 0;
 
 		u_int compressedMat_size = 0;
-		
+
+		FILE *geo_arq = fopen(geoConectivity_src,"rb");
+		FILE *topo_arq = fopen(topoConectivity_src,"rb");
+		FILE *rivers_arq = fopen(riversConectivity_src,"rb");
+
+		if(geo_arq == NULL){ printf(RED("Erro ao abrir arquivo %s\n"), geoConectivity_src); 		exit(1);}
+		if(topo_arq == NULL){ printf(RED("Erro ao abrir arquivo %s\n"), topoConectivity_src); 		exit(1);}
+		if(rivers_arq == NULL){ printf(RED("Erro ao abrir arquivo %s\n"), riversConectivity_src); 	exit(1);}
+
 		printf("\n");
 		printf(BLU("\tDescomprimindo Streams\n"));
-		if( my_decompress(geo_src, &geobuffer, &geoSize) != Z_OK ||
-			my_decompress(topo_src, &topobuffer, &topoSize) != Z_OK ||
-			my_decompress(rivers_src, &riversbuffer, &riversSize) != Z_OK)
+		if( my_decompress(geo_arq, &geobuffer, &geoSize) != Z_OK ||
+			my_decompress(topo_arq, &topobuffer, &topoSize) != Z_OK ||
+			my_decompress(rivers_arq, &riversbuffer, &riversSize) != Z_OK)
 		{
 			printf(RED("\tErro ao descomprimir streams!"));
+			fclose(geo_arq); fclose(topo_arq); fclose(rivers_arq);
 			exit(2);
 		}
+		fclose(geo_arq);
+		fclose(topo_arq);
+		fclose(rivers_arq);
 
 		int num_cells = ((int*)geobuffer)[0];
 		if( num_cells != ((int*)topobuffer)[0] || num_cells != ((int*)riversbuffer)[0]){
