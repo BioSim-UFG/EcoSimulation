@@ -206,15 +206,13 @@ namespace SimEco{
 						exit(3);
 					}
 				}
-				if(j == 2565)
-					printf(GRN("na linha %i - col %i\n "), i, j);
-
+				
 				connectivityMatrix[compressedMat_size] = {geoConn[j], topoConn[j], riversConn[j]};
 				indexMatrix[compressedMat_size] = {i, j};
 
 				if( indexMap.find( (uint)i)  == indexMap.end()){
 					indexMap.insert({(uint)i, (uint)compressedMat_size});
-					printf("mapa: %u ---> %u", i, indexMap.at(i));fflush(stdout);
+					//printf("mapa: %u ---> %u", i, indexMap.at(i));fflush(stdout);
 				}
 
 				compressedMat_size++;

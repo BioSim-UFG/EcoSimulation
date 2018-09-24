@@ -24,7 +24,6 @@ int main(int argc,char const *argv[]){
 	Specie *founders = (Specie *)malloc(sizeof(Specie) * NUM_FOUNDERS);
 	FILE *founders_input;
 
-
 	auto start_clock = chrono::high_resolution_clock::now();
 
 

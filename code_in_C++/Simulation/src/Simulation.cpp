@@ -14,7 +14,7 @@ namespace SimEco{
 			processFounder_timeZero(_grid.species[i]);
 
 			//olhando o resultado
-			for(uint j=0; i<_grid.species[i].celulas_IdxSize; j++){
+			for(uint j=0; j<_grid.species[i].celulas_IdxSize; j++){
 				//printf("especie %u - ocupou celula %u\n",i, _grid.species[i].celulas_Idx[j]);
 			}
 		}
@@ -42,6 +42,10 @@ namespace SimEco{
 			//ocupa essa celula também
 			if(idxMat[zipMatPos].i != idxMat[zipMatPos].j  && fitness[idxMat[zipMatPos].j] > 0.0f){
 				founder.celulas_Idx = (uint *)realloc(founder.celulas_Idx, sizeof(uint) * (founder.celulas_IdxSize+1));
+				if(founder.celulas_Idx == NULL){
+					perror(RED("Erro ao realocar memoria"));
+					exit(3);
+				}
 				founder.celulas_Idx[founder.celulas_IdxSize++] = idxMat[zipMatPos].j;
 			}
 
@@ -71,7 +75,8 @@ namespace SimEco{
 		MinPrecpTol = specie.niche[1].minimum;
 		MaxPrecpTol = specie.niche[1].maximum;
 
-		Climate *climates = Cell::getTimeClimates(timeStep);	//pega os climas das celulas de um timeStep
+		const Climate *climates = Cell::getTimeClimates(timeStep);	//pega os climas das celulas de um timeStep
+
 
 		//calcula o fitness dessa especia pra cada celula da grid
 		for(uint cellIdx=0; cellIdx < Grid::cellsSize; cellIdx++){
