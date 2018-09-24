@@ -27,7 +27,7 @@ namespace SimEco
 
 		static Connectivity *connectivityMatrix;   //matriz esparça compactada ( ver CUsparse)
 		static  MatIdx_2D *indexMatrix;
-		static map<uint, uint> mapLine_to_Compact_Idx;	//mapeia indice de linha (normal) para o indice na matriz compactada
+		static map<uint, uint> indexMap;	//mapeia indice de linha (normal) para o indice na matriz compactada
 		//troquei int por u_int, pois 50k x 50k dá um valor maior que MAX_INT, mas unsinged int aguenta
 		static u_int matrixSize;
 

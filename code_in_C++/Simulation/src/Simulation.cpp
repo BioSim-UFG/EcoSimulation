@@ -15,10 +15,9 @@ namespace SimEco{
 
 			//olhando o resultado
 			for(uint j=0; i<_grid.species[i].celulas_IdxSize; j++){
-				printf("especie %u - ocupou celula %u\n",i, _grid.species[i].celulas_Idx[j]);
+				//printf("especie %u - ocupou celula %u\n",i, _grid.species[i].celulas_Idx[j]);
 			}
 		}
-
 
 	}
 
@@ -34,8 +33,8 @@ namespace SimEco{
 		//agora, usando os fitness e as conectividades, espalhar o founder pela grid
 
 		const MatIdx_2D *idxMat = Grid::indexMatrix;
-		uint zipMatPos = Grid::mapLine_to_Compact_Idx[founder.celulas_Idx[0]];
-		
+		uint zipMatPos = Grid::indexMap[founder.celulas_Idx[0]];
+
 		//enquanto estiver na linha (da matriz compactada) correspondente a linha 'cellIdx'() da matriz de adjacencia)
 		uint lineValue = idxMat[zipMatPos].i;
 		while(idxMat[zipMatPos].i == lineValue){

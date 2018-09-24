@@ -12,7 +12,7 @@ namespace SimEco{
 
 	Connectivity *Grid::connectivityMatrix = NULL;
 	MatIdx_2D *Grid::indexMatrix = NULL;
-	map<uint, uint> Grid::mapLine_to_Compact_Idx;
+	map<uint, uint> Grid::indexMap;
 	u_int Grid::matrixSize = 0;
 
 	//Cell *Grid::cells;
@@ -64,7 +64,7 @@ namespace SimEco{
 			speciesSize = sp_size;
 		}
 
-		while(i<sp_size){
+		while(i < sp_size){
 			//celula.speciesInside[celula.numSpecies+i] = &sp[i];	//coloca o ponteiro da especie dentro do array 'speciesInside' da celula
 			species[i] = sp[i];
 			i++;
@@ -173,15 +173,20 @@ namespace SimEco{
 
 			No final usa-se o realloc para deixar a memoria alocada igual ao tamanho da matriz, isto é, deixamos alocados apenas 
 			o necessário.
-		*/	
+		*/
 
 		int block_size = (num_cells/5);		//tamanho do bloco (quantidade de elementos) que será realocado quando necessário
 		int blocksAllocated = 0;
+
+		//float *geoConn = (float *)geobuffer;
+		//float *topoConn = (float *)topobuffer;
+		//float *riversConn = (float *)riversbuffer;
 
 		printf(BLU("\tCompactando matriz esparsa ")); fflush(stdout);
 		for(int i=0; i<num_cells; i++){
 			//lê/descarta int que possui  número de colunas
 			geobuffer += sizeof(int); topobuffer += sizeof(int); riversbuffer += sizeof(int);
+			//geoConn += 1; topoConn += 1; riversConn += 1;
 			float *geoConn = (float*)geobuffer;
 			float *topoConn = (float*)topobuffer;
 			float *riversConn = (float*)riversbuffer;
@@ -196,16 +201,35 @@ namespace SimEco{
 					blocksAllocated++;
 					connectivityMatrix = (Connectivity *)realloc(connectivityMatrix, (blocksAllocated * block_size) * sizeof(Connectivity));
 					indexMatrix = (MatIdx_2D *)realloc(indexMatrix, (blocksAllocated * block_size) * sizeof(MatIdx_2D));
+					if (connectivityMatrix == NULL || indexMatrix == NULL){
+						perror(RED("Erro ao realocar memoria!"));
+						exit(3);
+					}
 				}
+				if(j == 2565)
+					printf(GRN("na linha %i - col %i\n "), i, j);
 
 				connectivityMatrix[compressedMat_size] = {geoConn[j], topoConn[j], riversConn[j]};
 				indexMatrix[compressedMat_size] = {i, j};
-				mapLine_to_Compact_Idx.insert({(uint)i, (uint)compressedMat_size});
-				compressedMat_size++;
-			}
 
+				if( indexMap.find( (uint)i)  == indexMap.end()){
+					indexMap.insert({(uint)i, (uint)compressedMat_size});
+					printf("mapa: %u ---> %u", i, indexMap.at(i));fflush(stdout);
+				}
+
+				compressedMat_size++;
+
+				//geoConn += 1;
+				//topoConn += 1;
+				//riversConn += 1;
+			}
 			geobuffer+=sizeof(float)*num_cells; topobuffer+=sizeof(float)*num_cells; riversbuffer+=sizeof(float)*num_cells;
+
 		}
+
+
+
+		//  [][][][][][][][][][][]
 
 		//realloca matriz compactada para tamanho certo/preciso
 		connectivityMatrix = (Connectivity *)realloc(connectivityMatrix, compressedMat_size * sizeof(Connectivity));
