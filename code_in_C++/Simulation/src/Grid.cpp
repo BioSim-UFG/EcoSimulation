@@ -178,16 +178,13 @@ namespace SimEco{
 		int block_size = (num_cells/5);		//tamanho do bloco (quantidade de elementos) que será realocado quando necessário
 		int blocksAllocated = 0;
 
-		//float *geoConn = (float *)geobuffer;
-		//float *topoConn = (float *)topobuffer;
-		//float *riversConn = (float *)riversbuffer;
 
 		printf(BLU("\tCompactando matriz esparsa ")); fflush(stdout);
 		for(int i=0; i<num_cells; i++){
 			//lê/descarta int que possui  número de colunas
 			geobuffer += sizeof(int); topobuffer += sizeof(int); riversbuffer += sizeof(int);
-			//geoConn += 1; topoConn += 1; riversConn += 1;
-			float *geoConn = (float*)geobuffer;
+
+			float *geoConn = (float*)geobuffer;		//"converte" o array de bytes para um array de floats
 			float *topoConn = (float*)topobuffer;
 			float *riversConn = (float*)riversbuffer;
 
@@ -216,18 +213,25 @@ namespace SimEco{
 				}
 
 				compressedMat_size++;
-
-				//geoConn += 1;
-				//topoConn += 1;
-				//riversConn += 1;
 			}
+
 			geobuffer+=sizeof(float)*num_cells; topobuffer+=sizeof(float)*num_cells; riversbuffer+=sizeof(float)*num_cells;
 
+
+			//imprimindo barra de progresso
+			printf(BLU("\r\tCompactando matriz esparsa "));
+			printf(SetForeWHT SetBOLD);
+			printf("[");
+			for(int k=0; k<50;k++){
+				if(k <= ((i*100)/num_cells) ) printf("#");
+				else printf(" ");
+			}
+			printf("]");
+			printf(RESETTEXT);
+			fflush(stdout);
 		}
 
 
-
-		//  [][][][][][][][][][][]
 
 		//realloca matriz compactada para tamanho certo/preciso
 		connectivityMatrix = (Connectivity *)realloc(connectivityMatrix, compressedMat_size * sizeof(Connectivity));
@@ -235,7 +239,7 @@ namespace SimEco{
 
 		Grid::matrixSize = compressedMat_size;
 
-		printf(" %i elementos removidos, tamanho final=%i\n", (num_cells * num_cells) - Grid::matrixSize, Grid::matrixSize);
+		printf("\n\t%i elementos removidos, tamanho final=%i\n", (num_cells * num_cells) - Grid::matrixSize, Grid::matrixSize);
 		fflush(stdout);
 		return num_cells;
 	}

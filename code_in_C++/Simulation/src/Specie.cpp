@@ -16,17 +16,21 @@ namespace SimEco{
 
 		copy(niche.begin(), niche.end(), this->niche.begin());
     }
+
 	Specie::Specie(array<NicheValue, NUM_ENV_VARS> niche, Dispersion dispCapacity, uint cellIdxs[], uint cellIdxsSize){
 		dispCap = dispCapacity;
 		curSize = 0.0f;
 		growth = 0.0f;
 		celulas_Idx = (uint *)malloc(sizeof(uint) * cellIdxsSize);
+		
 		for(int i=0; i<celulas_IdxSize; i++){
 			celulas_Idx[i] = cellIdxs[i];
 		}
 
 		copy(niche.begin(), niche.end(), this->niche.begin());
 	}
+
+	Specie::Specie(){}
 
 	Specie::~Specie(){}
 }

@@ -21,7 +21,7 @@ int main(int argc,char const *argv[]){
 	Grid *grid;
 	Cell *celulas;	/* vetor de celulas */
 	//Specie *founders = new Specie[NUM_FOUNDERS]; /*vetor de classes */
-	Specie *founders = (Specie *)malloc(sizeof(Specie) * NUM_FOUNDERS);
+	Specie founders[NUM_FOUNDERS];// = (Specie *)malloc(sizeof(Specie) * NUM_FOUNDERS);
 	FILE *founders_input;
 
 	auto start_clock = chrono::high_resolution_clock::now();
@@ -84,28 +84,30 @@ int main(int argc,char const *argv[]){
 	}
 
 	
-	/*******************INICIANDO SIMULAÇÃO********************/
+	/**************************INICIANDO SIMULAÇÃO*******************************/
 	grid = new Grid(num_cells, NUM_FOUNDERS);
 
 	//coloca os founders em suas celulas
 	grid->setFounders(founders, NUM_FOUNDERS);
 
+	printf("\n * * * * * * * * * * * * * * * * * * * *\n\n"); fflush(stdout);
 	printf(LGTGRN("Iniciando Simulação \n")); fflush(stdout);
-	simulacao = new Simulation(*grid);
+	
+	simulacao = new Simulation(*grid);		//calcula o tempo -1 (tempo ZERO)
 
 	/*** TESTE ***/
-
+	/*
 	FILE *teste = fopen("qqrnome.txt","w");
 	for (int i = 0; i < grid->species[0].celulas_IdxSize ; i++){
 		fprintf(teste,"%d ",grid->species[0].celulas_Idx[i]);
 	}
-	fclose(teste);
+	fclose(teste);*/
 	
 	//printf("EU OCUPO %d\n",grid->species[0].celulas_Idx[7]);
 
-		/**** FIM TESTE **/
+	/**** FIM TESTE **/
 
-		/*******FIM DA SIMULAÇÃO***********/
+	/***************************FIM DA SIMULAÇÃO*********************************/
 
 		// finaliza contagem de tempo
 		auto finish_clock = chrono::high_resolution_clock::now();
