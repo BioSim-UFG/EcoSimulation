@@ -22,9 +22,9 @@ Substituir *mode* pelo modo desejado, opções:
 - **`opt3`**: compila programa otimizando-o no nivel 1, as flags `-O3 -march=native -Wno-unused-result` são adicionadas a compilação;<br/>
     Caso tenha compilado default ou outro nivel de opt na ultima vez, use o modo all optX, para assim recompilar os arquivos .o, no nivel X desejado;
 - **`debug`**: compila programa com flags `-g -fno-inline-functions -DGLIBCXX_DEBUG`, habilitando o uso de um Debugger;
-- **`fast`**: equivale ao modo `opt3`;
-- **`all`**: "toca" todos os aquivos fontes, fazendo com que o proximo *make* compile todos os arquivos fontes;
-- **`clear`**: deleta todos os aquivos .o;<br/>
+- **`fast`**: equivale ao modo `opt2`;
+- **`all`**: "toca" todos os aquivos fontes, fazendo com que o proximo comando *make* compile todos os arquivos fontes;
+- **`clean`**: deleta todos os aquivos .o;<br/>
 
 **dicas**:<br/>usar `make all <modo>` para forçar compilação de todos aquivos, ao mudar de um modo para outro, exemplo: `make all default`
 

@@ -50,7 +50,7 @@ default: $(OBJ)
 	@echo 'All compiled'
 
 #fast, optimized compiling mode
-fast: opt3
+fast: opt2
 opt3: EXTFLG = -O3 -march=native -Wno-unused-result
 opt3: ECHOMSG = "fast, optimized compiling mode level 3\n"
 opt3: default
@@ -71,6 +71,6 @@ all:
 	@touch $(SRCDIR)/*
 	@echo 'touching all src files'
 
-clear: 
+clean: 
 	@find -name '*.o' -delete
 	@echo 'deleted .o files'

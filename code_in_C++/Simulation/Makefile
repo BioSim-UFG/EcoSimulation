@@ -72,7 +72,7 @@ all:
 	@touch $(SRCDIR)/*
 	@echo 'touching all src files'
 
-clear: 
+clean: 
 	@find -name '*.o' -delete
 	@echo 'deleted .o files'
 
