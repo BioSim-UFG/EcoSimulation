@@ -91,9 +91,10 @@ int main(int argc,char const *argv[]){
 	//coloca os founders em suas celulas
 	grid->setFounders(founders, NUM_FOUNDERS);
 
-	printf("\n * * * * * * * * * * * * * * * * * * * *\n\n"); fflush(stdout);
+	printf("\n * * * * * * * * * * * * * * * * * * * * * * *\n\n"); fflush(stdout);
 	printf(LGTGRN("Iniciando Simulação \n")); fflush(stdout);
 	
+	cout<<BLU("\tCalculando tempo ZERO\n"); fflush(stdout);
 	simulacao = new Simulation(*grid);		//calcula o tempo -1 (tempo ZERO)
 
 
@@ -121,7 +122,7 @@ int main(int argc,char const *argv[]){
 	auto finish_clock = chrono::high_resolution_clock::now();
 	std::chrono::duration<double> elapsed = finish_clock - start_clock;
 
-	cout<<"Tempo total: "<<BOLD( WHT( << elapsed.count() <<" s\n"));
+	cout<<"\nTempo total: "<<BOLD( WHT( << elapsed.count() <<" s\n"));
 
 
 	delete[] Cell::cell_climates;

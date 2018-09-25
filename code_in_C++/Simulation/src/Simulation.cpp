@@ -9,7 +9,6 @@ namespace SimEco{
 		
 		//aqui faz o trabalho de preparação da simulação, usando a(s) especie(s) fundadora(s)
 
-		cout<<BLU("\tCalculando tempo ZERO\n"); fflush(stdout);
 		for(uint i=0; i<_grid.speciesSize; i++){
 			processFounder_timeZero(_grid.species[i]);
 

@@ -27,7 +27,7 @@ namespace SimEco{
 	}
 
 	Grid::~Grid(){
-		printf(YEL("destrutor de Grid - destruindo vetor species %p\n"), species);
+		//printf(YEL("destrutor de Grid - end. %p\n"), this);
 		delete[] species;
 	}
 
@@ -249,8 +249,8 @@ namespace SimEco{
 		Grid::matrixSize = compressedMat_size;
 
 
-		printf(CYN("\n\tnumero de entradas no map = %lu"), indexMap.size() );
-		printf(CYN("\n\t%i elementos removidos, tamanho final=%i\n"), (num_cells * num_cells) - Grid::matrixSize, Grid::matrixSize);
+		//printf(CYN("\n\tnumero de entradas no map = %lu"), indexMap.size() );
+		printf(CYN("\n\t\t%i elementos removidos, tamanho final=%i\n"), (num_cells * num_cells) - Grid::matrixSize, Grid::matrixSize);
 		fflush(stdout);
 		return num_cells;
 	}

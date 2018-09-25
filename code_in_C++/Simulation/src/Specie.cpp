@@ -37,7 +37,7 @@ namespace SimEco{
 	}
 
 	Specie::~Specie(){
-		printf(YEL("destrutor de Specie - liberando ptr do vetor celulas_Idx %p\n"),celulas_Idx);
+		//printf(YEL("destrutor de Specie - end. %p\n"),this);
 		free(celulas_Idx);
 		celulas_Idx = NULL;
 	}
