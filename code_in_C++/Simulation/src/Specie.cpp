@@ -7,8 +7,12 @@ namespace SimEco{
 		dispCapacity: capacidade de dispersão da espécie
 		celIdx: índice da célula que está espécie está inicialmente	
 	*/
+	uint Specie::_nSpecies =0;
+
     Specie::Specie(array<NicheValue, NUM_ENV_VARS> niche, Dispersion dispCapacity, uint cellIdx){
     	//celulaQueTo = nullptr;
+		_nSpecies++;
+		_name = to_string(_nSpecies);
     	dispCap = dispCapacity;
     	curSize = 0.0f;
     	growth = 0.0f;
