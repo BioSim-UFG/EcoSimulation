@@ -25,7 +25,7 @@ namespace SimEco{
 	/*******************************implementando ainda essa função*********************************/
 
 	//processa o time zero pra uma especie founder especifica
-	inline void Simulation::processFounders_timeZero(Specie &founder){
+	inline void Simulation::processFounder_timeZero(Specie &founder){
 		/*aqui chama calcFitness e ela retorna um vetor (dinamicamente alocado lá dentro)
 		  com os fitness da especie com todas as celulas (consquentemente, vetor de tamanho Grid::cellsSize)*/
 

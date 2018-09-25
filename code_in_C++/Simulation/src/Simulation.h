@@ -28,7 +28,7 @@ namespace SimEco{
 		constexpr static float ErfD = 0.078108f;
 		constexpr static double pi = M_PI;
 
-		inline void processFounders_timeZero(Specie &founder);
+		inline void processFounder_timeZero(Specie &founder);
 		//calcula o fitness, e retorna o ponteiro do vetor resultante
 		float* calcSpecieFitness(const Specie &specie, uint timeStep, float *fitness);
 		//cria o poligono (já clipado) da curva do nicho
