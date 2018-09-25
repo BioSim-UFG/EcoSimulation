@@ -2,12 +2,10 @@
 #define GRID_H
 
 #include "SimTypes.h"
-#include "Cell.h"
-#include <utility>
 #include <unordered_map>
 
 #define MAX_CELLS 2566
-#define NUM_FOUNDERS 3
+#define NUM_FOUNDERS 4
 
 
 using namespace std;

@@ -4,8 +4,6 @@
 // como varios objetos do tipo simulation
 
 #include "SimTypes.h"
-#include "Grid.h"
-#include "Specie.h"
 #include <math.h>
 
 namespace SimEco{
@@ -30,7 +28,7 @@ namespace SimEco{
 
 		inline void processFounder_timeZero(Specie &founder);
 		//calcula o fitness, e retorna o ponteiro do vetor resultante
-		float* calcSpecieFitness(Specie &specie, uint timeStep);
+		float* calcSpecieFitness(Specie &specie, uint timeStep, float *fitness);
 		//cria o poligono (já clipado) da curva do nicho
 		void NicheCurve(const float MinTol, const float MaxTol, const float MinEnv, const float MaxEnv, poly_t &NichePoly);
 

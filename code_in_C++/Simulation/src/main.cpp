@@ -20,7 +20,7 @@ void carrega_founders(const char *founders_input, Specie founders[]);
 int main(int argc,char const *argv[]){
 	Simulation *simulacao;
 	Grid *grid;
-	Cell *celulas;	/* vetor de celulas */
+	//Cell *celulas;	/* vetor de celulas */
 	Specie *founders = new Specie[NUM_FOUNDERS]; /*vetor de classes */
 	//Specie *founders = (Specie *)malloc(sizeof(Specie) * NUM_FOUNDERS);
 
@@ -37,17 +37,17 @@ int main(int argc,char const *argv[]){
 
 		/***** lendo Serie Climatica das Celulas *****/
 
-	int numero_de_passos = 50; // 50 tempos + tempo zero
-	Cell::cell_climates = new Climate*[MAX_CELLS];
-	for(size_t i=0; i<MAX_CELLS; i++)
-		Cell::cell_climates[i] = new Climate[numero_de_passos+1];
+	int numero_de_tempos = 51; // 50 tempos + tempo zero
+	Cell::cell_climates = new Climate *[numero_de_tempos];
+	for(size_t i=0; i<numero_de_tempos; i++)
+		Cell::cell_climates[i] = new Climate[MAX_CELLS];
 
 	printf(GRN("Lendo serie Climatica ...")); fflush(stdout);
 	int celulas_lidasClima = Grid::setCellsClimate("../../output/DummyHex2566 - Output - MinTemp.txt", 		//climas de todas as celulas em todos os tempos
 												   "../../output/DummyHex2566 - Output - MaxTemp.txt",
 												   "../../output/DummyHex2566 - Output - MinPPTN.txt",
 												   "../../output/DummyHex2566 - Output - MaxPPTN.txt",
-												   "../../output/DummyHex2566 - Output - NPP.txt", numero_de_passos);
+												   "../../output/DummyHex2566 - Output - NPP.txt", numero_de_tempos);
 	printf(BOLD(LGTGRN("OK!\n"))); fflush(stdout);
 
 
@@ -100,7 +100,7 @@ int main(int argc,char const *argv[]){
 
 	/** agora que toda a pré configuração está pronta, vamos rodar mesmo a simulação **/
 
-	simulacao->run(numero_de_passos);	//roda a simulação para N timeSteps
+	simulacao->run(numero_de_tempos);	//roda a simulação para N timeSteps
 
 
 

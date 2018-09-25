@@ -1,7 +1,8 @@
 #include "Grid.h"
+#include "Cell.h"
 #include "Specie.h"
 #include <string.h>
-#include <execinfo.h>
+//#include <execinfo.h>
 
 #include "decompressData.h"
 #include "color.h"
@@ -86,7 +87,7 @@ namespace SimEco{
 		if (maxPptn_arq == NULL){ printf(RED("Erro ao abrir %s\n"), maxPptn_src); 	exit(1); }
 		if (NPP_arq == NULL){ printf(RED("Erro ao abrir %s\n"), NPP_src); 		exit(1); }
 
-		int i, j;
+		long int i, j;
 
 		fscanf(minTemp_arq, "%*[^\n]\n"); //ignora a primeira linha
 		fscanf(maxTemp_arq, "%*[^\n]\n"); //ignora a primeira linha
@@ -100,11 +101,11 @@ namespace SimEco{
 				break;
 
 			for (j = timeSteps - 1; j >= 0; j--){
-				fscanf(minTemp_arq, "%f", &(Cell::cell_climates[i][j].envValues[climVar::Temp].minimum));
-				fscanf(maxTemp_arq, "%f", &(Cell::cell_climates[i][j].envValues[climVar::Temp].maximum));
-				fscanf(minPptn_arq, "%f", &(Cell::cell_climates[i][j].envValues[climVar::Pptn].minimum));
-				fscanf(maxPptn_arq, "%f", &(Cell::cell_climates[i][j].envValues[climVar::Pptn].maximum));
-				fscanf(NPP_arq, "%f", &(Cell::cell_climates[i][j].NPP));
+				fscanf(minTemp_arq, "%f", &(Cell::cell_climates[j][i].envValues[climVar::Temp].minimum));
+				fscanf(maxTemp_arq, "%f", &(Cell::cell_climates[j][i].envValues[climVar::Temp].maximum));
+				fscanf(minPptn_arq, "%f", &(Cell::cell_climates[j][i].envValues[climVar::Pptn].minimum));
+				fscanf(maxPptn_arq, "%f", &(Cell::cell_climates[j][i].envValues[climVar::Pptn].maximum));
+				fscanf(NPP_arq, "%f", &(Cell::cell_climates[j][i].NPP));
 			}
 			fscanf(minTemp_arq, "%*[^\n]\n");
 			fscanf(maxTemp_arq, "%*[^\n]\n");
@@ -230,7 +231,7 @@ namespace SimEco{
 			printf(SetForeWHT SetBOLD);
 			printf("[");
 			for(int k=0; k<50;k++){
-				if(k <= ((i*100)/num_cells) ) printf("#");
+				if( ((double)k/50)  <= (double)i/num_cells ) printf("#");
 				else printf(" ");
 			}
 			printf("]");

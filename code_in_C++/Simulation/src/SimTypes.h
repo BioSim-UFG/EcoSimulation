@@ -1,7 +1,7 @@
 #ifndef SIMTYPES_H
 #define SIMTYPES_H
 
-#include <vector>
+//#include <vector>
 #include <array>
 
 #define NUM_ENV_VARS 2

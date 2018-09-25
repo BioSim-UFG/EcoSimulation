@@ -1,9 +1,12 @@
 #include "Simulation.h"
-#include "color.h"
+#include "Cell.h"
 #include "Grid.h"
+#include "Specie.h"
+
+#include "color.h"
 #include <iostream>
 #include <cmath>
-#include <memory>
+
 namespace SimEco{
 	Simulation::Simulation(Grid &grid): _grid(grid)/*, founders(founders), foundersSize(founders_size)*/{
 		
@@ -12,10 +15,16 @@ namespace SimEco{
 		for(uint i=0; i<_grid.speciesSize; i++){
 			processFounder_timeZero(_grid.species[i]);
 
-			//olhando o resultado
-			/*for(uint j=0; j<_grid.species[i].celulas_IdxSize; j++){
-				printf("especie %u - ocupou celula %u\n",i, _grid.species[i].celulas_Idx[j]);
-			}*/
+			//imprindo resultado em arquivo
+			char name[256]; sprintf(name, "timeZero - especie %u", i);
+			FILE *out=fopen(name, "w");
+			for(uint j=0; j<_grid.species[i].celulas_IdxSize; j++){
+				fprintf(out, "%5.u ", _grid.species[i].celulas_Idx[j]);
+				if((j+1)%7 == 0)
+					fprintf(out, "\n");
+				//printf("especie %u - ocupou celula %u\n",i, _grid.species[i].celulas_Idx[j]);
+			}
+			fclose(out);
 		}
 
 	}
@@ -27,7 +36,9 @@ namespace SimEco{
 	inline void Simulation::processFounder_timeZero(Specie &founder){
 		/*aqui chama calcFitness e ela retorna um vetor (dinamicamente alocado lá dentro)
 		  com os fitness da especie com todas as celulas (consquentemente, vetor de tamanho Grid::cellsSize)*/
-		float *fitness = calcSpecieFitness(founder, 0);
+
+		float *fitness = new float[_grid.cellsSize];
+		calcSpecieFitness(founder, 0, fitness);
 
 		//agora, usando os fitness e as conectividades, espalhar o founder pela grid
 
@@ -67,8 +78,7 @@ namespace SimEco{
 	/********************************************************************************/
 
 	//calcula o fitness de uma especie em um determinado timeStep (copiei e adaptei a função que tinhamos pra GPU)
-	float* Simulation::calcSpecieFitness(Specie &specie, uint timeStep){
-		float *fitness = new float[_grid.cellsSize];
+	float* Simulation::calcSpecieFitness(Specie &specie, uint timeStep, float *fitness){
 
 		float StdAreaNoOverlap, StdSimBetweenCenters;
 		float MidTol;
