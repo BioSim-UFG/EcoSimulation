@@ -7,6 +7,9 @@ Também comente no Código no formato " `// ~BUG: ....` ", para facilitar a loca
 é recomendado que sua versão do gcc/g++ seja acima da versão 6.1  -> https://gcc.gnu.org/projects/cxx-status.html#cxx14
 se nao tiver, pode usar alguma acima da 4.8.1, e alterar a flag da compilação de `-std=c++14` para `-std=c++11`, dentro do makefile.
 
+Vendo estatisticas (inclusive uso de memória) da execução:
+
+- rodar o programa com o prefixo `env time -v`, por exemplo: `env time -v ./Prog`
 
 comando de terminal para compilar normalmente:
 
