@@ -18,14 +18,13 @@ void carrega_founders(const char *founders_input, Specie founders[]);
 
 //no futuro podemos usar argumentos (argv) para passar o nome do arquivo de founders
 int main(int argc,char const *argv[]){
-	Simulation *simulacao;
-	Grid *grid;
-
 	if(argc < 2){
 		perror(RED("Nome da simulação não inserido"));
 		exit(4);
 	}
-
+	
+	Simulation *simulacao;
+	Grid *grid;
 	//Cell *celulas;	/* vetor de celulas */
 	Specie *founders = new Specie[NUM_FOUNDERS]; /*vetor de classes */
 	//Specie *founders = (Specie *)malloc(sizeof(Specie) * NUM_FOUNDERS);

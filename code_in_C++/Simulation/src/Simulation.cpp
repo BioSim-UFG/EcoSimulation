@@ -9,37 +9,23 @@
 
 namespace SimEco{
 	Simulation::Simulation(Grid &grid, const char* name): _grid(grid) , _name(name)/*, founders(founders), foundersSize(founders_size)*/{
-		
-		create_initial_file();
+
+		create_Directory();	//cria diretorio de saida/resultados da simulação
 
 		//aqui faz o trabalho de preparação da simulação, usando a(s) especie(s) fundadora(s)
 		for(uint i=0; i<_grid.speciesSize; i++){
-			processFounder_timeZero(_grid.species[i]);
-		
-			/*//imprindo resultado em arquivo
-			char name[256]; sprintf(name, "timeZero - especie %u", i);
-			FILE *out=fopen(name, "w");
-			for(uint j=0; j<_grid.species[i].celulas_IdxSize; j++){
-				fprintf(out, "%5.u ", _grid.species[i].celulas_Idx[j]);
-				if((j+1)%7 == 0)
-					fprintf(out, "\n");
-				//printf("especie %u - ocupou celula %u\n",i, _grid.species[i].celulas_Idx[j]);
-			}
-			fclose(out);
-			*/
-
-			//guardando os founders
+			processFounders_timeZero(_grid.species[i]);
 		}
-		createTimeStepFile(0);
 
-		printf(GRN("Arquivos iniciais criados com sucesso!\n"));
+		createTimeStepFiles(0);
+
 	}
 
 
 	/*******************************implementando ainda essa função*********************************/
 
 	//processa o time zero pra uma especie founder especifica
-	inline void Simulation::processFounder_timeZero(Specie &founder){
+	inline void Simulation::processFounders_timeZero(Specie &founder){
 		/*aqui chama calcFitness e ela retorna um vetor (dinamicamente alocado lá dentro)
 		  com os fitness da especie com todas as celulas (consquentemente, vetor de tamanho Grid::cellsSize)*/
 
@@ -75,16 +61,26 @@ namespace SimEco{
 
 	void Simulation::run(int nSteps){
 		
+		float *fitness = new float[_grid.cellsSize];
 		for(int timeStep = 0; timeStep< nSteps; timeStep++){
+			printf(BLU("\r\tProcessando timeStep %d/%d"), timeStep, nSteps-1);
+			fflush(stdout);
+
 			//processa cada timeStep
+			for(uint spcIdx=0; spcIdx<_grid.speciesSize; spcIdx++){
+				Specie &especie = _grid.species[spcIdx];
+				calcSpecieFitness(especie, timeStep, fitness);	//obtem os fitness's da espécie 
+
+
+			}
 
 		}
 	}
 
-	/********************************************************************************/
+
 
 	//calcula o fitness de uma especie em um determinado timeStep (copiei e adaptei a função que tinhamos pra GPU)
-	float* Simulation::calcSpecieFitness(Specie &specie, uint timeStep, float *fitness){
+	float* Simulation::calcSpecieFitness(const Specie &specie, uint timeStep, float *fitness){
 
 		float StdAreaNoOverlap=0, StdSimBetweenCenters=0;
 		float MidTol=0;
@@ -230,16 +226,17 @@ namespace SimEco{
 		//printf("vertice %d -> x-%f   y-%f\n\n",nPoints+2,NichePoly->v[nPoints+2].x, NichePoly->v[nPoints+2].y );
 	}
 
-	void Simulation::create_initial_file(){
+
+	/***********************************************************************************/
+
+	//cria o diretorio no caminho ( e o caminho se o tal nao existir ainda), apenas se ele não existir
+	void Simulation::create_Directory(){
 		char pasta[80];
-
-
-		sprintf(pasta,"mkdir Result/%s",_name);
-		
+		sprintf(pasta,"mkdir -p Results/%s",_name);
 		system(pasta);
-
 	}
-	void Simulation::createTimeStepFile(int timeStep){
+
+	void Simulation::createTimeStepFiles(int timeStep){
 
 		for(size_t i = 0; i < _grid.speciesSize ; i++){
 			createSpecieFile(timeStep, _grid.species[i]);
@@ -249,10 +246,8 @@ namespace SimEco{
 	void Simulation::createSpecieFile(int timeStep, Specie &sp){
 		FILE *f;
 		char fname[80];
-
 		//fname += _name + "_" + sp._name + "_" + to_string(timeStep) ;
-		sprintf(fname,"Result/%s/%s_%d_%d",_name,_name,sp._name,timeStep);
-
+		sprintf(fname,"Results/%s/%s_Esp%d_Time%d",_name,_name,sp._name,timeStep);
 
 		f = fopen(fname,"w");
 		if(f == NULL){
@@ -260,14 +255,12 @@ namespace SimEco{
 				exit(1);
 		}
 
-
 		for (size_t i = 0; i < sp.celulas_IdxSize; i++){
 			//fprintf(f, "%d ", sp.celulas_Idx[i]);
-
 			fprintf(f, "%5.u ", sp.celulas_Idx[i]);
 			if ((i + 1) % 7 == 0)
 				fprintf(f, "\n");
-			
+	
 		}
 
 		fclose(f);

@@ -28,7 +28,7 @@ namespace SimEco{
 	}
 
 	Grid::~Grid(){
-		printf(YEL("destrutor de Grid - end. %p\n"), this);
+		//printf(YEL("destrutor de Grid - end. %p\n"), this);
 		delete[] species;
 	}
 
@@ -141,21 +141,27 @@ namespace SimEco{
 		if(rivers_arq == NULL){ printf(RED("Erro ao abrir arquivo %s\n"), riversConectivity_src); 	exit(1);}
 
 		printf("\n");
-		printf(BLU("\tDescomprimindo Streams\n"));
-		if( my_decompress(geo_arq, &geobuffer, &geoSize) != Z_OK ||
-			my_decompress(topo_arq, &topobuffer, &topoSize) != Z_OK ||
-			my_decompress(rivers_arq, &riversbuffer, &riversSize) != Z_OK)
-		{
+		printf(BLU("\tDescomprimindo Streams")); fflush(stdout);
+		int decompressRet1, decompressRet2, decompressRet3;
+
+		printf(SetBOLD SetForeWHT "\t   [");		//imprimindo barra de progresso
+		decompressRet1 = my_decompress(geo_arq, &geobuffer, &geoSize);			printf("#################"); fflush(stdout);
+		decompressRet2 = my_decompress(topo_arq, &topobuffer, &topoSize);		printf("#################"); fflush(stdout);
+		decompressRet3 = my_decompress(rivers_arq, &riversbuffer, &riversSize);	printf("################]\n" RESETTEXT); fflush(stdout);
+		
+		if (decompressRet1 != Z_OK || decompressRet2 != Z_OK || decompressRet3 != Z_OK){
 			printf(RED("\tErro ao descomprimir streams!"));
 			fclose(geo_arq); fclose(topo_arq); fclose(rivers_arq);
 			exit(2);
 		}
+
 		fclose(geo_arq);
 		fclose(topo_arq);
 		fclose(rivers_arq);
 		geobuffer_start = geobuffer;
 		topobuffer_start = topobuffer;
 		riversbuffer_start = riversbuffer;
+
 
 
 
@@ -251,7 +257,7 @@ namespace SimEco{
 
 
 		//printf(CYN("\n\tnumero de entradas no map = %lu"), indexMap.size() );
-		printf(CYN("\n\t\t%i elementos removidos, tamanho final=%i\n"), (num_cells * num_cells) - Grid::matrixSize, Grid::matrixSize);
+		printf(CYN("\n\t\t\t\t    %i elementos removidos, tamanho final=%i\n"), (num_cells * num_cells) - Grid::matrixSize, Grid::matrixSize);
 		fflush(stdout);
 		return num_cells;
 	}

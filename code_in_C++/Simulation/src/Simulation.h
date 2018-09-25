@@ -28,13 +28,15 @@ namespace SimEco{
 		constexpr static float ErfD = 0.078108f;
 		constexpr static double pi = M_PI;
 
-		inline void processFounder_timeZero(Specie &founder);
+		inline void processFounders_timeZero(Specie &founder);
 		//calcula o fitness, e retorna o ponteiro do vetor resultante
-		float* calcSpecieFitness(Specie &specie, uint timeStep, float *fitness);
+		float* calcSpecieFitness(const Specie &specie, uint timeStep, float *fitness);
 		//cria o poligono (já clipado) da curva do nicho
 		void NicheCurve(const float MinTol, const float MaxTol, const float MinEnv, const float MaxEnv, poly_t &NichePoly);
-		void create_initial_file();
-		void createTimeStepFile(int timeStep);
+		//void create_initial_file();
+		void create_Directory();
+
+		void createTimeStepFiles(int timeStep);
 		void createSpecieFile(int timeStep, Specie &sp);
 
 	  public: 

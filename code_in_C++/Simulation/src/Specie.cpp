@@ -44,7 +44,7 @@ namespace SimEco{
 	}
 
 	Specie::~Specie(){
-		printf(YEL("destrutor de Specie - end. %p\n"),this);
+		//printf(YEL("destrutor de Specie - end. %p\n"),this);
 		free(celulas_Idx);
 		celulas_Idx = NULL;
 	}
