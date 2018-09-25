@@ -14,7 +14,7 @@ namespace SimEco{
 
 		//aqui faz o trabalho de preparação da simulação, usando a(s) especie(s) fundadora(s)
 		for(uint i=0; i<_grid.speciesSize; i++){
-			processFounders_timeZero(_grid.species[i]);
+			processFounder_timeZero(_grid.species[i]);
 		}
 
 		createTimeStepFiles(0);
@@ -63,7 +63,7 @@ namespace SimEco{
 		
 		float *fitness = new float[_grid.cellsSize];
 		for(int timeStep = 0; timeStep< nSteps; timeStep++){
-			printf(BLU("\r\tProcessando timeStep %d/%d"), timeStep, nSteps-1);
+			printf(BLU("\r\tProcessando timeStep ") "%d/%d", timeStep, nSteps-1);
 			fflush(stdout);
 
 			//processa cada timeStep
