@@ -14,6 +14,7 @@ namespace SimEco{
 	class Simulation{
 
 	  private:
+	  string name;
 		Grid &_grid;		//referencia para a grid
 		//Specie *founders;	//referencia para array de especies ( fundadoras nesse caso)
 		//uint foundersSize;
@@ -35,7 +36,7 @@ namespace SimEco{
 	  public:
 		Simulation(Grid &grid);
 		void run(int nSteps);
-	
+
 	};
 
 
