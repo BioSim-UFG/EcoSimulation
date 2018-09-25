@@ -59,8 +59,8 @@ namespace SimEco{
 		//Cell &celula = this->cells[positions[i]];
 		if(sp_size > speciesSize){
 			species = (Specie *)realloc(species, sizeof(Specie) * sp_size);
-			speciesSize = sp_size;
 		}
+		speciesSize = sp_size;
 
 		while(i < sp_size){
 			//celula.speciesInside[celula.numSpecies+i] = &sp[i];	//coloca o ponteiro da especie dentro do array 'speciesInside' da celula

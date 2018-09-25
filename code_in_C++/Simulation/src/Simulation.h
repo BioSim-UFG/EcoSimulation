@@ -21,7 +21,7 @@ namespace SimEco{
 		//uint foundersSize;
 
 
-		constexpr static int nSteps = 5; //precisão do poligono / número de pontos no poligono
+		constexpr static int nPoints = 5; //precisão do poligono / número de pontos no poligono
 		constexpr static float ErfA = 0.278393f;                   // Abramowitz e Stegun approximation to erf
 		constexpr static float ErfB = 0.230389f;                   // https://en.wikipedia.org/wiki/Error_function
 		constexpr static float ErfC = 0.000972f;
@@ -35,6 +35,7 @@ namespace SimEco{
 
 	  public:
 		Simulation(Grid &grid);
+		void run(int nSteps);
 	
 	};
 

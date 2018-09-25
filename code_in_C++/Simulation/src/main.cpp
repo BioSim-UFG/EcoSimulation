@@ -37,10 +37,10 @@ int main(int argc,char const *argv[]){
 
 		/***** lendo Serie Climatica das Celulas *****/
 
-	int numero_de_passos = 51; // 50 tempos + tempo zero
+	int numero_de_passos = 50; // 50 tempos + tempo zero
 	Cell::cell_climates = new Climate*[MAX_CELLS];
 	for(size_t i=0; i<MAX_CELLS; i++)
-		Cell::cell_climates[i] = new Climate[numero_de_passos];
+		Cell::cell_climates[i] = new Climate[numero_de_passos+1];
 
 	printf(GRN("Lendo serie Climatica ...")); fflush(stdout);
 	int celulas_lidasClima = Grid::setCellsClimate("../../output/DummyHex2566 - Output - MinTemp.txt", 		//climas de todas as celulas em todos os tempos
@@ -95,6 +95,13 @@ int main(int argc,char const *argv[]){
 	
 	simulacao = new Simulation(*grid);		//calcula o tempo -1 (tempo ZERO)
 
+
+	/** agora que toda a pré configuração está pronta, vamos rodar mesmo a simulação **/
+
+	simulacao->run(numero_de_passos);	//roda a simulação para N timeSteps
+
+	
+
 	/*** TESTE ***/
 	/*
 	FILE *teste = fopen("qqrnome.txt","w");
@@ -109,8 +116,8 @@ int main(int argc,char const *argv[]){
 
 	/***************************FIM DA SIMULAÇÃO*********************************/
 
-		// finaliza contagem de tempo
-		auto finish_clock = chrono::high_resolution_clock::now();
+	// finaliza contagem de tempo
+	auto finish_clock = chrono::high_resolution_clock::now();
 	std::chrono::duration<double> elapsed = finish_clock - start_clock;
 
 	cout<<"Tempo total: "<<BOLD( WHT( << elapsed.count() <<" s\n"));

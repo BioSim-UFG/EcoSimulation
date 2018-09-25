@@ -57,6 +57,13 @@ namespace SimEco{
 		delete fitness;
 	}
 
+	void Simulation::run(int nSteps){
+		
+		for(int timeStep = 0; timeStep< nSteps; timeStep++){
+			//processa cada timeStep
+
+		}
+	}
 
 	/********************************************************************************/
 
@@ -71,8 +78,8 @@ namespace SimEco{
 		float MidEnv;
 		float LocFitness;
 
-		vec_t NichePtns[nSteps + 3]; //pontos do poligono do nicho ( da especie ) ( struct com float x e y)
-		poly_t ClipedNichePoly = {NichePtns, nSteps + 3};
+		vec_t NichePtns[nPoints + 3]; //pontos do poligono do nicho ( da especie ) ( struct com float x e y)
+		poly_t ClipedNichePoly = {NichePtns, nPoints + 3};
 
 		MinTempTol = specie.niche[0].minimum;
 		MaxTempTol = specie.niche[0].maximum;
@@ -139,7 +146,7 @@ namespace SimEco{
 
 	//cria poligono do nicho já clipado com variaveis do Ambiente ( aka celula) (também copiado e adaptado da GPU)
 	void Simulation::NicheCurve(const float MinTol, const float MaxTol, const float MinEnv, const float MaxEnv, poly_t &nichePoly){
-		// nichePoly must be nSteps+3 long
+		// nichePoly must be nPoints+3 long
 		float erfX, erfY;
 		float PhiNum;
 		float PhiDen1, PhiDen2;
@@ -154,8 +161,8 @@ namespace SimEco{
 		const float MinimumMax = MaxTol < MaxEnv? MaxTol:MaxEnv;
 		const float MaximumMin = MinTol > MinEnv? MinTol:MinEnv;
 		float p, Tmp;
-		//float Step = ((b-a) / nSteps);
-		const float Step((MinimumMax - MaximumMin) / nSteps);
+		//float Step = ((b-a) / nPoints);
+		const float Step((MinimumMax - MaximumMin) / nPoints);
 
 		x = MinimumMax;
 		nichePoly.v[0].x = x;
@@ -163,7 +170,7 @@ namespace SimEco{
 	
 		//printf("MaximumMin=%f MinimumMax=%f\t Step=%f\n",MaximumMin,MinimumMax,Step );
 		//printf("vertice %d -> x-%f   y-%f\n",0,NichePoly->v[0].x, NichePoly->v[0].y );
-		for(int i = 0; i <= nSteps; i++){
+		for(int i = 0; i <= nPoints; i++){
 			// https://en.wikipedia.org/wiki/Truncated_normal_distribution
 			Tmp = (x - mi) / sigma;
 			PhiNum = (1.0f/sqrtf(2.0f*pi))*expf((-0.5f)*(Tmp*Tmp));
@@ -203,9 +210,9 @@ namespace SimEco{
 			//printf("erff(Tmp) = %f", erfY);
 		}
 
-		nichePoly.v[nSteps+2].x = nichePoly.v[nSteps+1].x;
-		nichePoly.v[nSteps+2].y = 0.0f;
-		//printf("vertice %d -> x-%f   y-%f\n\n",nSteps+2,NichePoly->v[nSteps+2].x, NichePoly->v[nSteps+2].y );
+		nichePoly.v[nPoints+2].x = nichePoly.v[nPoints+1].x;
+		nichePoly.v[nPoints+2].y = 0.0f;
+		//printf("vertice %d -> x-%f   y-%f\n\n",nPoints+2,NichePoly->v[nPoints+2].x, NichePoly->v[nPoints+2].y );
 	}
 
 }
