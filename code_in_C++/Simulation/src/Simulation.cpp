@@ -14,9 +14,9 @@ namespace SimEco{
 			processFounder_timeZero(_grid.species[i]);
 
 			//olhando o resultado
-			for(uint j=0; j<_grid.species[i].celulas_IdxSize; j++){
+			/*for(uint j=0; j<_grid.species[i].celulas_IdxSize; j++){
 				printf("especie %u - ocupou celula %u\n",i, _grid.species[i].celulas_Idx[j]);
-			}
+			}*/
 		}
 
 	}

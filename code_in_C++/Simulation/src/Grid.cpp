@@ -95,6 +95,9 @@ namespace SimEco{
 		fscanf(NPP_arq, "%*[^\n]\n");     //ignora a primeira linha
 
 		for (i = 0; i < MAX_CELLS; i++){
+			
+			if (feof(minTemp_arq) || feof(maxTemp_arq) || feof(minPptn_arq) || feof(maxPptn_arq) || feof(NPP_arq) )
+				break;
 
 			for (j = timeSteps - 1; j >= 0; j--){
 				fscanf(minTemp_arq, "%f", &(Cell::cell_climates[i][j].envValues[climVar::Temp].minimum));
@@ -108,10 +111,6 @@ namespace SimEco{
 			fscanf(minPptn_arq, "%*[^\n]\n");
 			fscanf(maxPptn_arq, "%*[^\n]\n");
 			fscanf(NPP_arq, "%*[^\n]\n");
-
-			if (feof(minTemp_arq) || feof(maxTemp_arq) || feof(minPptn_arq) || feof(maxPptn_arq) || feof(NPP_arq) )
-				break;
-			
 		}
 
 		fclose(minTemp_arq);
@@ -123,6 +122,8 @@ namespace SimEco{
 		return i;
 	}
 
+	//Lê dos arquivos comprimidos de conectividade das celulas.
+	/* Consome MUITA memória (~200mb por enquanto), mas apenas momentaneamente, depois a libera;*/
 	int Grid::setCellsConnectivity(const char *geoConectivity_src, const char *topoConectivity_src, const char *riversConectivity_src){
 		byte *geobuffer = NULL, *topobuffer = NULL, *riversbuffer = NULL;
 		byte *geobuffer_start, *topobuffer_start, *riversbuffer_start;	//ponteiros para o inicio do buffer
@@ -181,7 +182,7 @@ namespace SimEco{
 			o necessário.
 		*/
 
-		int block_size = (num_cells/5);		//tamanho do bloco (quantidade de elementos) que será realocado quando necessário
+		int block_size = (num_cells*2);		//tamanho do bloco (quantidade de elementos) que será realocado quando necessário
 		int blocksAllocated = 0;
 
 
@@ -213,7 +214,7 @@ namespace SimEco{
 				connectivityMatrix[compressedMat_size] = {geoConn[j], topoConn[j], riversConn[j]};
 				indexMatrix[compressedMat_size] = {i, j};
 
-				if( indexMap.count( (uint)i) != 0 ){
+				if( indexMap.count( (uint)i) == 0 ){
 					indexMap.insert({(uint)i, (uint)compressedMat_size});
 					//printf("mapa: %u ---> %u", i, indexMap.at(i));fflush(stdout);
 				}

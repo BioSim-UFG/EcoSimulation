@@ -53,12 +53,13 @@ int main(int argc,char const *argv[]){
 
 		/***** lendo matriz de adjacencia de Conectividade das Celulas *****/
 
-	printf(GRN("Lendo conectividade das celulas ..."));	fflush(stdout);
+	printf(GRN("Lendo conectividade das celulas ..."));	fflush(stdout);		//CONSOME muita memória temporariamente (200mb)
 	int celulas_lidasConnec = Grid::setCellsConnectivity("../../input/DummyHex2566 - Connectances - Geo.Single.Zip.Stream", 
 													"../../input/DummyHex2566 - Connectances - Topo.Single.Zip.Stream", 
 													"../../input/DummyHex2566 - Connectances - Rivers.Single.Zip.Stream");
 	printf(BOLD(LGTGRN("\tOK!\n")));	fflush(stdout);
 
+	//exit(0);
 	
 	//verificando se o numero de celulas é igual/batem, se não, pega o menor ( exclui as celulas extras)
 	u_int num_cells = min(celulas_lidasClima, celulas_lidasConnec);
@@ -100,7 +101,7 @@ int main(int argc,char const *argv[]){
 
 	simulacao->run(numero_de_passos);	//roda a simulação para N timeSteps
 
-	
+
 
 	/*** TESTE ***/
 	/*
