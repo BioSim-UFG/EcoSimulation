@@ -152,6 +152,11 @@ int my_decompress(FILE *source, byte **dest_stream, size_t *resulting_total_size
 
 			have = CHUNK - strm.avail_out;
 			*dest_stream = (byte *)realloc(*dest_stream, (*resulting_total_size)+have);
+			if(dest_stream == NULL){
+				perror("Realloc falhou em my_decompress");
+				(void)inflateEnd(&strm);
+				return Z_MEM_ERROR;
+			}
 			memcpy( *dest_stream+ *resulting_total_size, out, have );
 
 			(*resulting_total_size) = *resulting_total_size + have;

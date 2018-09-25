@@ -17,7 +17,7 @@ namespace SimEco{
 			processFounder_timeZero(_grid.species[i]);
 		}
 
-		createTimeStepFiles(0);
+		recordTimeStepFiles(0);
 
 	}
 
@@ -25,44 +25,57 @@ namespace SimEco{
 	/*******************************implementando ainda essa função*********************************/
 
 	//processa o time zero pra uma especie founder especifica
-	inline void Simulation::processFounder_timeZero(Specie &founder){
+	void Simulation::processFounder_timeZero(Specie &founder){
 		/*aqui chama calcFitness e ela retorna um vetor (dinamicamente alocado lá dentro)
 		  com os fitness da especie com todas as celulas (consquentemente, vetor de tamanho Grid::cellsSize)*/
-
 		float *fitness = new float[_grid.cellsSize];
 		calcSpecieFitness(founder, 0, fitness);
 
-		//agora, usando os fitness e as conectividades, espalhar o founder pela grid
-
+		/*agora, usando os fitness e as conectividades, espalhar o founder pela grid*/
 		const MatIdx_2D *idxMat = Grid::indexMatrix;
 		uint zipMatPos = Grid::indexMap[founder.celulas_Idx[0]];
-
-		//enquanto estiver na linha (da matriz compactada) correspondente a linha 'cellIdx'() da matriz de adjacencia)
 		uint lineValue = idxMat[zipMatPos].i;
+
+
+		//alocação por blocos/Chunks por vez, para evitar alto numero de chamadas ao realloc
+		// block_size é arbitrário
+		int block_size = (1024 + 512); //tamanho do bloco (quantidade de elementos) que será realocado quando necessário
+		int blocksAllocated = 0;
+
+		//enquanto estiver na mesma linha (da matriz compactada), correspondente a linha da matriz de adjacencia)
 		while(idxMat[zipMatPos].i == lineValue && zipMatPos < Grid::matrixSize){
 			
 			//ocupa essa celula também, se o fitness for maior que 0 e não for a própria célula
 			if(idxMat[zipMatPos].i != idxMat[zipMatPos].j  && fitness[idxMat[zipMatPos].j] > 0.0f){
-				void * tmp = founder.celulas_Idx;
-				founder.celulas_Idx = (uint *)realloc(founder.celulas_Idx, sizeof(uint) * (founder.celulas_IdxSize+1));
-				if(founder.celulas_Idx == NULL){
-					perror(RED("Erro ao realocar memoria"));
-					exit(3);
+
+				// se o numero de elementos alocados for insuficiente, aloca mais espaço (um bloco)
+				if( blocksAllocated*block_size <= founder.celulas_IdxSize){
+					blocksAllocated++;
+					founder.celulas_Idx = (uint *)realloc(founder.celulas_Idx, sizeof(uint) * (blocksAllocated * block_size));
+					if(founder.celulas_Idx == NULL){
+						perror(RED("Erro ao realocar memoria"));
+						exit(3);
+					}
 				}
 
+				//adiciona célula na lista de celulas ocupadas (pela especie)
 				founder.celulas_Idx[founder.celulas_IdxSize++] = idxMat[zipMatPos].j;
 			}
 
 			zipMatPos++;
 		}
 
+		founder.celulas_Idx = (uint *)realloc(founder.celulas_Idx, sizeof(uint) * founder.celulas_IdxSize);
+		
 		delete fitness;
 	}
 
 	void Simulation::run(int nSteps){
 		
 		float *fitness = new float[_grid.cellsSize];
-		for(int timeStep = 0; timeStep< nSteps; timeStep++){
+
+		//timeStep começa em 1, pois deve pular o timeStep Zero (pois ele já foi calculado antes).
+		for(int timeStep = 1; timeStep< nSteps; timeStep++){
 			printf(BLU("\r\tProcessando timeStep ") "%d/%d", timeStep, nSteps-1);
 			fflush(stdout);
 
@@ -71,10 +84,21 @@ namespace SimEco{
 				Specie &especie = _grid.species[spcIdx];
 				calcSpecieFitness(especie, timeStep, fitness);	//obtem os fitness's da espécie 
 
-
+				processSpecieTimeStep(especie, fitness, timeStep);
 			}
 
 		}
+
+		delete fitness;
+	}
+
+	void Simulation::processSpecieTimeStep(Specie &specie, float *fitness, int timeStep){
+		//ideia de como fazer:
+
+		/*
+			fazer um loop que percorre as celulas que a espécie já está ocupando, e pra cada iteração
+
+		*/
 	}
 
 
@@ -230,37 +254,30 @@ namespace SimEco{
 	/***********************************************************************************/
 
 	//cria o diretorio no caminho ( e o caminho se o tal nao existir ainda), apenas se ele não existir
-	void Simulation::create_Directory(){
+	inline void Simulation::create_Directory(){
 		char pasta[80];
 		sprintf(pasta,"mkdir -p Results/%s",_name);
 		system(pasta);
 	}
 
-	void Simulation::createTimeStepFiles(int timeStep){
-
-		for(size_t i = 0; i < _grid.speciesSize ; i++){
-			createSpecieFile(timeStep, _grid.species[i]);
-		}
+	inline void Simulation::recordTimeStepFiles(int timeStep){
+		for(size_t i = 0; i < _grid.speciesSize ; i++)
+			recordSpecieFile(timeStep, _grid.species[i]);
 	}
 
-	void Simulation::createSpecieFile(int timeStep, Specie &sp){
-		FILE *f;
+	inline void Simulation::recordSpecieFile(int timeStep, Specie &sp){
 		char fname[80];
-		//fname += _name + "_" + sp._name + "_" + to_string(timeStep) ;
 		sprintf(fname,"Results/%s/%s_Esp%d_Time%d",_name,_name,sp._name,timeStep);
-
-		f = fopen(fname,"w");
+		FILE *f = fopen(fname,"w");
 		if(f == NULL){
 			printf(RED("Falha ao abrir o arquivo %s\n"),fname );
-				exit(1);
+			exit(1);
 		}
 
 		for (size_t i = 0; i < sp.celulas_IdxSize; i++){
-			//fprintf(f, "%d ", sp.celulas_Idx[i]);
 			fprintf(f, "%5.u ", sp.celulas_Idx[i]);
 			if ((i + 1) % 7 == 0)
 				fprintf(f, "\n");
-	
 		}
 
 		fclose(f);

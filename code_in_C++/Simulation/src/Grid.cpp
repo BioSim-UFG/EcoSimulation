@@ -30,6 +30,7 @@ namespace SimEco{
 	Grid::~Grid(){
 		//printf(YEL("destrutor de Grid - end. %p\n"), this);
 		delete[] species;
+		species = NULL;
 	}
 
 	//recebe e compacta matriz de adjacencia		//depois atualizar e deixar como o load_cellsConnectivy()
@@ -207,7 +208,7 @@ namespace SimEco{
 				if(geoConn[j] < connThreshold && topoConn[j] < connThreshold && riversConn[j] < connThreshold)
 					continue;
 				
-				// se o numero de elementos alocados for insuficiente, realoca mais um bloco
+				// se o numero de elementos alocados for insuficiente, aloca mais um bloco
 				if( blocksAllocated*block_size <= compressedMat_size){
 					blocksAllocated++;
 					connectivityMatrix = (Connectivity *)realloc(connectivityMatrix, (blocksAllocated * block_size) * sizeof(Connectivity));

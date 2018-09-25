@@ -19,7 +19,7 @@ void carrega_founders(const char *founders_input, Specie founders[]);
 //no futuro podemos usar argumentos (argv) para passar o nome do arquivo de founders
 int main(int argc,char const *argv[]){
 	if(argc < 2){
-		perror(RED("Nome da simulação não inserido"));
+		printf(RED("Número de argumentos inválido, nome da simulação não inserido\n"));
 		exit(4);
 	}
 	
@@ -42,9 +42,9 @@ int main(int argc,char const *argv[]){
 
 		/***** lendo Serie Climatica das Celulas *****/
 
-	int numero_de_tempos = 51; // 50 tempos + tempo zero
-	Cell::cell_climates = new Climate *[numero_de_tempos];
-	for(size_t i=0; i<numero_de_tempos; i++)
+	int numero_de_timeSteps = 51; // 50 tempos + tempo zero
+	Cell::cell_climates = new Climate *[numero_de_timeSteps];
+	for(size_t i=0; i<numero_de_timeSteps; i++)
 		Cell::cell_climates[i] = new Climate[MAX_CELLS];
 
 	printf(GRN("Lendo serie Climatica ...")); fflush(stdout);
@@ -52,7 +52,7 @@ int main(int argc,char const *argv[]){
 												   "../../output/DummyHex2566 - Output - MaxTemp.txt",
 												   "../../output/DummyHex2566 - Output - MinPPTN.txt",
 												   "../../output/DummyHex2566 - Output - MaxPPTN.txt",
-												   "../../output/DummyHex2566 - Output - NPP.txt", numero_de_tempos);
+												   "../../output/DummyHex2566 - Output - NPP.txt", numero_de_timeSteps);
 	printf(BOLD(LGTGRN("OK!\n"))); fflush(stdout);
 
 
@@ -64,8 +64,8 @@ int main(int argc,char const *argv[]){
 													"../../input/DummyHex2566 - Connectances - Rivers.Single.Zip.Stream");
 	printf(BOLD(LGTGRN("\tOK!\n")));	fflush(stdout);
 
-	//exit(0);
-	
+
+
 	//verificando se o numero de celulas é igual/batem, se não, pega o menor ( exclui as celulas extras)
 	u_int num_cells = min(celulas_lidasClima, celulas_lidasConnec);
 	if(celulas_lidasClima != celulas_lidasConnec){
@@ -96,7 +96,7 @@ int main(int argc,char const *argv[]){
 	//coloca os founders em suas celulas
 	grid->setFounders(founders, NUM_FOUNDERS);
 
-	printf("\n * * * * * * * * * * * * * * * * * * * * * * *\n\n"); fflush(stdout);
+	//printf("\n * * * * * * * * * * * * * * * * * * * * * * *\n\n"); fflush(stdout);
 	printf(LGTGRN("Iniciando Simulação \n")); fflush(stdout);
 	
 	cout<<BLU("\tCalculando tempo ZERO\n"); fflush(stdout);
@@ -105,21 +105,9 @@ int main(int argc,char const *argv[]){
 
 	/** agora que toda a pré configuração está pronta, vamos rodar mesmo a simulação **/
 
-	simulacao->run(numero_de_tempos);	//roda a simulação para N timeSteps
+	simulacao->run(numero_de_timeSteps);	//roda a simulação para N timeSteps
 
 
-
-	/*** TESTE ***/
-	/*
-	FILE *teste = fopen("qqrnome.txt","w");
-	for (int i = 0; i < grid->species[0].celulas_IdxSize ; i++){
-		fprintf(teste,"%d ",grid->species[0].celulas_Idx[i]);
-	}
-	fclose(teste);*/
-	
-	//printf("EU OCUPO %d\n",grid->species[0].celulas_Idx[7]);
-
-	/**** FIM TESTE **/
 
 	/***************************FIM DA SIMULAÇÃO*********************************/
 
@@ -130,10 +118,10 @@ int main(int argc,char const *argv[]){
 	cout<<"\nTempo total: "<<BOLD( WHT( << elapsed.count() <<" s\n"));
 
 
+	delete[] founders;
 	delete[] Cell::cell_climates;
 	delete grid;
 	delete simulacao;
-	//possivel free(founders); --> depende se vai fazer isso na grid; --> descobri q faz, e deu um eero KABULOSO
 	free(Grid::connectivityMatrix );
 	free(Grid::indexMatrix);
 

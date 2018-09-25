@@ -13,9 +13,7 @@
 #  define SET_BINARY_MODE(file)
 #endif
 
-
-
-#define CHUNK 256000		//size of buffer in bytes
+#define CHUNK 256000			//size of buffer in bytes
 #define COMPRESSION_LEVEL 6	//de -1 a 9 -> -1 = Z_DEFAULT_COMPRESSION ( que é igual a 6)
 
 

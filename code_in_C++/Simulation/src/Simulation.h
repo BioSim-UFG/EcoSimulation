@@ -28,7 +28,8 @@ namespace SimEco{
 		constexpr static float ErfD = 0.078108f;
 		constexpr static double pi = M_PI;
 
-		inline void processFounder_timeZero(Specie &founder);
+		void processFounder_timeZero(Specie &founder);
+		void processSpecieTimeStep(Specie &specie, float *fitness, int timeStep);
 		//calcula o fitness, e retorna o ponteiro do vetor resultante
 		float* calcSpecieFitness(const Specie &specie, uint timeStep, float *fitness);
 		//cria o poligono (já clipado) da curva do nicho
@@ -36,8 +37,8 @@ namespace SimEco{
 		//void create_initial_file();
 		void create_Directory();
 
-		void createTimeStepFiles(int timeStep);
-		void createSpecieFile(int timeStep, Specie &sp);
+		void recordTimeStepFiles(int timeStep);
+		void recordSpecieFile(int timeStep, Specie &sp);
 
 	  public: 
 		Simulation(Grid &grid, const char* name);
