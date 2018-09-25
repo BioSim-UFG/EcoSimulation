@@ -9,6 +9,9 @@ namespace SimEco{
 
     class Specie{
       public:
+        static uint _nSpecies;
+        string _name;
+        
         array<NicheValue, NUM_ENV_VARS> niche;        //niche of the specie
 
         //NUMCell *celula_ptr;        //pointer to current Cell
@@ -28,7 +31,7 @@ namespace SimEco{
         Specie(array<NicheValue, NUM_ENV_VARS> niche, Dispersion dispCapacity, uint cellIdxs[], uint cellIdxsSize);
         Specie();
         ~Specie();
-    
+        
     };
 
 }

@@ -95,7 +95,7 @@ int main(int argc,char const *argv[]){
 	printf(LGTGRN("Iniciando Simulação \n")); fflush(stdout);
 	
 	cout<<BLU("\tCalculando tempo ZERO\n"); fflush(stdout);
-	simulacao = new Simulation(*grid);		//calcula o tempo -1 (tempo ZERO)
+	simulacao = new Simulation(*grid, argv[1]);		//calcula o tempo -1 (tempo ZERO)
 
 
 	/** agora que toda a pré configuração está pronta, vamos rodar mesmo a simulação **/

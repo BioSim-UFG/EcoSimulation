@@ -34,6 +34,7 @@ namespace SimEco{
 	Specie::Specie(){
 		celulas_Idx = NULL;
 		celulas_IdxSize = 0;
+		
 	}
 
 	Specie::~Specie(){

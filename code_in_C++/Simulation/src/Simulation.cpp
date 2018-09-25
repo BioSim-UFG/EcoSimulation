@@ -8,10 +8,10 @@
 #include <cmath>
 
 namespace SimEco{
-	Simulation::Simulation(Grid &grid): _grid(grid)/*, founders(founders), foundersSize(founders_size)*/{
+	Simulation::Simulation(Grid &grid, string name): _grid(grid) , _name(name)/*, founders(founders), foundersSize(founders_size)*/{
 		
-		//aqui faz o trabalho de preparação da simulação, usando a(s) especie(s) fundadora(s)
 
+		//aqui faz o trabalho de preparação da simulação, usando a(s) especie(s) fundadora(s)
 		for(uint i=0; i<_grid.speciesSize; i++){
 			processFounder_timeZero(_grid.species[i]);
 
@@ -80,12 +80,12 @@ namespace SimEco{
 	//calcula o fitness de uma especie em um determinado timeStep (copiei e adaptei a função que tinhamos pra GPU)
 	float* Simulation::calcSpecieFitness(Specie &specie, uint timeStep, float *fitness){
 
-		float StdAreaNoOverlap, StdSimBetweenCenters;
-		float MidTol;
-		float MinTempTol, MaxTempTol, MinPrecpTol, MaxPrecpTol;
-		float MinTempEnv, MaxTempEnv, MinPrecpEnv, MaxPrecpEnv;
-		float MidEnv;
-		float LocFitness;
+		float StdAreaNoOverlap=0, StdSimBetweenCenters=0;
+		float MidTol=0;
+		float MinTempTol=0, MaxTempTol=0, MinPrecpTol=0, MaxPrecpTol=0;
+		float MinTempEnv = 0, MaxTempEnv = 0, MinPrecpEnv = 0, MaxPrecpEnv = 0;
+		float MidEnv = 0;
+		float LocFitness = 0;
 
 		vec_t NichePtns[nPoints + 3]; //pontos do poligono do nicho ( da especie ) ( struct com float x e y)
 		poly_t ClipedNichePoly = {NichePtns, nPoints + 3};
@@ -156,13 +156,13 @@ namespace SimEco{
 	//cria poligono do nicho já clipado com variaveis do Ambiente ( aka celula) (também copiado e adaptado da GPU)
 	void Simulation::NicheCurve(const float MinTol, const float MaxTol, const float MinEnv, const float MaxEnv, poly_t &nichePoly){
 		// nichePoly must be nPoints+3 long
-		float erfX, erfY;
-		float PhiNum;
-		float PhiDen1, PhiDen2;
-	
+		float erfX = 0, erfY = 0;
+		float PhiNum = 0;
+		float PhiDen1 = 0, PhiDen2 = 0;
+
 		// Read input data
 		const float mi = ((MaxTol + MinTol) / 2.0f);
-		const float sigma = (MaxTol - mi) / 2.0;
+		const float sigma = (MaxTol - mi) / 2.0f;
 		const float &a =     MinTol;
 		const float &b =     MaxTol;
 	
@@ -224,4 +224,30 @@ namespace SimEco{
 		//printf("vertice %d -> x-%f   y-%f\n\n",nPoints+2,NichePoly->v[nPoints+2].x, NichePoly->v[nPoints+2].y );
 	}
 
+	//void Simulation::create_initial_file(){
+	//}
+	void Simulation::createTimestepFile(int timeStep){
+
+		for(size_t i = 0; i < _grid.speciesSize ; i++){
+			createSpecieFile(timeStep, _grid.species[i]);
+		}
+	}
+
+	void Simulation::createSpecieFile(int timeStep, Specie sp){
+		FILE *f;
+		string fname;
+
+		fname += _name + "_" + sp._name + "_" + timeStep ;
+
+		f = fopen(fname.c_str(),"w");
+		if(f == NULL){
+			cout << RED(<< "Falha ao abrir o arquivo " << fname << "\n");
+			exit(3);
+		}
+
+
+		for (size_t i = 0; i < sp.celulas_IdxSize; i++){
+			fprintf(f, "%d ", sp.celulas_Idx[i]);
+		}
+	}
 }
