@@ -10,6 +10,7 @@ se nao tiver, pode usar alguma acima da 4.8.1, e alterar a flag da compilação 
 Vendo estatisticas (inclusive uso de memória) da execução:
 
 - rodar o programa com o prefixo `env time -v`, por exemplo: `env time -v ./Prog`
+descrição da saida: https://codeforces.com/blog/entry/49371
 
 comando de terminal para compilar normalmente:
 

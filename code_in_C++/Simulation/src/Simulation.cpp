@@ -14,9 +14,9 @@ namespace SimEco{
 			processFounder_timeZero(_grid.species[i]);
 
 			//olhando o resultado
-			/*for(uint j=0; j<_grid.species[i].celulas_IdxSize; j++){
+			for(uint j=0; j<_grid.species[i].celulas_IdxSize; j++){
 				printf("especie %u - ocupou celula %u\n",i, _grid.species[i].celulas_Idx[j]);
-			}*/
+			}
 		}
 
 	}
@@ -37,20 +37,24 @@ namespace SimEco{
 
 		//enquanto estiver na linha (da matriz compactada) correspondente a linha 'cellIdx'() da matriz de adjacencia)
 		uint lineValue = idxMat[zipMatPos].i;
-		while(idxMat[zipMatPos].i == lineValue){
+		while(idxMat[zipMatPos].i == lineValue && zipMatPos < Grid::matrixSize){
 			
-			//ocupa essa celula também
+			//ocupa essa celula também, se o fitness for maior que 0 e não for a própria célula
 			if(idxMat[zipMatPos].i != idxMat[zipMatPos].j  && fitness[idxMat[zipMatPos].j] > 0.0f){
+				void * tmp = founder.celulas_Idx;
 				founder.celulas_Idx = (uint *)realloc(founder.celulas_Idx, sizeof(uint) * (founder.celulas_IdxSize+1));
 				if(founder.celulas_Idx == NULL){
 					perror(RED("Erro ao realocar memoria"));
 					exit(3);
 				}
+
 				founder.celulas_Idx[founder.celulas_IdxSize++] = idxMat[zipMatPos].j;
 			}
 
 			zipMatPos++;
 		}
+
+		delete fitness;
 	}
 
 

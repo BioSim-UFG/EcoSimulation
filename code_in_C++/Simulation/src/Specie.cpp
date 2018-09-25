@@ -1,4 +1,5 @@
 #include "Specie.h"
+#include "color.h"
 
 namespace SimEco{
 
@@ -30,7 +31,14 @@ namespace SimEco{
 		copy(niche.begin(), niche.end(), this->niche.begin());
 	}
 
-	Specie::Specie(){}
+	Specie::Specie(){
+		celulas_Idx = NULL;
+		celulas_IdxSize = 0;
+	}
 
-	Specie::~Specie(){}
+	Specie::~Specie(){
+		printf(YEL("destrutor de Specie - liberando ptr do vetor celulas_Idx %p\n"),celulas_Idx);
+		free(celulas_Idx);
+		celulas_Idx = NULL;
+	}
 }

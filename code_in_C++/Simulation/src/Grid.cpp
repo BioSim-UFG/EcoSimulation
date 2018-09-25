@@ -12,7 +12,7 @@ namespace SimEco{
 
 	Connectivity *Grid::connectivityMatrix = NULL;
 	MatIdx_2D *Grid::indexMatrix = NULL;
-	map<uint, uint> Grid::indexMap;
+	unordered_map<uint, uint> Grid::indexMap;
 	u_int Grid::matrixSize = 0;
 
 	//Cell *Grid::cells;
@@ -21,18 +21,15 @@ namespace SimEco{
 	Grid::Grid(uint num_cells, uint num_species){
 		//cells = new Cell[num_cells];
 		cellsSize = num_cells;
-		species = (Specie *)malloc( sizeof(Specie) * num_species );
+		//species = (Specie *)malloc( sizeof(Specie) * num_species );
+		species = new Specie[num_species];
 		speciesSize = num_species;
 	}
 
 	Grid::~Grid(){
-		//for(auto &i: species) free(i);
+		printf(YEL("destrutor de Grid - destruindo vetor species %p\n"), species);
+		delete[] species;
 	}
-
-	/*void Grid::setCells(Cell *cells, size_t size){
-		memcpy(Grid::cells, cells, sizeof(Cell)*size);
-		cellsSize = size;
-	}*/
 
 	//recebe e compacta matriz de adjacencia		//depois atualizar e deixar como o load_cellsConnectivy()
 	void Grid::setCellsConnectivity(Connectivity *adjMatrix, size_t size){
@@ -55,6 +52,7 @@ namespace SimEco{
 	/*Cell* Grid::getCellat(uint index){
 		return index<cellsSize ? &cells[index] : nullptr;
 	}*/
+
 
 	void Grid::setFounders(Specie sp[], size_t sp_size){
 		int i = 0;
@@ -127,6 +125,7 @@ namespace SimEco{
 
 	int Grid::setCellsConnectivity(const char *geoConectivity_src, const char *topoConectivity_src, const char *riversConectivity_src){
 		byte *geobuffer = NULL, *topobuffer = NULL, *riversbuffer = NULL;
+		byte *geobuffer_start, *topobuffer_start, *riversbuffer_start;	//ponteiros para o inicio do buffer
 		size_t geoSize = 0, topoSize = 0, riversSize = 0;
 
 		u_int compressedMat_size = 0;
@@ -152,6 +151,13 @@ namespace SimEco{
 		fclose(geo_arq);
 		fclose(topo_arq);
 		fclose(rivers_arq);
+		geobuffer_start = geobuffer;
+		topobuffer_start = topobuffer;
+		riversbuffer_start = riversbuffer;
+
+
+
+		/********termina a descompenssão, e começa a consumir os buffers (ja descomprimidos)*********/
 
 		int num_cells = ((int*)geobuffer)[0];
 		if( num_cells != ((int*)topobuffer)[0] || num_cells != ((int*)riversbuffer)[0]){
@@ -160,7 +166,7 @@ namespace SimEco{
 			num_cells = min(((int *)riversbuffer)[0], num_cells);
 			printf("Numero de células: %i", num_cells);
 		}
-		geobuffer += sizeof(int);       
+		geobuffer += sizeof(int);       //pula/descarta o primeiro inteiro do buffer
 		topobuffer += sizeof(int);
 		riversbuffer += sizeof(int);
 
@@ -181,7 +187,7 @@ namespace SimEco{
 
 		printf(BLU("\tCompactando matriz esparsa ")); fflush(stdout);
 		for(int i=0; i<num_cells; i++){
-			//lê/descarta int que possui  número de colunas
+			//lê/descarta int que possui número de colunas
 			geobuffer += sizeof(int); topobuffer += sizeof(int); riversbuffer += sizeof(int);
 
 			float *geoConn = (float*)geobuffer;		//"converte" o array de bytes para um array de floats
@@ -207,7 +213,7 @@ namespace SimEco{
 				connectivityMatrix[compressedMat_size] = {geoConn[j], topoConn[j], riversConn[j]};
 				indexMatrix[compressedMat_size] = {i, j};
 
-				if( indexMap.find( (uint)i)  == indexMap.end()){
+				if( indexMap.count( (uint)i) != 0 ){
 					indexMap.insert({(uint)i, (uint)compressedMat_size});
 					//printf("mapa: %u ---> %u", i, indexMap.at(i));fflush(stdout);
 				}
@@ -231,7 +237,9 @@ namespace SimEco{
 			fflush(stdout);
 		}
 
-
+		free(geobuffer_start);
+		free(topobuffer_start);
+		free(riversbuffer_start);
 
 		//realloca matriz compactada para tamanho certo/preciso
 		connectivityMatrix = (Connectivity *)realloc(connectivityMatrix, compressedMat_size * sizeof(Connectivity));
@@ -239,7 +247,9 @@ namespace SimEco{
 
 		Grid::matrixSize = compressedMat_size;
 
-		printf("\n\t%i elementos removidos, tamanho final=%i\n", (num_cells * num_cells) - Grid::matrixSize, Grid::matrixSize);
+
+		printf(CYN("\n\tnumero de entradas no map = %lu"), indexMap.size() );
+		printf(CYN("\n\t%i elementos removidos, tamanho final=%i\n"), (num_cells * num_cells) - Grid::matrixSize, Grid::matrixSize);
 		fflush(stdout);
 		return num_cells;
 	}

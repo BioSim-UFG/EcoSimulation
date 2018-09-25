@@ -1,4 +1,4 @@
 minTemp 	maxTemp 	minPPTN 	maxPPTN     GeoDispCap  TopoDispCap RiverDispCap    initialCellIdx
 15 			40 			150 		2000        1.0         1.0         1.0             2
 3.72 		25.86 		403.21 		1271.5      1.0         1.0         1.0             7
-3.72 		25.86 		303.21 		1371.5      1.0         1.0         1.0             138
+9.72 		31.86 		240.21 		1771.5      1.0         1.0         1.0             237

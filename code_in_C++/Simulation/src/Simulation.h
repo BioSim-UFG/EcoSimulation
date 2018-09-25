@@ -11,32 +11,32 @@
 namespace SimEco{
 
 
-    class Simulation;
+	class Simulation;
 
-    class Simulation{
+	class Simulation{
 
-      private:
+	  private:
 		Grid &_grid;		//referencia para a grid
 		//Specie *founders;	//referencia para array de especies ( fundadoras nesse caso)
-        //uint foundersSize;
+		//uint foundersSize;
 
 
-        constexpr static int nSteps = 5; //precisão do poligono / número de pontos no poligono
-        constexpr static float ErfA = 0.278393f;                   // Abramowitz e Stegun approximation to erf
-        constexpr static float ErfB = 0.230389f;                   // https://en.wikipedia.org/wiki/Error_function
-        constexpr static float ErfC = 0.000972f;
-        constexpr static float ErfD = 0.078108f;
-        constexpr static double pi = M_PI;
+		constexpr static int nSteps = 5; //precisão do poligono / número de pontos no poligono
+		constexpr static float ErfA = 0.278393f;                   // Abramowitz e Stegun approximation to erf
+		constexpr static float ErfB = 0.230389f;                   // https://en.wikipedia.org/wiki/Error_function
+		constexpr static float ErfC = 0.000972f;
+		constexpr static float ErfD = 0.078108f;
+		constexpr static double pi = M_PI;
 
-        inline void processFounder_timeZero(Specie &founder);
-        //calcula o fitness, e retorna o ponteiro do vetor resultante
-        float* calcSpecieFitness(Specie &specie, uint timeStep);
-        void NicheCurve(const float MinTol, const float MaxTol, const float MinEnv, const float MaxEnv, poly_t &NichePoly);
+		inline void processFounder_timeZero(Specie &founder);
+		//calcula o fitness, e retorna o ponteiro do vetor resultante
+		float* calcSpecieFitness(Specie &specie, uint timeStep);
+		void NicheCurve(const float MinTol, const float MaxTol, const float MinEnv, const float MaxEnv, poly_t &NichePoly);
 
-      public:
-        Simulation(Grid &grid);        
-    
-    };
+	  public:
+		Simulation(Grid &grid);
+	
+	};
 
 
 }

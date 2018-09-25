@@ -4,10 +4,10 @@
 #include "SimTypes.h"
 #include "Cell.h"
 #include <utility>
-#include <map>
+#include <unordered_map>
 
 #define MAX_CELLS 2566
-#define NUM_FOUNDERS 1
+#define NUM_FOUNDERS 3
 
 
 using namespace std;
@@ -27,7 +27,7 @@ namespace SimEco
 
 		static Connectivity *connectivityMatrix;   //matriz esparça compactada ( ver CUsparse)
 		static  MatIdx_2D *indexMatrix;
-		static map<uint, uint> indexMap;	//mapeia indice de linha (normal) para o indice na matriz compactada
+		static unordered_map<uint, uint> indexMap;	//mapeia indice de linha (normal) para o indice na matriz compactada
 		//troquei int por u_int, pois 50k x 50k dá um valor maior que MAX_INT, mas unsinged int aguenta
 		static u_int matrixSize;
 

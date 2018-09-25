@@ -16,13 +16,13 @@ using namespace SimEco;
 void carrega_founders(const char *founders_input, Specie founders[]);
 
 
+//no futuro podemos usar argumentos (argv) para passar o nome do arquivo de founders
 int main(int argc,char const *argv[]){
 	Simulation *simulacao;
 	Grid *grid;
 	Cell *celulas;	/* vetor de celulas */
-	//Specie *founders = new Specie[NUM_FOUNDERS]; /*vetor de classes */
-	Specie founders[NUM_FOUNDERS];// = (Specie *)malloc(sizeof(Specie) * NUM_FOUNDERS);
-	FILE *founders_input;
+	Specie *founders = new Specie[NUM_FOUNDERS]; /*vetor de classes */
+	//Specie *founders = (Specie *)malloc(sizeof(Specie) * NUM_FOUNDERS);
 
 	auto start_clock = chrono::high_resolution_clock::now();
 
