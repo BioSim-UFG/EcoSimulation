@@ -10,7 +10,7 @@ namespace SimEco{
     class Specie{
       public:
         static uint _nSpecies;
-        string _name;
+        uint _name;
         
         array<NicheValue, NUM_ENV_VARS> niche;        //niche of the specie
 

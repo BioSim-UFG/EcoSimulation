@@ -15,7 +15,7 @@ namespace SimEco{
 	class Simulation{
 
 	  private:
-	  	string _name;
+	  	const char *_name;
 		Grid &_grid;		//referencia para a grid
 		//Specie *founders;	//referencia para array de especies ( fundadoras nesse caso)
 		//uint foundersSize;
@@ -33,12 +33,12 @@ namespace SimEco{
 		float* calcSpecieFitness(Specie &specie, uint timeStep, float *fitness);
 		//cria o poligono (já clipado) da curva do nicho
 		void NicheCurve(const float MinTol, const float MaxTol, const float MinEnv, const float MaxEnv, poly_t &NichePoly);
-		//void create_initial_file();
-		void createTimestepFile(int timeStep);
-		void createSpecieFile(int timeStep, Specie sp);
+		void create_initial_file();
+		void createTimeStepFile(int timeStep);
+		void createSpecieFile(int timeStep, Specie &sp);
 
 	  public: 
-		Simulation(Grid &grid, string name);
+		Simulation(Grid &grid, const char* name);
 		void run(int nSteps);
 
 	};

@@ -12,7 +12,7 @@ namespace SimEco{
     Specie::Specie(array<NicheValue, NUM_ENV_VARS> niche, Dispersion dispCapacity, uint cellIdx){
     	//celulaQueTo = nullptr;
 		_nSpecies++;
-		_name = to_string(_nSpecies);
+		_name = _nSpecies;
     	dispCap = dispCapacity;
     	curSize = 0.0f;
     	growth = 0.0f;
@@ -23,6 +23,8 @@ namespace SimEco{
     }
 
 	Specie::Specie(array<NicheValue, NUM_ENV_VARS> niche, Dispersion dispCapacity, uint cellIdxs[], uint cellIdxsSize){
+		_nSpecies++;
+		_name = _nSpecies;
 		dispCap = dispCapacity;
 		curSize = 0.0f;
 		growth = 0.0f;
@@ -42,7 +44,7 @@ namespace SimEco{
 	}
 
 	Specie::~Specie(){
-		//printf(YEL("destrutor de Specie - end. %p\n"),this);
+		printf(YEL("destrutor de Specie - end. %p\n"),this);
 		free(celulas_Idx);
 		celulas_Idx = NULL;
 	}

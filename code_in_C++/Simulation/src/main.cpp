@@ -20,6 +20,12 @@ void carrega_founders(const char *founders_input, Specie founders[]);
 int main(int argc,char const *argv[]){
 	Simulation *simulacao;
 	Grid *grid;
+
+	if(argc < 2){
+		perror(RED("Nome da simulação não inserido"));
+		exit(4);
+	}
+
 	//Cell *celulas;	/* vetor de celulas */
 	Specie *founders = new Specie[NUM_FOUNDERS]; /*vetor de classes */
 	//Specie *founders = (Specie *)malloc(sizeof(Specie) * NUM_FOUNDERS);

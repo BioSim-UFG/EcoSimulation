@@ -8,14 +8,15 @@
 #include <cmath>
 
 namespace SimEco{
-	Simulation::Simulation(Grid &grid, string name): _grid(grid) , _name(name)/*, founders(founders), foundersSize(founders_size)*/{
+	Simulation::Simulation(Grid &grid, const char* name): _grid(grid) , _name(name)/*, founders(founders), foundersSize(founders_size)*/{
 		
+		create_initial_file();
 
 		//aqui faz o trabalho de preparação da simulação, usando a(s) especie(s) fundadora(s)
 		for(uint i=0; i<_grid.speciesSize; i++){
 			processFounder_timeZero(_grid.species[i]);
-
-			//imprindo resultado em arquivo
+		
+			/*//imprindo resultado em arquivo
 			char name[256]; sprintf(name, "timeZero - especie %u", i);
 			FILE *out=fopen(name, "w");
 			for(uint j=0; j<_grid.species[i].celulas_IdxSize; j++){
@@ -25,8 +26,13 @@ namespace SimEco{
 				//printf("especie %u - ocupou celula %u\n",i, _grid.species[i].celulas_Idx[j]);
 			}
 			fclose(out);
-		}
+			*/
 
+			//guardando os founders
+		}
+		createTimeStepFile(0);
+
+		printf(GRN("Arquivos iniciais criados com sucesso!\n"));
 	}
 
 
@@ -224,30 +230,46 @@ namespace SimEco{
 		//printf("vertice %d -> x-%f   y-%f\n\n",nPoints+2,NichePoly->v[nPoints+2].x, NichePoly->v[nPoints+2].y );
 	}
 
-	//void Simulation::create_initial_file(){
-	//}
-	void Simulation::createTimestepFile(int timeStep){
+	void Simulation::create_initial_file(){
+		char pasta[80];
+
+
+		sprintf(pasta,"mkdir Result/%s",_name);
+		
+		system(pasta);
+
+	}
+	void Simulation::createTimeStepFile(int timeStep){
 
 		for(size_t i = 0; i < _grid.speciesSize ; i++){
 			createSpecieFile(timeStep, _grid.species[i]);
 		}
 	}
 
-	void Simulation::createSpecieFile(int timeStep, Specie sp){
+	void Simulation::createSpecieFile(int timeStep, Specie &sp){
 		FILE *f;
-		string fname;
+		char fname[80];
 
-		fname += _name + "_" + sp._name + "_" + timeStep ;
+		//fname += _name + "_" + sp._name + "_" + to_string(timeStep) ;
+		sprintf(fname,"Result/%s/%s_%d_%d",_name,_name,sp._name,timeStep);
 
-		f = fopen(fname.c_str(),"w");
+
+		f = fopen(fname,"w");
 		if(f == NULL){
-			cout << RED(<< "Falha ao abrir o arquivo " << fname << "\n");
-			exit(3);
+			printf(RED("Falha ao abrir o arquivo %s\n"),fname );
+				exit(1);
 		}
 
 
 		for (size_t i = 0; i < sp.celulas_IdxSize; i++){
-			fprintf(f, "%d ", sp.celulas_Idx[i]);
+			//fprintf(f, "%d ", sp.celulas_Idx[i]);
+
+			fprintf(f, "%5.u ", sp.celulas_Idx[i]);
+			if ((i + 1) % 7 == 0)
+				fprintf(f, "\n");
+			
 		}
+
+		fclose(f);
 	}
 }

@@ -28,7 +28,7 @@ namespace SimEco{
 	}
 
 	Grid::~Grid(){
-		//printf(YEL("destrutor de Grid - end. %p\n"), this);
+		printf(YEL("destrutor de Grid - end. %p\n"), this);
 		delete[] species;
 	}
 
