@@ -103,23 +103,25 @@ namespace SimEco{
 			fazer um loop que percorre todas as celulas que a espécie já está ocupando, e pra cada iteração
 			espalhar a especie a partir daquela célula especifica.
 		*/
+		//alocação por blocos/Chunks por vez, para evitar alto numero de chamadas ao realloc
+		// block_size é arbitrário
+		int block_size = (2048 + 1024); //tamanho do bloco (quantidade de elementos) que será realocado quando necessário
+		int blocksAllocated = 0;
 
 		for(uint cellIdx = 0; cellIdx < prevCelulas_IdxSize; cellIdx++){
 			//printf("\rprocessando celula ja ocupada %u", cellIdx);
 
 			const MatIdx_2D *idxMat = Grid::indexMatrix;
-			uint zipMatPos = Grid::indexMap[specie.celulas_Idx[0]];
+			uint zipMatPos = Grid::indexMap[specie.celulas_Idx[cellIdx]];
 			uint lineValue = idxMat[zipMatPos].i;
 
 
-			//alocação por blocos/Chunks por vez, para evitar alto numero de chamadas ao realloc
-			// block_size é arbitrário
-			int block_size = (2048 + 1024); //tamanho do bloco (quantidade de elementos) que será realocado quando necessário
-			int blocksAllocated = 0;
 
 			//enquanto estiver na mesma linha (da matriz compactada), correspondente a linha da matriz de adjacencia)
 			while(idxMat[zipMatPos].i == lineValue && zipMatPos < Grid::matrixSize){
 				
+
+				/******DAQUI PRA BAIXA VEM OS PROBLEMAS********/
 
 				//ocupa essa celula também, se o fitness for maior que 0 e não for a própria célula
 				if(idxMat[zipMatPos].i != idxMat[zipMatPos].j  && fitness[idxMat[zipMatPos].j] > 0.0f  /*&& celua nao foi ocupada */){
@@ -135,7 +137,8 @@ namespace SimEco{
 					}
 
 					//adiciona célula na lista de celulas ocupadas (pela especie)
-					//specie.celulas_Idx[specie.celulas_IdxSize++] = idxMat[zipMatPos].j;
+					specie.celulas_Idx[specie.celulas_IdxSize] = idxMat[zipMatPos].j;
+					specie.celulas_IdxSize = min(++specie.celulas_IdxSize, (uint)2566);
 				}
 				else if( fitness[idxMat[zipMatPos].j] <= 0.0f){
 					//remove celula da lista
@@ -145,10 +148,13 @@ namespace SimEco{
 				zipMatPos++;
 			}
 
-			specie.celulas_Idx = (uint *)realloc(specie.celulas_Idx, sizeof(uint) * specie.celulas_IdxSize);
 
 		}
-
+		specie.celulas_Idx = (uint *)realloc(specie.celulas_Idx, sizeof(uint) * specie.celulas_IdxSize);
+		if (specie.celulas_Idx == NULL){
+			perror(RED("Erro ao realocar memoria"));
+			exit(3);
+		}
 	}
 
 
