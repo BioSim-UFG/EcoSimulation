@@ -5,7 +5,7 @@
 #include <unordered_map>
 
 #define MAX_CELLS 2566
-#define NUM_FOUNDERS 5
+#define NUM_FOUNDERS 2
 
 
 using namespace std;

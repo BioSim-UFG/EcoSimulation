@@ -335,8 +335,13 @@ namespace SimEco{
 	}
 
 	inline void Simulation::recordSpecieFile(int timeStep, Specie &sp){
-		char fname[80];
-		sprintf(fname,"Results/%s/%s_Esp%d_Time%d",_name,_name,sp._name,timeStep);
+		char fname[80], comand[80];
+		sprintf(fname,"Results/%s/timeStep%d",_name, timeStep);
+		sprintf(comand, "mkdir -p %s", fname);
+		system(comand);
+		//sprintf(fname, "Results/%s/%s_Esp%d_Time%d", _name, _name, sp._name, timeStep);
+		sprintf(fname, "%s/%s_Esp%d_Time%d", fname, _name, sp._name, timeStep);
+
 		FILE *f = fopen(fname,"w");
 		if(f == NULL){
 			printf(RED("Falha ao abrir o arquivo %s\n"),fname );fflush(stdout);
