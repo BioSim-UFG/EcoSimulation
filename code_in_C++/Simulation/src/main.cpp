@@ -105,7 +105,7 @@ int main(int argc,char const *argv[]){
 
 	/** agora que toda a pré configuração está pronta, vamos rodar mesmo a simulação **/
 
-	simulacao->run(numero_de_timeSteps);	//roda a simulação para N timeSteps
+	simulacao->run(numero_de_timeSteps);	//roda a simulação para N timeSteps -1(tempo zero)
 
 
 
