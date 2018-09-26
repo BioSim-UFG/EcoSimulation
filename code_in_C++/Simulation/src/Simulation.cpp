@@ -75,10 +75,11 @@ namespace SimEco{
 	void Simulation::run(int nSteps){
 		
 		float *fitness = new float[_grid.cellsSize];
+		this->_timeSteps = nSteps;
 
 		//timeStep começa em 1, pois deve pular o timeStep Zero (pois ele já foi calculado antes).
-		for(int timeStep = 1; timeStep< nSteps; timeStep++){
-			printf(BLU("\r\tProcessando timeStep ") "%d/%d", timeStep, nSteps-1);
+		for(int timeStep = 1; timeStep< _timeSteps; timeStep++){
+			printf(BLU("\r\tProcessando timeStep ") "%d/%d", timeStep, _timeSteps-1);
 			fflush(stdout);
 
 			//processa cada timeStep
@@ -87,7 +88,7 @@ namespace SimEco{
 				calcSpecieFitness(especie, timeStep, fitness);	//obtem os fitness's da espécie
 
 				//printf("\nProcessando especie %u", spcIdx); fflush(stdout);
-				processSpecieTimeStep(especie, fitness, timeStep);
+				processSpecieTimeStep(especie, fitness);
 				//printf("total celulas ocupadas %u\n", especie.celulas_IdxSize);
 
 				recordTimeStepFiles(timeStep);
@@ -98,7 +99,7 @@ namespace SimEco{
 		delete fitness;
 	}
 
-	void Simulation::processSpecieTimeStep(Specie &specie, float *fitness, int timeStep){
+	void Simulation::processSpecieTimeStep(Specie &specie, float *fitness){
 
 		//uint prevCelulas_IdxSize = specie.celulas_IdxSize;
 		uint prevCelulas_IdxSize = specie.cellsPopulation.size();
@@ -169,7 +170,6 @@ namespace SimEco{
 		//specie.celulas_Idx = (uint *)realloc(specie.celulas_Idx, sizeof(uint) * specie.celulas_IdxSize);
 
 	}
-
 
 
 	//calcula o fitness de uma especie em um determinado timeStep (copiei e adaptei a função que tinhamos pra GPU)

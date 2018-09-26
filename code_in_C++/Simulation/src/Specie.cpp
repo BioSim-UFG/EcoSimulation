@@ -49,7 +49,6 @@ namespace SimEco{
 	}
 
 	Specie::Specie(const SimEco::Specie &src){
-		printf("instanciando especie %u\n", _nSpecies);fflush(stdout);
 		_name = _nSpecies;
 		Specie::_nSpecies++;
 

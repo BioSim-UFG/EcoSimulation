@@ -16,6 +16,7 @@ namespace SimEco{
 
 	  private:
 	  	const char *_name;
+		uint _timeSteps = 0;
 		Grid &_grid;		//referencia para a grid
 		//Specie *founders;	//referencia para array de especies ( fundadoras nesse caso)
 		//uint foundersSize;
@@ -29,7 +30,7 @@ namespace SimEco{
 		constexpr static double pi = M_PI;
 
 		void processFounder_timeZero(Specie &founder);
-		void processSpecieTimeStep(Specie &specie, float *fitness, int timeStep);
+		void processSpecieTimeStep(Specie &specie, float *fitness);
 		//calcula o fitness, e retorna o ponteiro do vetor resultante
 		float* calcSpecieFitness(const Specie &specie, uint timeStep, float *fitness);
 		//cria o poligono (já clipado) da curva do nicho
