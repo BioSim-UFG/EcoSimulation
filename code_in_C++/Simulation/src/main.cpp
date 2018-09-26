@@ -142,8 +142,9 @@ void carrega_founders(const char *founders_input, Specie founders[]){
 		exit(1);    
 	}
 
+	int i;
 	fscanf(src, "%*[^\n]\n");  //pula primeira linha
-	for(int i=0; i<NUM_FOUNDERS; i++){
+	for(i=0; i<NUM_FOUNDERS; i++){
 		//lê valores do nicho e de capacidade de dispersão
 		fscanf(src, "%f %f %f %f", &niche[0].minimum, &niche[0].maximum, &niche[1].minimum, &niche[1].maximum);
 		fscanf(src, "%f %f %f", &dispersionCapacity.Geo, &dispersionCapacity.Topo, &dispersionCapacity.River);
@@ -154,6 +155,18 @@ void carrega_founders(const char *founders_input, Specie founders[]){
 
 		if(feof(src)) break;
 	}
+
+	if(i < NUM_FOUNDERS){
+		printf(YEL("ATENÇÃO, numero de founders em %s insuficiente\n"), founders_input);
+		printf("Replicando founders para tamanho necessário.\n\t");
+		int num_lidos = i;
+		for(i; i<NUM_FOUNDERS; i++){
+			founders[i] = *new Specie(founders[i%num_lidos]);
+		}
+	}
+
+	printf("especies instanciadas %i", Specie::_nSpecies);
+	
 
 	fclose(src);
 }
