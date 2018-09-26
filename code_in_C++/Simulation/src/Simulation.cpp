@@ -82,11 +82,13 @@ namespace SimEco{
 			//processa cada timeStep
 			for(uint spcIdx=0; spcIdx<_grid.speciesSize; spcIdx++){
 				Specie &especie = _grid.species[spcIdx];
-				calcSpecieFitness(especie, timeStep, fitness);	//obtem os fitness's da espécie 
+				calcSpecieFitness(especie, timeStep, fitness);	//obtem os fitness's da espécie
 
 				//printf("\nProcessando especie %u", spcIdx); fflush(stdout);
-				//processSpecieTimeStep(especie, fitness, timeStep);
+				processSpecieTimeStep(especie, fitness, timeStep);
 				//printf("total celulas ocupadas %u\n", especie.celulas_IdxSize);
+
+				recordTimeStepFiles(timeStep);
 			}
 
 		}
@@ -104,18 +106,20 @@ namespace SimEco{
 			espalhar a especie a partir daquela célula especifica.
 		*/
 
+		//alocação por blocos/Chunks por vez, para evitar alto numero de chamadas ao realloc
+		// block_size é arbitrário
+		int block_size = (2048 + 1024); //tamanho do bloco (quantidade de elementos) que será realocado quando necessário
+		int blocksAllocated = 0;
+
+		const MatIdx_2D *idxMat = Grid::indexMatrix;
+
 		for(uint cellIdx = 0; cellIdx < prevCelulas_IdxSize; cellIdx++){
 			//printf("\rprocessando celula ja ocupada %u", cellIdx);
 
-			const MatIdx_2D *idxMat = Grid::indexMatrix;
-			uint zipMatPos = Grid::indexMap[specie.celulas_Idx[0]];
+			uint zipMatPos = Grid::indexMap[specie.celulas_Idx[cellIdx]];
 			uint lineValue = idxMat[zipMatPos].i;
 
 
-			//alocação por blocos/Chunks por vez, para evitar alto numero de chamadas ao realloc
-			// block_size é arbitrário
-			int block_size = (2048 + 1024); //tamanho do bloco (quantidade de elementos) que será realocado quando necessário
-			int blocksAllocated = 0;
 
 			//enquanto estiver na mesma linha (da matriz compactada), correspondente a linha da matriz de adjacencia)
 			while(idxMat[zipMatPos].i == lineValue && zipMatPos < Grid::matrixSize){
@@ -134,6 +138,11 @@ namespace SimEco{
 						}
 					}
 
+					/* USAR unordered_map PARA INDICAR QUAIS CELULAS ESTÃO OCUPADAS, E QUAL O 
+					   TAMANHO DA POPULAÇÃO (DESSA ESPECIE) DENTRO DA CELULA
+						ou seja, vai mapear o índice da célula ocupada para a população dela.
+					*/
+
 					//adiciona célula na lista de celulas ocupadas (pela especie)
 					//specie.celulas_Idx[specie.celulas_IdxSize++] = idxMat[zipMatPos].j;
 				}
@@ -145,9 +154,9 @@ namespace SimEco{
 				zipMatPos++;
 			}
 
-			specie.celulas_Idx = (uint *)realloc(specie.celulas_Idx, sizeof(uint) * specie.celulas_IdxSize);
 
 		}
+		specie.celulas_Idx = (uint *)realloc(specie.celulas_Idx, sizeof(uint) * specie.celulas_IdxSize);
 
 	}
 
