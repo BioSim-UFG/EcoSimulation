@@ -18,6 +18,7 @@ namespace SimEco{
     	growth = 0.0f;
 		celulas_Idx = (uint *) malloc(sizeof(uint) * 1);
 		celulas_Idx[0] = cellIdx;
+		celulas_IdxSize = 1;
 
 		copy(niche.begin(), niche.end(), this->niche.begin());
     }
@@ -29,12 +30,22 @@ namespace SimEco{
 		curSize = 0.0f;
 		growth = 0.0f;
 		celulas_Idx = (uint *)malloc(sizeof(uint) * cellIdxsSize);
+		celulas_IdxSize = cellIdxsSize;
 		
 		for(int i=0; i<celulas_IdxSize; i++){
 			celulas_Idx[i] = cellIdxs[i];
 		}
 
 		copy(niche.begin(), niche.end(), this->niche.begin());
+	}
+
+	//retorna o índice da posição da celula no vetor de células ocupadas, ou
+	long Specie::occupingCell(uint cellIdx){
+		for(uint i=0; i< celulas_IdxSize; i++){
+			if(celulas_Idx[i] == cellIdx)
+				return i;
+		}
+		return -1;
 	}
 
 	Specie::Specie(){

@@ -209,7 +209,7 @@ namespace SimEco{
 					continue;
 				
 				// se o numero de elementos alocados for insuficiente, aloca mais um bloco
-				if( blocksAllocated*block_size <= compressedMat_size){
+				while( blocksAllocated*block_size <= compressedMat_size){
 					blocksAllocated++;
 					connectivityMatrix = (Connectivity *)realloc(connectivityMatrix, (blocksAllocated * block_size) * sizeof(Connectivity));
 					indexMatrix = (MatIdx_2D *)realloc(indexMatrix, (blocksAllocated * block_size) * sizeof(MatIdx_2D));

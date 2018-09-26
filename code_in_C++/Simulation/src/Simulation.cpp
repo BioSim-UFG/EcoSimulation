@@ -49,7 +49,7 @@ namespace SimEco{
 			if(idxMat[zipMatPos].i != idxMat[zipMatPos].j  && fitness[idxMat[zipMatPos].j] > 0.0f){
 
 				// se o numero de elementos alocados for insuficiente, aloca mais espaço (um bloco)
-				if( blocksAllocated*block_size <= founder.celulas_IdxSize){
+				while( blocksAllocated*block_size <= founder.celulas_IdxSize){
 					blocksAllocated++;
 					founder.celulas_Idx = (uint *)realloc(founder.celulas_Idx, sizeof(uint) * (blocksAllocated * block_size));
 					if(founder.celulas_Idx == NULL){
@@ -84,7 +84,9 @@ namespace SimEco{
 				Specie &especie = _grid.species[spcIdx];
 				calcSpecieFitness(especie, timeStep, fitness);	//obtem os fitness's da espécie 
 
-				processSpecieTimeStep(especie, fitness, timeStep);
+				//printf("\nProcessando especie %u", spcIdx); fflush(stdout);
+				//processSpecieTimeStep(especie, fitness, timeStep);
+				//printf("total celulas ocupadas %u\n", especie.celulas_IdxSize);
 			}
 
 		}
@@ -93,12 +95,60 @@ namespace SimEco{
 	}
 
 	void Simulation::processSpecieTimeStep(Specie &specie, float *fitness, int timeStep){
+
+		uint prevCelulas_IdxSize = specie.celulas_IdxSize;
 		//ideia de como fazer:
 
 		/*
-			fazer um loop que percorre as celulas que a espécie já está ocupando, e pra cada iteração
-
+			fazer um loop que percorre todas as celulas que a espécie já está ocupando, e pra cada iteração
+			espalhar a especie a partir daquela célula especifica.
 		*/
+
+		for(uint cellIdx = 0; cellIdx < prevCelulas_IdxSize; cellIdx++){
+			//printf("\rprocessando celula ja ocupada %u", cellIdx);
+
+			const MatIdx_2D *idxMat = Grid::indexMatrix;
+			uint zipMatPos = Grid::indexMap[specie.celulas_Idx[0]];
+			uint lineValue = idxMat[zipMatPos].i;
+
+
+			//alocação por blocos/Chunks por vez, para evitar alto numero de chamadas ao realloc
+			// block_size é arbitrário
+			int block_size = (2048 + 1024); //tamanho do bloco (quantidade de elementos) que será realocado quando necessário
+			int blocksAllocated = 0;
+
+			//enquanto estiver na mesma linha (da matriz compactada), correspondente a linha da matriz de adjacencia)
+			while(idxMat[zipMatPos].i == lineValue && zipMatPos < Grid::matrixSize){
+				
+
+				//ocupa essa celula também, se o fitness for maior que 0 e não for a própria célula
+				if(idxMat[zipMatPos].i != idxMat[zipMatPos].j  && fitness[idxMat[zipMatPos].j] > 0.0f  /*&& celua nao foi ocupada */){
+
+					// se o numero de elementos alocados for insuficiente, aloca mais espaço (um bloco)
+					while( blocksAllocated*block_size <= specie.celulas_IdxSize){
+						blocksAllocated++;
+						specie.celulas_Idx = (uint *)realloc(specie.celulas_Idx, sizeof(uint) * (blocksAllocated * block_size));
+						if(specie.celulas_Idx == NULL){
+							perror(RED("Erro ao realocar memoria"));
+							exit(3);
+						}
+					}
+
+					//adiciona célula na lista de celulas ocupadas (pela especie)
+					//specie.celulas_Idx[specie.celulas_IdxSize++] = idxMat[zipMatPos].j;
+				}
+				else if( fitness[idxMat[zipMatPos].j] <= 0.0f){
+					//remove celula da lista
+					//specie.celulas_IdxSize--;
+				}
+
+				zipMatPos++;
+			}
+
+			specie.celulas_Idx = (uint *)realloc(specie.celulas_Idx, sizeof(uint) * specie.celulas_IdxSize);
+
+		}
+
 	}
 
 

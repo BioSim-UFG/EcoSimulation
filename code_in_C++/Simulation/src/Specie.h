@@ -29,6 +29,13 @@ namespace SimEco{
         Specie(array<NicheValue, NUM_ENV_VARS> niche, Dispersion dispCapacity, uint CellIdx);
         //criação de uma especie já espalhada por várias células
         Specie(array<NicheValue, NUM_ENV_VARS> niche, Dispersion dispCapacity, uint cellIdxs[], uint cellIdxsSize);
+        
+        
+        //usar um array de bits de comprimento fixo, tamanho = total de células na grid
+        
+        //retorna se já está ocupando uma celula, -1 se nao estiver ou índice dessa célula no vetor de celulas ocupadas ( se estiver)
+        long occupingCell(uint cellIdx);
+
         Specie();
         ~Specie();
         
