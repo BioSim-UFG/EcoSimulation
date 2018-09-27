@@ -17,7 +17,7 @@ namespace SimEco{
 			processFounder_timeZero(_grid.species[i]);
 		}
 
-		recordTimeStepFiles(0);
+		recordTimeStepFiles( ("Results/"+string(_name)+"/timeStep0").c_str(), 0);
 
 	}
 
@@ -77,6 +77,17 @@ namespace SimEco{
 		float *fitness = new float[_grid.cellsSize];
 		this->_timeSteps = nSteps;
 
+
+		//cria um subdiretorio para cada timestep
+		char dir[50], comand[61];
+		sprintf(dir, "Results/%s/timeStep", _name);
+		int len = strlen(dir);
+		for(int i=0; i< nSteps; i++){
+			sprintf(dir+len,"%d",i);
+			sprintf(comand, "mkdir -p %s &", dir);
+			system(comand);
+		}
+
 		//timeStep começa em 1, pois deve pular o timeStep Zero (pois ele já foi calculado antes).
 		for(int timeStep = 1; timeStep< _timeSteps; timeStep++){
 			printf(BLU("\r\tProcessando timeStep ") "%d/%d", timeStep, _timeSteps-1);
@@ -90,10 +101,9 @@ namespace SimEco{
 				//printf("\nProcessando especie %u", spcIdx); fflush(stdout);
 				processSpecieTimeStep(especie, fitness);
 				//printf("total celulas ocupadas %u\n", especie.celulas_IdxSize);
-
-				recordTimeStepFiles(timeStep);
 			}
-
+			sprintf(dir+len, "%d", timeStep);
+			recordTimeStepFiles(dir, timeStep);
 		}
 
 		delete fitness;
@@ -104,19 +114,9 @@ namespace SimEco{
 		//uint prevCelulas_IdxSize = specie.celulas_IdxSize;
 		uint prevCelulas_IdxSize = specie.cellsPopulation.size();
 
-		/*
-			fazer um loop que percorre todas as celulas que a espécie já está ocupando, e pra cada iteração
+		/*fazer um loop que percorre todas as celulas que a espécie já está ocupando, e pra cada iteração
 			espalhar a especie a partir daquela célula especifica.
 		*/
-		//alocação por blocos/Chunks por vez, para evitar alto numero de chamadas ao realloc
-		// block_size é arbitrário
-		int block_size = (2048 + 1024); //tamanho do bloco (quantidade de elementos) que será realocado quando necessário
-		int blocksAllocated = 0;
-
-		//alocação por blocos/Chunks por vez, para evitar alto numero de chamadas ao realloc
-		// block_size é arbitrário
-		//int block_size = (2048 + 1024); //tamanho do bloco (quantidade de elementos) que será realocado quando necessário
-		//int blocksAllocated = 0;
 
 		pair<uint, short> prevCelulas[prevCelulas_IdxSize];
 		copy(specie.cellsPopulation.begin(), specie.cellsPopulation.end(), prevCelulas);
@@ -137,16 +137,6 @@ namespace SimEco{
 				
 				//ocupa essa celula também, se o fitness for maior que 0 e não for a própria célula
 				if(fitness[idxMat[zipMatPos].j] > 0.0f && cell.first!= idxMat[zipMatPos].j){
-
-					// se o numero de elementos alocados for insuficiente, aloca mais espaço (um bloco)
-					/*while( blocksAllocated*block_size <= specie.celulas_IdxSize){
-						blocksAllocated++;
-						specie.celulas_Idx = (uint *)realloc(specie.celulas_Idx, sizeof(uint) * (blocksAllocated * block_size));
-						if(specie.celulas_Idx == NULL){
-							perror(RED("Erro ao realocar memoria"));
-							exit(3);
-						}
-					}*/
 
 					/* USAR unordered_map PARA INDICAR QUAIS CELULAS ESTÃO OCUPADAS, E QUAL O 
 					   TAMANHO DA POPULAÇÃO (DESSA ESPECIE) DENTRO DA CELULA
@@ -333,31 +323,25 @@ namespace SimEco{
 		system(pasta);
 	}
 
-	inline void Simulation::recordTimeStepFiles(int timeStep){
-		for(size_t i = 0; i < _grid.speciesSize ; i++)
-			recordSpecieFile(timeStep, _grid.species[i]);
+	inline void Simulation::recordTimeStepFiles(const char *path, int timeStep){
+
+		char fname[80];
+		for(uint i = 0; i < _grid.speciesSize ; i++){
+			sprintf(fname, "%s/timeStep%u", path, i);
+			recordSpecieFile(path, timeStep, _grid.species[i]);
+		}
 	}
 
-	inline void Simulation::recordSpecieFile(int timeStep, Specie &sp){
-		char fname[80], comand[80];
-		sprintf(fname,"Results/%s/timeStep%d",_name, timeStep);
-		sprintf(comand, "mkdir -p %s", fname);
-		system(comand);
-		//sprintf(fname, "Results/%s/%s_Esp%d_Time%d", _name, _name, sp._name, timeStep);
-		sprintf(fname, "%s/%s_Esp%d_Time%d", fname, _name, sp._name, timeStep);
+	inline void Simulation::recordSpecieFile(const char *path, int timeStep, Specie &sp){
+		char fname[100];
+		sprintf(fname, "%s/%s_Esp%d_Time%d", path, _name, sp._name, timeStep);
 
-		FILE *f = fopen(fname,"w");
+		FILE *f = fopen(fname, "w");
 		if(f == NULL){
 			printf(RED("Falha ao abrir o arquivo %s\n"),fname );fflush(stdout);
 			fclose(f);
 			exit(1);
 		}
-
-		/*for (size_t i = 0; i < sp.celulas_IdxSize; i++){
-			fprintf(f, "%5.u ", sp.celulas_Idx[i]);
-			if ((i + 1) % 7 == 0)
-				fprintf(f, "\n");
-		}*/
 
 		int cont =0;
 		for (auto &cellInfo: sp.cellsPopulation){
