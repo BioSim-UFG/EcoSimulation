@@ -12,6 +12,19 @@ namespace SimEco{
 
 		create_Directory();	//cria diretorio de saida/resultados da simulação
 
+		Specie *founders = new Specie[NUM_FOUNDERS]; /*vetor de classes */
+
+		printf(GRN("Lendo especies Founders ...")); fflush(stdout);
+		carrega_founders("../../input/SpecieData.txt" , founders);
+		printf(BOLD(LGTGRN("OK!\n"))); fflush(stdout);
+
+		for(size_t i=0 ; i < NUM_FOUNDERS; i++)
+			printf("\n founder: %u -> niche: %f, %f  \n",founders[i]._name, founders[i].niche[0].minimum, founders[i].niche[0].maximum);
+		
+
+		//coloca os founders em suas celulas
+		grid.setFounders(founders, NUM_FOUNDERS);
+
 		//aqui faz o trabalho de preparação da simulação, usando a(s) especie(s) fundadora(s)
 		for(uint i=0; i<_grid.speciesSize; i++){
 			processFounder_timeZero(_grid.species[i]);
@@ -21,6 +34,11 @@ namespace SimEco{
 		string comand = "mkdir -p " + path;
 		system(comand.c_str());
 		recordTimeStepFiles((path).c_str(), 0);
+		
+		delete[] founders;
+	}
+
+	Simulation::~Simulation(){
 	}
 
 
@@ -68,9 +86,7 @@ namespace SimEco{
 
 			zipMatPos++;
 		}
-
 		//founder.celulas_Idx = (uint *)realloc(founder.celulas_Idx, sizeof(uint) * founder.celulas_IdxSize);
-		
 		delete fitness;
 	}
 
@@ -166,7 +182,6 @@ namespace SimEco{
 		//specie.celulas_Idx = (uint *)realloc(specie.celulas_Idx, sizeof(uint) * specie.celulas_IdxSize);
 
 	}
-
 
 	//calcula o fitness de uma especie em um determinado timeStep (copiei e adaptei a função que tinhamos pra GPU)
 	float* Simulation::calcSpecieFitness(const Specie &specie, uint timeStep, float *fitness){
@@ -353,5 +368,43 @@ namespace SimEco{
 		}
 
 		fclose(f);
+	}
+
+	void Simulation::carrega_founders(const char *founders_input, Specie founders[]){
+		Dispersion dispersionCapacity;
+		array<NicheValue, NUM_ENV_VARS> niche;
+		uint cellIdx;
+
+		FILE *src = fopen(founders_input, "r");
+		if (src == NULL){
+			perror(RED("Erro ao abrir SpecieData.txt"));
+			exit(1);
+		}
+
+		int i;
+		fscanf(src, "%*[^\n]\n"); //pula primeira linha
+		for (i = 0; i < NUM_FOUNDERS; i++){
+			if (feof(src))
+				break;
+			//lê valores do nicho e de capacidade de dispersão
+			fscanf(src, "%f %f %f %f", &niche[0].minimum, &niche[0].maximum, &niche[1].minimum, &niche[1].maximum);
+			fscanf(src, "%f %f %f", &dispersionCapacity.Geo, &dispersionCapacity.Topo, &dispersionCapacity.River);
+			fscanf(src, "%u", &cellIdx);
+			fscanf(src, "\n");
+
+			founders[i] = *new Specie(niche, dispersionCapacity, cellIdx);
+		}
+
+		if (i < NUM_FOUNDERS){
+			printf(LGTYEL(BOLD("\n\tATENÇÃO, numero de founders em %s insuficiente\n")), founders_input);
+			printf(LGTYEL(BOLD("\tReplicando founders para tamanho necessário.\n\t")));
+			int num_lidos = i;
+			for (i; i < NUM_FOUNDERS; i++)
+			{
+				founders[i] = *new Specie(founders[i % num_lidos]);
+			}
+		}
+
+		fclose(src);
 	}
 }

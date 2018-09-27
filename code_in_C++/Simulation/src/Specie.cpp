@@ -13,7 +13,11 @@ namespace SimEco{
     	//celulaQueTo = nullptr;
 		_name = _nSpecies;
 		_nSpecies++;
-    	dispCap = dispCapacity;
+
+		printf("\n\n Name:%d n_species:%d \n\n", Specie::_name, Specie::_nSpecies);
+		fflush(stdout);
+
+		dispCap = dispCapacity;
     	curSize = 0.0f;
     	growth = 0.0f;
 		//celulas_Idx = (uint *) malloc(sizeof(uint) * 1);
@@ -28,6 +32,8 @@ namespace SimEco{
 	Specie::Specie(const array<NicheValue, NUM_ENV_VARS> &niche, const Dispersion &dispCapacity, uint cellIdxs[], uint cellIdxsSize){
 		_name = _nSpecies;
 		_nSpecies++;
+
+		
 		dispCap = dispCapacity;
 		curSize = 0.0f;
 		growth = 0.0f;
@@ -51,6 +57,8 @@ namespace SimEco{
 	Specie::Specie(const SimEco::Specie &src){
 		_name = _nSpecies;
 		Specie::_nSpecies++;
+
+		//printf("\n\n Name:%d n_species:%d \n\n", Specie::_name, Specie::_nSpecies);
 
 		curSize = src.curSize;
 		growth = src.growth;
