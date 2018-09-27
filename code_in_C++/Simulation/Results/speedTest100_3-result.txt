@@ -12,4 +12,3 @@ tempo execução 4: 187.766 s
 tempo execução 5: 186.784 s
 
 tempo de execuçao medio: 186.632 s ( 3min e 06s)
-
