@@ -126,13 +126,8 @@ namespace SimEco{
 		for(auto &cell: prevCelulas){
 			//printf("\rprocessando celula ja ocupada %u", cellIdx);
 
-<<<<<<< HEAD
-			const MatIdx_2D *idxMat = Grid::indexMatrix;
-			uint zipMatPos = Grid::indexMap[specie.celulas_Idx[cellIdx]];
-=======
 			//uint zipMatPos = Grid::indexMap[specie.celulas_Idx[cellIdx]];
 			uint zipMatPos = Grid::indexMap[cell.first];
->>>>>>> 8b2aa7c2e7f1e0a7ae9b1cd0991c7e8d06d1b232
 			uint lineValue = idxMat[zipMatPos].i;
 
 
@@ -140,12 +135,6 @@ namespace SimEco{
 			//enquanto estiver na mesma linha (da matriz compactada), correspondente a linha da matriz de adjacencia)
 			while(idxMat[zipMatPos].i == lineValue && zipMatPos < Grid::matrixSize){
 				
-<<<<<<< HEAD
-
-				/******DAQUI PRA BAIXA VEM OS PROBLEMAS********/
-
-=======
->>>>>>> 8b2aa7c2e7f1e0a7ae9b1cd0991c7e8d06d1b232
 				//ocupa essa celula também, se o fitness for maior que 0 e não for a própria célula
 				if(fitness[idxMat[zipMatPos].j] > 0.0f && cell.first!= idxMat[zipMatPos].j){
 
@@ -165,13 +154,8 @@ namespace SimEco{
 					*/
 
 					//adiciona célula na lista de celulas ocupadas (pela especie)
-<<<<<<< HEAD
-					specie.celulas_Idx[specie.celulas_IdxSize] = idxMat[zipMatPos].j;
-					specie.celulas_IdxSize = min(++specie.celulas_IdxSize, (uint)2566);
-=======
 					//specie.celulas_Idx[specie.celulas_IdxSize++] = idxMat[zipMatPos].j;
 					specie.cellsPopulation.insert( {(uint)idxMat[zipMatPos].j, 1} );	//coloca a celula idxMat[zipMatPos].j como ocupada, com 1 de população
->>>>>>> 8b2aa7c2e7f1e0a7ae9b1cd0991c7e8d06d1b232
 				}
 				else if( fitness[idxMat[zipMatPos].j] <= 0.0f){
 					//remove celula da lista
@@ -187,16 +171,8 @@ namespace SimEco{
 
 
 		}
-<<<<<<< HEAD
-		specie.celulas_Idx = (uint *)realloc(specie.celulas_Idx, sizeof(uint) * specie.celulas_IdxSize);
-		if (specie.celulas_Idx == NULL){
-			perror(RED("Erro ao realocar memoria"));
-			exit(3);
-		}
-=======
 		//specie.celulas_Idx = (uint *)realloc(specie.celulas_Idx, sizeof(uint) * specie.celulas_IdxSize);
 
->>>>>>> 8b2aa7c2e7f1e0a7ae9b1cd0991c7e8d06d1b232
 	}
 
 
