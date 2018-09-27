@@ -33,14 +33,15 @@ namespace SimEco{
 
 		/*agora, usando os fitness e as conectividades, espalhar o founder pela grid*/
 		const MatIdx_2D *idxMat = Grid::indexMatrix;
-		uint zipMatPos = Grid::indexMap[founder.celulas_Idx[0]];
+		//uint zipMatPos = Grid::indexMap[founder.celulas_Idx[0]];
+		uint zipMatPos = Grid::indexMap[founder.cellsPopulation.begin()->first];
 		uint lineValue = idxMat[zipMatPos].i;
 
 
 		//alocação por blocos/Chunks por vez, para evitar alto numero de chamadas ao realloc
 		// block_size é arbitrário
-		int block_size = (1024 + 512); //tamanho do bloco (quantidade de elementos) que será realocado quando necessário
-		int blocksAllocated = 0;
+		//int block_size = (1024 + 512); //tamanho do bloco (quantidade de elementos) que será realocado quando necessário
+		//int blocksAllocated = 0;
 
 		//enquanto estiver na mesma linha (da matriz compactada), correspondente a linha da matriz de adjacencia)
 		while(idxMat[zipMatPos].i == lineValue && zipMatPos < Grid::matrixSize){
@@ -49,23 +50,24 @@ namespace SimEco{
 			if(idxMat[zipMatPos].i != idxMat[zipMatPos].j  && fitness[idxMat[zipMatPos].j] > 0.0f){
 
 				// se o numero de elementos alocados for insuficiente, aloca mais espaço (um bloco)
-				while( blocksAllocated*block_size <= founder.celulas_IdxSize){
+				/*while( blocksAllocated*block_size <= founder.celulas_IdxSize){
 					blocksAllocated++;
 					founder.celulas_Idx = (uint *)realloc(founder.celulas_Idx, sizeof(uint) * (blocksAllocated * block_size));
 					if(founder.celulas_Idx == NULL){
 						perror(RED("Erro ao realocar memoria"));
 						exit(3);
 					}
-				}
+				}*/
 
 				//adiciona célula na lista de celulas ocupadas (pela especie)
-				founder.celulas_Idx[founder.celulas_IdxSize++] = idxMat[zipMatPos].j;
+				//founder.celulas_Idx[founder.celulas_IdxSize++] = idxMat[zipMatPos].j;
+				founder.cellsPopulation.insert( {(uint)idxMat[zipMatPos].j, (short)1} );
 			}
 
 			zipMatPos++;
 		}
 
-		founder.celulas_Idx = (uint *)realloc(founder.celulas_Idx, sizeof(uint) * founder.celulas_IdxSize);
+		//founder.celulas_Idx = (uint *)realloc(founder.celulas_Idx, sizeof(uint) * founder.celulas_IdxSize);
 		
 		delete fitness;
 	}
@@ -73,20 +75,23 @@ namespace SimEco{
 	void Simulation::run(int nSteps){
 		
 		float *fitness = new float[_grid.cellsSize];
+		this->_timeSteps = nSteps;
 
 		//timeStep começa em 1, pois deve pular o timeStep Zero (pois ele já foi calculado antes).
-		for(int timeStep = 1; timeStep< nSteps; timeStep++){
-			printf(BLU("\r\tProcessando timeStep ") "%d/%d", timeStep, nSteps-1);
+		for(int timeStep = 1; timeStep< _timeSteps; timeStep++){
+			printf(BLU("\r\tProcessando timeStep ") "%d/%d", timeStep, _timeSteps-1);
 			fflush(stdout);
 
 			//processa cada timeStep
 			for(uint spcIdx=0; spcIdx<_grid.speciesSize; spcIdx++){
 				Specie &especie = _grid.species[spcIdx];
-				calcSpecieFitness(especie, timeStep, fitness);	//obtem os fitness's da espécie 
+				calcSpecieFitness(especie, timeStep, fitness);	//obtem os fitness's da espécie
 
 				//printf("\nProcessando especie %u", spcIdx); fflush(stdout);
-				//processSpecieTimeStep(especie, fitness, timeStep);
+				processSpecieTimeStep(especie, fitness);
 				//printf("total celulas ocupadas %u\n", especie.celulas_IdxSize);
+
+				recordTimeStepFiles(timeStep);
 			}
 
 		}
@@ -94,10 +99,10 @@ namespace SimEco{
 		delete fitness;
 	}
 
-	void Simulation::processSpecieTimeStep(Specie &specie, float *fitness, int timeStep){
+	void Simulation::processSpecieTimeStep(Specie &specie, float *fitness){
 
-		uint prevCelulas_IdxSize = specie.celulas_IdxSize;
-		//ideia de como fazer:
+		//uint prevCelulas_IdxSize = specie.celulas_IdxSize;
+		uint prevCelulas_IdxSize = specie.cellsPopulation.size();
 
 		/*
 			fazer um loop que percorre todas as celulas que a espécie já está ocupando, e pra cada iteração
@@ -108,11 +113,26 @@ namespace SimEco{
 		int block_size = (2048 + 1024); //tamanho do bloco (quantidade de elementos) que será realocado quando necessário
 		int blocksAllocated = 0;
 
-		for(uint cellIdx = 0; cellIdx < prevCelulas_IdxSize; cellIdx++){
+		//alocação por blocos/Chunks por vez, para evitar alto numero de chamadas ao realloc
+		// block_size é arbitrário
+		//int block_size = (2048 + 1024); //tamanho do bloco (quantidade de elementos) que será realocado quando necessário
+		//int blocksAllocated = 0;
+
+		pair<uint, short> prevCelulas[prevCelulas_IdxSize];
+		copy(specie.cellsPopulation.begin(), specie.cellsPopulation.end(), prevCelulas);
+
+		const MatIdx_2D *idxMat = Grid::indexMatrix;
+		//for(uint cellIdx = 0; cellIdx < prevCelulas_IdxSize; cellIdx++){
+		for(auto &cell: prevCelulas){
 			//printf("\rprocessando celula ja ocupada %u", cellIdx);
 
+<<<<<<< HEAD
 			const MatIdx_2D *idxMat = Grid::indexMatrix;
 			uint zipMatPos = Grid::indexMap[specie.celulas_Idx[cellIdx]];
+=======
+			//uint zipMatPos = Grid::indexMap[specie.celulas_Idx[cellIdx]];
+			uint zipMatPos = Grid::indexMap[cell.first];
+>>>>>>> 8b2aa7c2e7f1e0a7ae9b1cd0991c7e8d06d1b232
 			uint lineValue = idxMat[zipMatPos].i;
 
 
@@ -120,29 +140,46 @@ namespace SimEco{
 			//enquanto estiver na mesma linha (da matriz compactada), correspondente a linha da matriz de adjacencia)
 			while(idxMat[zipMatPos].i == lineValue && zipMatPos < Grid::matrixSize){
 				
+<<<<<<< HEAD
 
 				/******DAQUI PRA BAIXA VEM OS PROBLEMAS********/
 
+=======
+>>>>>>> 8b2aa7c2e7f1e0a7ae9b1cd0991c7e8d06d1b232
 				//ocupa essa celula também, se o fitness for maior que 0 e não for a própria célula
-				if(idxMat[zipMatPos].i != idxMat[zipMatPos].j  && fitness[idxMat[zipMatPos].j] > 0.0f  /*&& celua nao foi ocupada */){
+				if(fitness[idxMat[zipMatPos].j] > 0.0f && cell.first!= idxMat[zipMatPos].j){
 
 					// se o numero de elementos alocados for insuficiente, aloca mais espaço (um bloco)
-					while( blocksAllocated*block_size <= specie.celulas_IdxSize){
+					/*while( blocksAllocated*block_size <= specie.celulas_IdxSize){
 						blocksAllocated++;
 						specie.celulas_Idx = (uint *)realloc(specie.celulas_Idx, sizeof(uint) * (blocksAllocated * block_size));
 						if(specie.celulas_Idx == NULL){
 							perror(RED("Erro ao realocar memoria"));
 							exit(3);
 						}
-					}
+					}*/
+
+					/* USAR unordered_map PARA INDICAR QUAIS CELULAS ESTÃO OCUPADAS, E QUAL O 
+					   TAMANHO DA POPULAÇÃO (DESSA ESPECIE) DENTRO DA CELULA
+						ou seja, vai mapear o índice da célula ocupada para a população dela.
+					*/
 
 					//adiciona célula na lista de celulas ocupadas (pela especie)
+<<<<<<< HEAD
 					specie.celulas_Idx[specie.celulas_IdxSize] = idxMat[zipMatPos].j;
 					specie.celulas_IdxSize = min(++specie.celulas_IdxSize, (uint)2566);
+=======
+					//specie.celulas_Idx[specie.celulas_IdxSize++] = idxMat[zipMatPos].j;
+					specie.cellsPopulation.insert( {(uint)idxMat[zipMatPos].j, 1} );	//coloca a celula idxMat[zipMatPos].j como ocupada, com 1 de população
+>>>>>>> 8b2aa7c2e7f1e0a7ae9b1cd0991c7e8d06d1b232
 				}
 				else if( fitness[idxMat[zipMatPos].j] <= 0.0f){
 					//remove celula da lista
 					//specie.celulas_IdxSize--;
+					auto cellIterator = specie.cellsPopulation.find((uint)idxMat[zipMatPos].j);
+					//remove se a celula, se tiver sindo encontrada
+					if( cellIterator != specie.cellsPopulation.end() )
+						specie.cellsPopulation.erase(cellIterator);
 				}
 
 				zipMatPos++;
@@ -150,13 +187,17 @@ namespace SimEco{
 
 
 		}
+<<<<<<< HEAD
 		specie.celulas_Idx = (uint *)realloc(specie.celulas_Idx, sizeof(uint) * specie.celulas_IdxSize);
 		if (specie.celulas_Idx == NULL){
 			perror(RED("Erro ao realocar memoria"));
 			exit(3);
 		}
-	}
+=======
+		//specie.celulas_Idx = (uint *)realloc(specie.celulas_Idx, sizeof(uint) * specie.celulas_IdxSize);
 
+>>>>>>> 8b2aa7c2e7f1e0a7ae9b1cd0991c7e8d06d1b232
+	}
 
 
 	//calcula o fitness de uma especie em um determinado timeStep (copiei e adaptei a função que tinhamos pra GPU)
@@ -322,17 +363,30 @@ namespace SimEco{
 	}
 
 	inline void Simulation::recordSpecieFile(int timeStep, Specie &sp){
-		char fname[80];
-		sprintf(fname,"Results/%s/%s_Esp%d_Time%d",_name,_name,sp._name,timeStep);
+		char fname[80], comand[80];
+		sprintf(fname,"Results/%s/timeStep%d",_name, timeStep);
+		sprintf(comand, "mkdir -p %s", fname);
+		system(comand);
+		//sprintf(fname, "Results/%s/%s_Esp%d_Time%d", _name, _name, sp._name, timeStep);
+		sprintf(fname, "%s/%s_Esp%d_Time%d", fname, _name, sp._name, timeStep);
+
 		FILE *f = fopen(fname,"w");
 		if(f == NULL){
-			printf(RED("Falha ao abrir o arquivo %s\n"),fname );
+			printf(RED("Falha ao abrir o arquivo %s\n"),fname );fflush(stdout);
+			fclose(f);
 			exit(1);
 		}
 
-		for (size_t i = 0; i < sp.celulas_IdxSize; i++){
+		/*for (size_t i = 0; i < sp.celulas_IdxSize; i++){
 			fprintf(f, "%5.u ", sp.celulas_Idx[i]);
 			if ((i + 1) % 7 == 0)
+				fprintf(f, "\n");
+		}*/
+
+		int cont =0;
+		for (auto &cellInfo: sp.cellsPopulation){
+			fprintf(f, "%5.u ", cellInfo.first);	//escreve o numero de cada célula ocupada pela espécie (no timeStep indicado)
+			if ((++cont) % 7 == 0)
 				fprintf(f, "\n");
 		}
 

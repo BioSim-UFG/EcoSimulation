@@ -18,8 +18,8 @@ void carrega_founders(const char *founders_input, Specie founders[]);
 
 //no futuro podemos usar argumentos (argv) para passar o nome do arquivo de founders
 int main(int argc,char const *argv[]){
-	if(argc < 2){
-		printf(RED("Número de argumentos inválido, nome da simulação não inserido\n"));
+	if(argc < 3){
+		printf(RED("Número de argumentos inválido,") GRN("formato correto: ./<Executavel> <nome_da_simulacao> <numero_de_passos>\n"));
 		exit(4);
 	}
 	
@@ -42,7 +42,7 @@ int main(int argc,char const *argv[]){
 
 		/***** lendo Serie Climatica das Celulas *****/
 
-	int numero_de_timeSteps = 51; // 50 tempos + tempo zero
+	int numero_de_timeSteps = atoi(argv[2])+1; // 50 tempos + tempo zero
 	Cell::cell_climates = new Climate *[numero_de_timeSteps];
 	for(size_t i=0; i<numero_de_timeSteps; i++)
 		Cell::cell_climates[i] = new Climate[MAX_CELLS];
@@ -97,7 +97,7 @@ int main(int argc,char const *argv[]){
 	grid->setFounders(founders, NUM_FOUNDERS);
 
 	//printf("\n * * * * * * * * * * * * * * * * * * * * * * *\n\n"); fflush(stdout);
-	printf(LGTGRN("Iniciando Simulação \n")); fflush(stdout);
+	printf(LGTGRN(BOLD("Iniciando Simulação \n"))); fflush(stdout);
 	
 	cout<<BLU("\tCalculando tempo ZERO\n"); fflush(stdout);
 	simulacao = new Simulation(*grid, argv[1]);		//calcula o tempo -1 (tempo ZERO)
@@ -115,7 +115,7 @@ int main(int argc,char const *argv[]){
 	auto finish_clock = chrono::high_resolution_clock::now();
 	std::chrono::duration<double> elapsed = finish_clock - start_clock;
 
-	cout<<"\nTempo total: "<<BOLD( WHT( << elapsed.count() <<" s\n"));
+	cout<<"\nTempo total: "<< LGTYEL( << elapsed.count() <<" s\n");
 
 
 	delete[] founders;
@@ -142,8 +142,10 @@ void carrega_founders(const char *founders_input, Specie founders[]){
 		exit(1);    
 	}
 
+	int i;
 	fscanf(src, "%*[^\n]\n");  //pula primeira linha
-	for(int i=0; i<NUM_FOUNDERS; i++){
+	for(i=0; i<NUM_FOUNDERS; i++){
+		if(feof(src)) break;
 		//lê valores do nicho e de capacidade de dispersão
 		fscanf(src, "%f %f %f %f", &niche[0].minimum, &niche[0].maximum, &niche[1].minimum, &niche[1].maximum);
 		fscanf(src, "%f %f %f", &dispersionCapacity.Geo, &dispersionCapacity.Topo, &dispersionCapacity.River);
@@ -151,9 +153,16 @@ void carrega_founders(const char *founders_input, Specie founders[]){
 		fscanf(src, "\n");
 
 		founders[i] = *new Specie(niche, dispersionCapacity, cellIdx);
-
-		if(feof(src)) break;
 	}
+
+	if(i < NUM_FOUNDERS){
+		printf(LGTYEL(BOLD("\n\tATENÇÃO, numero de founders em %s insuficiente\n")), founders_input);
+		printf(LGTYEL(BOLD("\tReplicando founders para tamanho necessário.\n\t")));
+		int num_lidos = i;
+		for(i; i<NUM_FOUNDERS; i++){
+			founders[i] = *new Specie(founders[i%num_lidos]);
+		}
+	}	
 
 	fclose(src);
 }

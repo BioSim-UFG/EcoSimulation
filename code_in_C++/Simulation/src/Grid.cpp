@@ -60,7 +60,9 @@ namespace SimEco{
 		int i = 0;
 		//Cell &celula = this->cells[positions[i]];
 		if(sp_size > speciesSize){
-			species = (Specie *)realloc(species, sizeof(Specie) * sp_size);
+			//species = (Specie *)realloc(species, sizeof(Specie) * sp_size);
+			delete[] species;
+			species = new Specie[sp_size];
 		}
 		speciesSize = sp_size;
 
