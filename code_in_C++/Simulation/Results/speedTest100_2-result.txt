@@ -1,0 +1,15 @@
+modelo de CPU: AMD FX 8350 - eight core processor
+numero de núcleos usados: 1
+frequencia/clock:
+flag de otimização para o compilador: -O2 
+flag de otimização para o makefile: opt2
+
+numero de execuções: 5
+tempo execução 1: 216.258 s
+tempo execução 2: 216.647 s
+tempo execução 3: 215.395 s
+tempo execução 4: 216.408 s
+tempo execução 5: 217.528 s
+
+tempo de execuçao medio: 216,447 s (3 min e 36 seg)
+
