@@ -126,15 +126,15 @@ namespace SimEco{
 	}
 
 	void Simulation::processSpecieTimeStep(Specie &specie, float *fitness){
-
+		//salva as celulas ocupadas do timeStep anterior
 		uint prevCelulas_IdxSize = specie.cellsPopulation.size();
+		pair<uint, short> prevCelulas[prevCelulas_IdxSize];
+		copy(specie.cellsPopulation.begin(), specie.cellsPopulation.end(), prevCelulas);
+
 
 		/*fazer um loop que percorre todas as celulas que a espécie já está ocupando, e pra cada iteração
 			espalhar a especie a partir daquela célula especifica.
 		*/
-		pair<uint, short> prevCelulas[prevCelulas_IdxSize];
-		copy(specie.cellsPopulation.begin(), specie.cellsPopulation.end(), prevCelulas);
-
 		const MatIdx_2D *idxMat = Grid::indexMatrix;
 		//for(uint cellIdx = 0; cellIdx < prevCelulas_IdxSize; cellIdx++){
 		for(auto &cell: prevCelulas){
@@ -145,25 +145,29 @@ namespace SimEco{
 			//enquanto estiver na mesma linha (da matriz compactada), correspondente a linha da matriz de adjacencia)
 			while(idxMat[zipMatPos].i == lineValue && zipMatPos < Grid::matrixSize){
 				
-				//ocupa essa celula também, se o fitness for maior que 0 e não for a própria célula
+				//ocupa essa celula também, se o fitness for maior que 0 e não estiver ocupada ainda
 				if(fitness[idxMat[zipMatPos].j] > 0.0f && cell.first!= idxMat[zipMatPos].j){
+
 
 					/* USAR unordered_map PARA INDICAR QUAIS CELULAS ESTÃO OCUPADAS, E QUAL O 
 					   TAMANHO DA POPULAÇÃO (DESSA ESPECIE) DENTRO DA CELULA
 						ou seja, vai mapear o índice da célula ocupada para a população dela.
 					*/
+					if( specie.reachability(Grid::connectivityMatrix[zipMatPos]) >= Specie::dispThreshold ){
+						//adiciona célula na lista de celulas ocupadas (pela especie)
+						//specie.celulas_Idx[specie.celulas_IdxSize++] = idxMat[zipMatPos].j;
 
-					//adiciona célula na lista de celulas ocupadas (pela especie)
-					//specie.celulas_Idx[specie.celulas_IdxSize++] = idxMat[zipMatPos].j;
-					specie.cellsPopulation.insert( {(uint)idxMat[zipMatPos].j, 1} );	//coloca a celula idxMat[zipMatPos].j como ocupada, com 1 de população
+						//coloca a celula idxMat[zipMatPos].j como ocupada, com 1 de população
+						specie.cellsPopulation.insert( {(uint)idxMat[zipMatPos].j, 1} );	//obs: insert() só adiciona o par {chave,valor}, se nao existir a chave ainda
+					}
 				}
 				else if( fitness[idxMat[zipMatPos].j] <= 0.0f){
 					//remove celula da lista
 					//specie.celulas_IdxSize--;
 					auto cellIterator = specie.cellsPopulation.find((uint)idxMat[zipMatPos].j);
 					//remove se a celula, se tiver sindo encontrada
-					if( cellIterator != specie.cellsPopulation.end() )
-						specie.cellsPopulation.erase(cellIterator);
+					//if( cellIterator != specie.cellsPopulation.end() )
+						//specie.cellsPopulation.erase(cellIterator);
 				}
 
 				zipMatPos++;
@@ -335,18 +339,17 @@ namespace SimEco{
 
 		char fname[80];
 		for(uint i = 0; i < _grid.speciesSize ; i++){
-			sprintf(fname, "%s/timeStep%u", path, i);
-			recordSpecieFile(path, timeStep, _grid.species[i]);
+			//sprintf(fname, "%s/timeStep%u", path, i);
+			sprintf(fname, "%s/%s_Esp%d_Time%d", path, _name, _grid.species[i]._name, timeStep);
+			recordSpecieFile(fname, timeStep, _grid.species[i]);
 		}
 	}
 
 	inline void Simulation::recordSpecieFile(const char *path, int timeStep, Specie &sp){
-		char fname[100];
-		sprintf(fname, "%s/%s_Esp%d_Time%d", path, _name, sp._name, timeStep);
 
-		FILE *f = fopen(fname, "w");
+		FILE *f = fopen(path, "w");
 		if(f == NULL){
-			printf(RED("Falha ao abrir o arquivo %s\n"),fname );fflush(stdout);
+			printf(RED("Falha ao abrir o arquivo %s\n"),path );fflush(stdout);
 			fclose(f);
 			exit(1);
 		}
@@ -384,6 +387,7 @@ namespace SimEco{
 			fscanf(src, "\n");
 
 			founders[i] = *new Specie(niche, dispersionCapacity, cellIdx);
+			//printf("geidisp: %f\n", dispersionCapacity.Geo);
 		}
 
 		if (i < NUM_FOUNDERS){

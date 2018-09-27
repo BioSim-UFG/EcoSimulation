@@ -23,6 +23,7 @@ namespace SimEco{
 
         //Capacity of dispersion over geographic distance, river barriers and topographic heterogeneity
         Dispersion dispCap;
+        constexpr static float dispThreshold = 0.2500f;
 
         //ideia para achar espécie, um MAP
 
@@ -31,7 +32,7 @@ namespace SimEco{
         //criação de uma especie já espalhada por várias células
         Specie(const array<NicheValue, NUM_ENV_VARS> &niche, const Dispersion &dispCapacity, uint cellIdxs[], uint cellIdxsSize);
         
-        
+        float reachability(const Connectivity &destCellConn );
         //usar um array de bits de comprimento fixo, tamanho = total de células na grid
         
         Specie(const Specie &src);

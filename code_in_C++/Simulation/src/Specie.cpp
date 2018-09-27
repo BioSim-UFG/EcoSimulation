@@ -14,9 +14,6 @@ namespace SimEco{
 		_name = _nSpecies;
 		_nSpecies++;
 
-		//printf("\n\n Name:%d n_species:%d \n\n", Specie::_name, Specie::_nSpecies);
-		//fflush(stdout);
-
 		dispCap = dispCapacity;
     	curSize = 0.0f;
     	growth = 0.0f;
@@ -32,8 +29,6 @@ namespace SimEco{
 	Specie::Specie(const array<NicheValue, NUM_ENV_VARS> &niche, const Dispersion &dispCapacity, uint cellIdxs[], uint cellIdxsSize){
 		_name = _nSpecies;
 		_nSpecies++;
-
-		
 		dispCap = dispCapacity;
 		curSize = 0.0f;
 		growth = 0.0f;
@@ -52,6 +47,14 @@ namespace SimEco{
 	Specie::Specie(){
 		//celulas_Idx = NULL;
 		//celulas_IdxSize = 0;
+	}
+
+	float Specie::reachability(const Connectivity &destCellConn ){
+		float result = 0.0f;
+		result = destCellConn.Geo * this->dispCap.Geo;
+		result = max(result, destCellConn.Topo * this->dispCap.Topo);
+		result = max(result, destCellConn.River * this->dispCap.River);
+		return result;
 	}
 
 	Specie::Specie(const SimEco::Specie &src){
