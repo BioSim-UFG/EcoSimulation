@@ -14,31 +14,31 @@ namespace SimEco{
 
 		Specie *founders = new Specie[NUM_FOUNDERS]; /*vetor de classes */
 
-		printf(GRN("Lendo especies Founders ...")); fflush(stdout);
+		printf(BLU("\tLendo especies Founders... ")); fflush(stdout);
 		carrega_founders("../../input/SpecieData.txt" , founders);
-		printf(BOLD(LGTGRN("OK!\n"))); fflush(stdout);
+		printf(BOLD(LGTBLU("OK!\n"))); fflush(stdout);
 
-		for(size_t i=0 ; i < NUM_FOUNDERS; i++)
+		/*for(size_t i=0 ; i < NUM_FOUNDERS; i++)
 			printf("\n founder: %u -> niche: %f, %f  \n",founders[i]._name, founders[i].niche[0].minimum, founders[i].niche[0].maximum);
-		
+		*/
 
 		//coloca os founders em suas celulas
 		grid.setFounders(founders, NUM_FOUNDERS);
 
+
+		cout<<BLU("\tCalculando tempo ZERO\n"); fflush(stdout);
 		//aqui faz o trabalho de preparação da simulação, usando a(s) especie(s) fundadora(s)
 		for(uint i=0; i<_grid.speciesSize; i++){
 			processFounder_timeZero(_grid.species[i]);
 		}
 
+		//grava os resultados do timeStep
 		string path = "Results/" + string(_name) + "/timeStep0";
 		string comand = "mkdir -p " + path;
 		system(comand.c_str());
 		recordTimeStepFiles((path).c_str(), 0);
 		
 		delete[] founders;
-	}
-
-	Simulation::~Simulation(){
 	}
 
 
@@ -91,10 +91,8 @@ namespace SimEco{
 	}
 
 	void Simulation::run(int nSteps){
-		
 		float *fitness = new float[_grid.cellsSize];
 		this->_timeSteps = nSteps;
-
 
 		//cria um subdiretorio para cada timestep
 		char dir[50], comand[61];
@@ -129,26 +127,20 @@ namespace SimEco{
 
 	void Simulation::processSpecieTimeStep(Specie &specie, float *fitness){
 
-		//uint prevCelulas_IdxSize = specie.celulas_IdxSize;
 		uint prevCelulas_IdxSize = specie.cellsPopulation.size();
 
 		/*fazer um loop que percorre todas as celulas que a espécie já está ocupando, e pra cada iteração
 			espalhar a especie a partir daquela célula especifica.
 		*/
-
 		pair<uint, short> prevCelulas[prevCelulas_IdxSize];
 		copy(specie.cellsPopulation.begin(), specie.cellsPopulation.end(), prevCelulas);
 
 		const MatIdx_2D *idxMat = Grid::indexMatrix;
 		//for(uint cellIdx = 0; cellIdx < prevCelulas_IdxSize; cellIdx++){
 		for(auto &cell: prevCelulas){
-			//printf("\rprocessando celula ja ocupada %u", cellIdx);
-
 			//uint zipMatPos = Grid::indexMap[specie.celulas_Idx[cellIdx]];
 			uint zipMatPos = Grid::indexMap[cell.first];
 			uint lineValue = idxMat[zipMatPos].i;
-
-
 
 			//enquanto estiver na mesma linha (da matriz compactada), correspondente a linha da matriz de adjacencia)
 			while(idxMat[zipMatPos].i == lineValue && zipMatPos < Grid::matrixSize){
@@ -177,39 +169,38 @@ namespace SimEco{
 				zipMatPos++;
 			}
 
-
 		}
 		//specie.celulas_Idx = (uint *)realloc(specie.celulas_Idx, sizeof(uint) * specie.celulas_IdxSize);
-
 	}
 
 	//calcula o fitness de uma especie em um determinado timeStep (copiei e adaptei a função que tinhamos pra GPU)
 	float* Simulation::calcSpecieFitness(const Specie &specie, uint timeStep, float *fitness){
 
 		float StdAreaNoOverlap=0, StdSimBetweenCenters=0;
+
+		const float &MinTempTol = specie.niche[0].minimum;
+		const float &MaxTempTol = specie.niche[0].maximum;
+		const float &MinPrecpTol = specie.niche[1].minimum;
+		const float &MaxPrecpTol = specie.niche[1].maximum;
+		//float MinTempEnv = 0, MaxTempEnv = 0, MinPrecpEnv = 0, MaxPrecpEnv = 0;
+
 		float MidTol=0;
-		float MinTempTol=0, MaxTempTol=0, MinPrecpTol=0, MaxPrecpTol=0;
-		float MinTempEnv = 0, MaxTempEnv = 0, MinPrecpEnv = 0, MaxPrecpEnv = 0;
 		float MidEnv = 0;
 		float LocFitness = 0;
 
 		vec_t NichePtns[nPoints + 3]; //pontos do poligono do nicho ( da especie ) ( struct com float x e y)
 		poly_t ClipedNichePoly = {NichePtns, nPoints + 3};
 
-		MinTempTol = specie.niche[0].minimum;
-		MaxTempTol = specie.niche[0].maximum;
-		MinPrecpTol = specie.niche[1].minimum;
-		MaxPrecpTol = specie.niche[1].maximum;
 
 		const Climate *climates = Cell::getTimeClimates(timeStep);	//pega os climas das celulas de um timeStep
 
 
 		//calcula o fitness dessa especia pra cada celula da grid
 		for(uint cellIdx=0; cellIdx < Grid::cellsSize; cellIdx++){
-			MinTempEnv = climates[cellIdx].envValues[0].minimum;
-			MaxTempEnv = climates[cellIdx].envValues[0].maximum;
-			MinPrecpEnv = climates[cellIdx].envValues[1].minimum;
-			MaxPrecpEnv = climates[cellIdx].envValues[1].maximum;
+			const float &MinTempEnv = climates[cellIdx].envValues[0].minimum;
+			const float &MaxTempEnv = climates[cellIdx].envValues[0].maximum;
+			const float &MinPrecpEnv = climates[cellIdx].envValues[1].minimum;
+			const float &MaxPrecpEnv = climates[cellIdx].envValues[1].maximum;
 
 			// Does the species tolerate the local environment?
 			if ((MinTempEnv < MinTempTol) || (MaxTempEnv > MaxTempTol) || (MinPrecpEnv < MinPrecpTol) || (MaxPrecpEnv > MaxPrecpTol)){
@@ -273,11 +264,11 @@ namespace SimEco{
 		const float &b =     MaxTol;
 	
 		float x;// = MaxTol;
-		const float MinimumMax = MaxTol < MaxEnv? MaxTol:MaxEnv;
-		const float MaximumMin = MinTol > MinEnv? MinTol:MinEnv;
+		const float &MinimumMax = MaxTol < MaxEnv? MaxTol:MaxEnv;
+		const float &MaximumMin = MinTol > MinEnv? MinTol:MinEnv;
 		float p, Tmp;
 		//float Step = ((b-a) / nPoints);
-		const float Step((MinimumMax - MaximumMin) / nPoints);
+		const float Step = ((MinimumMax - MaximumMin) / nPoints);
 
 		x = MinimumMax;
 		nichePoly.v[0].x = x;

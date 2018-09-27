@@ -41,12 +41,10 @@ namespace SimEco{
 		void recordTimeStepFiles(const char *path, int timeStep);
 		void recordSpecieFile(const char *path, int timeStep, Specie &sp);
 
-		void carrega_founders(const char *founders_input, Specie founders[]);
-
 	   public:
 		
 		Simulation(Grid & grid, const char *name);
-		~Simulation();
+		void carrega_founders(const char *founders_input, Specie founders[]);
 		void run(int nSteps);
 
 	};

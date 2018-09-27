@@ -14,8 +14,8 @@ namespace SimEco{
 		_name = _nSpecies;
 		_nSpecies++;
 
-		printf("\n\n Name:%d n_species:%d \n\n", Specie::_name, Specie::_nSpecies);
-		fflush(stdout);
+		//printf("\n\n Name:%d n_species:%d \n\n", Specie::_name, Specie::_nSpecies);
+		//fflush(stdout);
 
 		dispCap = dispCapacity;
     	curSize = 0.0f;
