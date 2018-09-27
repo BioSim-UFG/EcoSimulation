@@ -17,8 +17,10 @@ namespace SimEco{
 			processFounder_timeZero(_grid.species[i]);
 		}
 
-		recordTimeStepFiles( ("Results/"+string(_name)+"/timeStep0").c_str(), 0);
-
+		string path = "Results/" + string(_name) + "/timeStep0";
+		string comand = "mkdir -p " + path;
+		system(comand.c_str());
+		recordTimeStepFiles((path).c_str(), 0);
 	}
 
 
