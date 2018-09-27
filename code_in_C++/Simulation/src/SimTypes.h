@@ -51,7 +51,7 @@ namespace SimEco
 	} vec_t;
 
 	typedef struct { 
-    	vec_t *v; 
+    	vec_t * const v; 
     	int len;
 
 		inline float area(){

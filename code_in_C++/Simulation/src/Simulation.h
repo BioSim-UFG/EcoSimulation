@@ -22,7 +22,7 @@ namespace SimEco{
 		//uint foundersSize;
 
 
-		constexpr static int nPoints = 5; //precisão do poligono / número de pontos no poligono
+		constexpr static int nPoints = 12; //precisão do poligono / número de pontos no poligono
 		constexpr static float ErfA = 0.278393f;                   // Abramowitz e Stegun approximation to erf
 		constexpr static float ErfB = 0.230389f;                   // https://en.wikipedia.org/wiki/Error_function
 		constexpr static float ErfC = 0.000972f;
@@ -41,8 +41,10 @@ namespace SimEco{
 		void recordTimeStepFiles(const char *path, int timeStep);
 		void recordSpecieFile(const char *path, int timeStep, Specie &sp);
 
-	  public: 
-		Simulation(Grid &grid, const char* name);
+	   public:
+		
+		Simulation(Grid & grid, const char *name);
+		void carrega_founders(const char *founders_input, Specie founders[]);
 		void run(int nSteps);
 
 	};

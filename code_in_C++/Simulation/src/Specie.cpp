@@ -13,7 +13,8 @@ namespace SimEco{
     	//celulaQueTo = nullptr;
 		_name = _nSpecies;
 		_nSpecies++;
-    	dispCap = dispCapacity;
+
+		dispCap = dispCapacity;
     	curSize = 0.0f;
     	growth = 0.0f;
 		//celulas_Idx = (uint *) malloc(sizeof(uint) * 1);
@@ -48,9 +49,19 @@ namespace SimEco{
 		//celulas_IdxSize = 0;
 	}
 
+	float Specie::reachability(const Connectivity &destCellConn ){
+		float result = 0.0f;
+		result = destCellConn.Geo * this->dispCap.Geo;
+		result = max(result, destCellConn.Topo * this->dispCap.Topo);
+		result = max(result, destCellConn.River * this->dispCap.River);
+		return result;
+	}
+
 	Specie::Specie(const SimEco::Specie &src){
 		_name = _nSpecies;
 		Specie::_nSpecies++;
+
+		//printf("\n\n Name:%d n_species:%d \n\n", Specie::_name, Specie::_nSpecies);
 
 		curSize = src.curSize;
 		growth = src.growth;

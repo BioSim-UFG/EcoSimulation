@@ -13,11 +13,9 @@
 using namespace SimEco;
 
 
-void carrega_founders(const char *founders_input, Specie founders[]);
-
-
 //no futuro podemos usar argumentos (argv) para passar o nome do arquivo de founders
 int main(int argc,char const *argv[]){
+	
 	if(argc < 3){
 		printf(RED("Número de argumentos inválido,") GRN("formato correto: ./<Executavel> <nome_da_simulacao> <numero_de_passos>\n"));
 		exit(4);
@@ -26,17 +24,11 @@ int main(int argc,char const *argv[]){
 	Simulation *simulacao;
 	Grid *grid;
 	//Cell *celulas;	/* vetor de celulas */
-	Specie *founders = new Specie[NUM_FOUNDERS]; /*vetor de classes */
 	//Specie *founders = (Specie *)malloc(sizeof(Specie) * NUM_FOUNDERS);
 
 	auto start_clock = chrono::high_resolution_clock::now();
 
 
-	/*******INICIALIZANDO ESPECIES FOUNDERS*********/
-	
-	printf(GRN("Lendo especies Founders ...")); fflush(stdout);
-	carrega_founders("../../input/SpecieData.txt" , founders);
-	printf(BOLD(LGTGRN("OK!\n"))); fflush(stdout);
 
 	/*****************INICIALIZANDO GRID *****************/
 
@@ -47,7 +39,7 @@ int main(int argc,char const *argv[]){
 	for(size_t i=0; i<numero_de_timeSteps; i++)
 		Cell::cell_climates[i] = new Climate[MAX_CELLS];
 
-	printf(GRN("Lendo serie Climatica ...")); fflush(stdout);
+	printf(GRN("Lendo serie Climatica... ")); fflush(stdout);
 	int celulas_lidasClima = Grid::setCellsClimate("../../output/DummyHex2566 - Output - MinTemp.txt", 		//climas de todas as celulas em todos os tempos
 												   "../../output/DummyHex2566 - Output - MaxTemp.txt",
 												   "../../output/DummyHex2566 - Output - MinPPTN.txt",
@@ -58,7 +50,7 @@ int main(int argc,char const *argv[]){
 
 		/***** lendo matriz de adjacencia de Conectividade das Celulas *****/
 
-	printf(GRN("Lendo conectividade das celulas ..."));	fflush(stdout);		//CONSOME muita memória temporariamente (200mb)
+	printf(GRN("Lendo conectividade das celulas... "));	fflush(stdout);		//CONSOME muita memória temporariamente (200mb)
 	int celulas_lidasConnec = Grid::setCellsConnectivity("../../input/DummyHex2566 - Connectances - Geo.Single.Zip.Stream", 
 													"../../input/DummyHex2566 - Connectances - Topo.Single.Zip.Stream", 
 													"../../input/DummyHex2566 - Connectances - Rivers.Single.Zip.Stream");
@@ -91,16 +83,15 @@ int main(int argc,char const *argv[]){
 
 	
 	/**************************INICIANDO SIMULAÇÃO*******************************/
-	grid = new Grid(num_cells, NUM_FOUNDERS);
+	/*******INICIALIZANDO ESPECIES FOUNDERS*********/
 
-	//coloca os founders em suas celulas
-	grid->setFounders(founders, NUM_FOUNDERS);
+	grid = new Grid(num_cells, NUM_FOUNDERS);
 
 	//printf("\n * * * * * * * * * * * * * * * * * * * * * * *\n\n"); fflush(stdout);
 	printf(LGTGRN(BOLD("Iniciando Simulação \n"))); fflush(stdout);
 	
-	cout<<BLU("\tCalculando tempo ZERO\n"); fflush(stdout);
 	simulacao = new Simulation(*grid, argv[1]);		//calcula o tempo -1 (tempo ZERO)
+
 
 
 	/** agora que toda a pré configuração está pronta, vamos rodar mesmo a simulação **/
@@ -118,7 +109,7 @@ int main(int argc,char const *argv[]){
 	cout<<"\nTempo total: "<< LGTYEL( << elapsed.count() <<" s\n");
 
 
-	delete[] founders;
+	//delete[] founders;
 	delete[] Cell::cell_climates;
 	delete grid;
 	delete simulacao;
@@ -127,43 +118,3 @@ int main(int argc,char const *argv[]){
 
 	return 0;
 }
-
-
-
-
-void carrega_founders(const char *founders_input, Specie founders[]){
-	Dispersion dispersionCapacity;
-	array<NicheValue, NUM_ENV_VARS> niche;
-	uint cellIdx;
-
-	FILE *src = fopen(founders_input, "r");
-	if (src == NULL){
-		perror(RED("Erro ao abrir SpecieData.txt"));
-		exit(1);    
-	}
-
-	int i;
-	fscanf(src, "%*[^\n]\n");  //pula primeira linha
-	for(i=0; i<NUM_FOUNDERS; i++){
-		if(feof(src)) break;
-		//lê valores do nicho e de capacidade de dispersão
-		fscanf(src, "%f %f %f %f", &niche[0].minimum, &niche[0].maximum, &niche[1].minimum, &niche[1].maximum);
-		fscanf(src, "%f %f %f", &dispersionCapacity.Geo, &dispersionCapacity.Topo, &dispersionCapacity.River);
-		fscanf(src, "%u", &cellIdx);
-		fscanf(src, "\n");
-
-		founders[i] = *new Specie(niche, dispersionCapacity, cellIdx);
-	}
-
-	if(i < NUM_FOUNDERS){
-		printf(LGTYEL(BOLD("\n\tATENÇÃO, numero de founders em %s insuficiente\n")), founders_input);
-		printf(LGTYEL(BOLD("\tReplicando founders para tamanho necessário.\n\t")));
-		int num_lidos = i;
-		for(i; i<NUM_FOUNDERS; i++){
-			founders[i] = *new Specie(founders[i%num_lidos]);
-		}
-	}	
-
-	fclose(src);
-}
-
