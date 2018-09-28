@@ -33,6 +33,7 @@ namespace SimEco{
 		}
 
 		//grava os resultados do timeStep
+		system( ("rm -r Results/"+string(_name)).c_str() );
 		string path = "Results/" + string(_name) + "/timeStep0";
 		string comand = "mkdir -p " + path;
 		system(comand.c_str());
@@ -165,8 +166,8 @@ namespace SimEco{
 					//specie.celulas_IdxSize--;
 					auto cellIterator = specie.cellsPopulation.find((uint)idxMat[zipMatPos].j);
 					//remove se a celula, se tiver sindo encontrada
-					//if( cellIterator != specie.cellsPopulation.end() )
-						//specie.cellsPopulation.erase(cellIterator);
+					if( cellIterator != specie.cellsPopulation.end() )
+						specie.cellsPopulation.erase(cellIterator);
 				}
 
 				zipMatPos++;
@@ -355,8 +356,8 @@ namespace SimEco{
 
 		int cont =0;
 		for (auto &cellInfo: sp.cellsPopulation){
-			fprintf(f, "%5.u ", cellInfo.first);	//escreve o numero de cada célula ocupada pela espécie (no timeStep indicado)
-			if ((++cont) % 7 == 0)
+			fprintf(f, "%5u ", cellInfo.first);	//escreve o numero de cada célula ocupada pela espécie (no timeStep indicado)
+			if ((++cont) % 11 == 0)
 				fprintf(f, "\n");
 		}
 

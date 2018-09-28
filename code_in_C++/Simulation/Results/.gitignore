@@ -3,4 +3,4 @@
 #mas mantem ele mesmo
 !.gitignore
 !speedTest*.*
-!diff.sh
+!*.sh

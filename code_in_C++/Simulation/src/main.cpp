@@ -109,6 +109,11 @@ int main(int argc,char const *argv[]){
 	cout<<"\nTempo total: "<< LGTYEL( << elapsed.count() <<" s\n");
 
 
+	//grava log num arquivo
+
+	
+
+
 	//delete[] founders;
 	delete[] Cell::cell_climates;
 	delete grid;
