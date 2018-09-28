@@ -149,8 +149,7 @@ namespace SimEco{
 				if(fitness[idxMat[zipMatPos].j] > 0.0f && cell.first!= idxMat[zipMatPos].j){
 
 
-					/* USAR unordered_map PARA INDICAR QUAIS CELULAS ESTÃO OCUPADAS, E QUAL O 
-					   TAMANHO DA POPULAÇÃO (DESSA ESPECIE) DENTRO DA CELULA
+					/* USAR unordered_map para indicar quais celulas estão ocupadas, e qual o tamanho da população (dessa especie) dentro da celula
 						ou seja, vai mapear o índice da célula ocupada para a população dela.
 					*/
 					if( specie.reachability(Grid::connectivityMatrix[zipMatPos]) >= Specie::dispThreshold ){
