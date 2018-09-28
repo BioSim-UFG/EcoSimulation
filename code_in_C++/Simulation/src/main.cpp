@@ -3,12 +3,11 @@
 #include "Grid.h"
 #include "Simulation.h"
 #include "Specie.h"
-
-#include "color.h"
+#include "Helper.h"
 
 
 #include <iostream>
-#include <chrono>
+
 
 using namespace SimEco;
 
@@ -16,19 +15,18 @@ using namespace SimEco;
 //no futuro podemos usar argumentos (argv) para passar o nome do arquivo de founders
 int main(int argc,char const *argv[]){
 	
-	if(argc < 3){
-		printf(RED("Número de argumentos inválido,") GRN("formato correto: ./<Executavel> <nome_da_simulacao> <numero_de_passos>\n"));
-		exit(4);
+	if( testArgs(argc,argv) == false){
+		exit( intException( Exceptions::argException) );
 	}
-	
+
 	Simulation *simulacao;
 	Grid *grid;
 	//Cell *celulas;	/* vetor de celulas */
 	//Specie *founders = (Specie *)malloc(sizeof(Specie) * NUM_FOUNDERS);
 
-	auto start_clock = chrono::high_resolution_clock::now();
 
-
+	//auto start_clock = startTimer();
+	auto start_clock = std::chrono::high_resolution_clock::now();
 
 	/*****************INICIALIZANDO GRID *****************/
 
@@ -110,8 +108,6 @@ int main(int argc,char const *argv[]){
 
 
 	//grava log num arquivo
-
-	
 
 
 	//delete[] founders;

@@ -25,7 +25,6 @@ namespace SimEco{
 		//coloca os founders em suas celulas
 		grid.setFounders(founders, NUM_FOUNDERS);
 
-
 		cout<<BLU("\tCalculando tempo ZERO\n"); fflush(stdout);
 		//aqui faz o trabalho de preparação da simulação, usando a(s) especie(s) fundadora(s)
 		for(uint i=0; i<_grid.speciesSize; i++){

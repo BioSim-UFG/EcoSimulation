@@ -49,13 +49,6 @@ namespace SimEco{
 		//celulas_IdxSize = 0;
 	}
 
-	float Specie::reachability(const Connectivity &destCellConn ){
-		float result = 0.0f;
-		result = destCellConn.Geo * this->dispCap.Geo;
-		result = max(result, destCellConn.Topo * this->dispCap.Topo);
-		result = max(result, destCellConn.River * this->dispCap.River);
-		return result;
-	}
 
 	Specie::Specie(const SimEco::Specie &src){
 		_name = _nSpecies;
@@ -75,5 +68,13 @@ namespace SimEco{
 		//free(celulas_Idx);
 		//celulas_Idx = NULL;
 		//delete &cellsPopulation;
+	}
+	
+	float Specie::reachability(const Connectivity &destCellConn ){
+		float result = 0.0f;
+		result = destCellConn.Geo * this->dispCap.Geo;
+		result = max(result, destCellConn.Topo * this->dispCap.Topo);
+		result = max(result, destCellConn.River * this->dispCap.River);
+		return result;
 	}
 }
