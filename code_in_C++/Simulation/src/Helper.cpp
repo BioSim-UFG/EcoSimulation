@@ -16,10 +16,22 @@ namespace SimEco{
        return (int) ex;
     }
 
-    /*
-    auto startTimer(){
-         auto start_clock = std::chrono::high_resolution_clock::now();
-        return start_clock;
+
+    //Clock class functions
+    void Clock::timerStart(){
+        this->start = std::chrono::high_resolution_clock::now();
     }
-    */
+
+    void Clock::timerEnd(){
+        this->end = std::chrono::high_resolution_clock::now();
+        elapsed = end - start;
+    }
+
+    double Clock::elapsedTime(){
+        return elapsed.count();
+    }
+
+    Clock::Clock(){}
+    Clock::~Clock(){}
+
 }

@@ -23,11 +23,10 @@ int main(int argc,char const *argv[]){
 	Grid *grid;
 	//Cell *celulas;	/* vetor de celulas */
 	//Specie *founders = (Specie *)malloc(sizeof(Specie) * NUM_FOUNDERS);
+	Clock *timeCounter = new Clock();
 
-
-	//auto start_clock = startTimer();
-	auto start_clock = std::chrono::high_resolution_clock::now();
-
+	timeCounter->timerStart();
+	
 	/*****************INICIALIZANDO GRID *****************/
 
 		/***** lendo Serie Climatica das Celulas *****/
@@ -101,16 +100,15 @@ int main(int argc,char const *argv[]){
 	/***************************FIM DA SIMULAÇÃO*********************************/
 
 	// finaliza contagem de tempo
-	auto finish_clock = chrono::high_resolution_clock::now();
-	std::chrono::duration<double> elapsed = finish_clock - start_clock;
+	timeCounter->timerEnd();
 
-	cout<<"\nTempo total: "<< LGTYEL( << elapsed.count() <<" s\n");
-
+	cout << "\nTempo total: " << LGTYEL(<< timeCounter->elapsedTime() << " s\n");
 
 	//grava log num arquivo
 
 
 	//delete[] founders;
+	delete timeCounter;
 	delete[] Cell::cell_climates;
 	delete grid;
 	delete simulacao;

@@ -11,13 +11,24 @@
 
 namespace SimEco{
 
-    enum class Exceptions {fileException=1, argException = 4};
-
+    enum class Exceptions {fileException=1,decompStrException,memRealocException, argException = 4};
     
     int intException(enum Exceptions ex);
     bool testArgs(int argc,char const *argv[]);
 
-    //auto startTimer();
+    //Timer class
+    class Clock
+    {   public:
+        std::chrono::high_resolution_clock::time_point start;
+        std::chrono::high_resolution_clock::time_point end;
+        std::chrono::duration<double> elapsed;
+
+        Clock();
+        ~Clock();
+        void timerStart();
+        void timerEnd();
+        double elapsedTime();
+    };
 }
 
 #endif

@@ -1,11 +1,12 @@
 #include "Grid.h"
 #include "Cell.h"
 #include "Specie.h"
+#include "Helper.h"
 #include <string.h>
 //#include <execinfo.h>
 
 #include "decompressData.h"
-#include "color.h"
+
 
 using namespace std;
 
@@ -84,11 +85,11 @@ namespace SimEco{
 		FILE *maxPptn_arq = fopen(maxPptn_src, "r");
 		FILE *NPP_arq = fopen(NPP_src, "r");
 
-		if (minTemp_arq == NULL){ printf(RED("Erro ao abrir %s\n"), minTemp_src); 	exit(1); }
-		if (maxTemp_arq == NULL){ printf(RED("Erro ao abrir %s\n"), maxTemp_src); 	exit(1); }
-		if (minPptn_arq == NULL){ printf(RED("Erro ao abrir %s\n"), minPptn_src); 	exit(1); }
-		if (maxPptn_arq == NULL){ printf(RED("Erro ao abrir %s\n"), maxPptn_src); 	exit(1); }
-		if (NPP_arq == NULL){ printf(RED("Erro ao abrir %s\n"), NPP_src); 		exit(1); }
+		if (minTemp_arq == NULL){ printf(RED("Erro ao abrir %s\n"), minTemp_src); 	exit( intException(Exceptions::fileException) ); }
+		if (maxTemp_arq == NULL){ printf(RED("Erro ao abrir %s\n"), maxTemp_src); 	exit( intException(Exceptions::fileException) ); }
+		if (minPptn_arq == NULL){ printf(RED("Erro ao abrir %s\n"), minPptn_src); 	exit( intException(Exceptions::fileException) ); }
+		if (maxPptn_arq == NULL){ printf(RED("Erro ao abrir %s\n"), maxPptn_src); 	exit( intException(Exceptions::fileException) ); }
+		if (NPP_arq == NULL){ printf(RED("Erro ao abrir %s\n"), NPP_src); 		exit( intException(Exceptions::fileException) ); }
 
 		long int i, j;
 
@@ -139,9 +140,9 @@ namespace SimEco{
 		FILE *topo_arq = fopen(topoConectivity_src,"rb");
 		FILE *rivers_arq = fopen(riversConectivity_src,"rb");
 
-		if(geo_arq == NULL){ printf(RED("Erro ao abrir arquivo %s\n"), geoConectivity_src); 		exit(1);}
-		if(topo_arq == NULL){ printf(RED("Erro ao abrir arquivo %s\n"), topoConectivity_src); 		exit(1);}
-		if(rivers_arq == NULL){ printf(RED("Erro ao abrir arquivo %s\n"), riversConectivity_src); 	exit(1);}
+		if(geo_arq == NULL){ printf(RED("Erro ao abrir arquivo %s\n"), geoConectivity_src); 		exit( intException(Exceptions::fileException) );}
+		if(topo_arq == NULL){ printf(RED("Erro ao abrir arquivo %s\n"), topoConectivity_src); 		exit( intException(Exceptions::fileException) );}
+		if(rivers_arq == NULL){ printf(RED("Erro ao abrir arquivo %s\n"), riversConectivity_src); 	exit( intException(Exceptions::fileException) );}
 
 		printf("\n");
 		printf(BLU("\tDescomprimindo Streams")); fflush(stdout);
@@ -155,7 +156,7 @@ namespace SimEco{
 		if (decompressRet1 != Z_OK || decompressRet2 != Z_OK || decompressRet3 != Z_OK){
 			printf(RED("\tErro ao descomprimir streams!"));
 			fclose(geo_arq); fclose(topo_arq); fclose(rivers_arq);
-			exit(2);
+			exit( intException(Exceptions::decompStrException) );
 		}
 
 		fclose(geo_arq);
@@ -217,7 +218,7 @@ namespace SimEco{
 					indexMatrix = (MatIdx_2D *)realloc(indexMatrix, (blocksAllocated * block_size) * sizeof(MatIdx_2D));
 					if (connectivityMatrix == NULL || indexMatrix == NULL){
 						perror(RED("Erro ao realocar memoria!"));
-						exit(3);
+						exit( intException(Exceptions::memRealocException));
 					}
 				}
 				

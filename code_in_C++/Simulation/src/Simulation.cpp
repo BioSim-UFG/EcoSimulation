@@ -2,8 +2,8 @@
 #include "Cell.h"
 #include "Grid.h"
 #include "Specie.h"
+#include "Helper.h"
 
-#include "color.h"
 #include <iostream>
 #include <cmath>
 
@@ -350,7 +350,7 @@ namespace SimEco{
 		if(f == NULL){
 			printf(RED("Falha ao abrir o arquivo %s\n"),path );fflush(stdout);
 			fclose(f);
-			exit(1);
+			exit( intException(Exceptions::fileException) );
 		}
 
 		int cont =0;
@@ -371,7 +371,7 @@ namespace SimEco{
 		FILE *src = fopen(founders_input, "r");
 		if (src == NULL){
 			perror(RED("Erro ao abrir SpecieData.txt"));
-			exit(1);
+			exit(intException(Exceptions::fileException));
 		}
 
 		int i;
