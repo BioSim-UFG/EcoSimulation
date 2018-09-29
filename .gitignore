@@ -4,7 +4,7 @@ code_in_delphi/paleo_data/Decompressed.Stream
 DummyHex2566 - Output*
 input/xPLASIM.All3DMats.Single.Zip.Stream
 Prog.exe
-.vscode/settings.json
+*.vscode/settings.json
 .vscode/c_cpp_properties.json
 .vscode/launch.json
 input/DummyHex2566 - Connectances - Rivers.Single.Zip.Stream
