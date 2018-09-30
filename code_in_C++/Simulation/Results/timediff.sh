@@ -1,14 +1,14 @@
 #!/bin/bash
 
 min=1
-flags= 
+flags=-
 
 if [ "$1" = "--help" ]; then
 	echo "Autor: João Gabriel S. Fernandes"
 	echo "Versao 0.52"
 	echo "esse script compara os arquivos de saída gerados pela simulação,"
-	echo "cada espécie tem cada timeStep seu comparados com o timeStep anterior, ambos ordenados"
-	echo "arquivos de saída entre espécies não são comparados entre si"
+	echo "cada espécie tem cada timeStep X seu comparado com o timeStep anterior (X-1), todos com as celulas ocupadas ordenadas."
+	echo "timeSteps das espécies não são comparados entre si"
 	echo ""
 	echo "informe a pasta gerada pela simulação (sem a '/' no final) "
 	echo "que quer checar o diff e a flag diff(opcional)"
@@ -42,7 +42,7 @@ for esp in $(\ls -d ${path}/timeStep0/${path}_Esp*_Time0); do
 		strlen=$(basename ${pastTime})
 		padSize=$(( (${#i}  - ${#strlen}) +1))
 
-		printf '\e[1;96m'"\n $(basename ${pastTime}) %*s and %*s $(basename ${i}):\n" ${padSize} "" ${padSize} "";
+		printf '\e[1;96m'"\n $(basename ${pastTime}) %*s para %*s $(basename ${i}):\n" ${padSize} "" ${padSize} "";
 		printf '\e[0m'
 
 		numColumns=$(head -n 1 "${pastTime}" | awk '{print NF}')

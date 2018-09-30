@@ -100,9 +100,11 @@ int main(int argc,char const *argv[]){
 	/***************************FIM DA SIMULAÇÃO*********************************/
 
 	// finaliza contagem de tempo
-	timeCounter->timerEnd();
+	//timeCounter->timerEnd();
 
-	cout << "\nTempo total: " << LGTYEL(<< timeCounter->elapsedTime() << " s\n");
+	//cout << "\nTempo total: " << LGTYEL(<< timeCounter->elapsedTime() << " s\n");
+
+	cout << "\nTempo total: " << LGTYEL(<< timeCounter->timerEnd() << " s\n");
 
 	//grava log num arquivo
 
