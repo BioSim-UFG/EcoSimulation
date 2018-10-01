@@ -15,9 +15,9 @@ using namespace SimEco;
 //no futuro podemos usar argumentos (argv) para passar o nome do arquivo de founders
 int main(int argc,char const *argv[]){
 	
-	if( testArgs(argc,argv) == false){
-		exit( intException( Exceptions::argException) );
-	}
+	testArgs(argc,argv);
+		
+	
 
 	Simulation *simulacao;
 	Grid *grid;
@@ -25,7 +25,7 @@ int main(int argc,char const *argv[]){
 	//Specie *founders = (Specie *)malloc(sizeof(Specie) * NUM_FOUNDERS);
 	Clock *timeCounter = new Clock();
 
-	timeCounter->timerStart();
+	timeCounter->Start();
 	
 	/*****************INICIALIZANDO GRID *****************/
 
@@ -35,6 +35,7 @@ int main(int argc,char const *argv[]){
 	Cell::cell_climates = new Climate *[numero_de_timeSteps];
 	for(size_t i=0; i<numero_de_timeSteps; i++)
 		Cell::cell_climates[i] = new Climate[MAX_CELLS];
+
 
 	printf(GRN("Lendo serie Climatica... ")); fflush(stdout);
 	int celulas_lidasClima = Grid::setCellsClimate("../../output/DummyHex2566 - Output - MinTemp.txt", 		//climas de todas as celulas em todos os tempos
@@ -78,7 +79,6 @@ int main(int argc,char const *argv[]){
 		}
 	}
 
-	
 	/**************************INICIANDO SIMULAÇÃO*******************************/
 	/*******INICIALIZANDO ESPECIES FOUNDERS*********/
 
@@ -103,8 +103,7 @@ int main(int argc,char const *argv[]){
 	//timeCounter->timerEnd();
 
 	//cout << "\nTempo total: " << LGTYEL(<< timeCounter->elapsedTime() << " s\n");
-
-	cout << "\nTempo total: " << LGTYEL(<< timeCounter->timerEnd() << " s\n");
+	cout << "\nTempo total: " << LGTYEL(<< timeCounter->End() << " s\n");
 
 	//grava log num arquivo
 

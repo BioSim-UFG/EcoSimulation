@@ -15,7 +15,7 @@ namespace SimEco{
 	enum class Exceptions {fileException=1, decompStrException, memRealocException, argException = 4};
 	
 	int intException(enum Exceptions ex);
-	bool testArgs(int argc,char const *argv[]);
+	void testArgs(int argc,char const *argv[]);
 
 	//Timer class
 	class Clock
@@ -42,17 +42,17 @@ namespace SimEco{
 		//std::chrono::high_resolution_clock::time_point end;
 		//std::chrono::duration<double> elapsed;
 
-		void timerStart();
+		void Start();
 
 		//void timerStart(int id);
 
 		//pausa o timer
-		void timerPause();
+		void Pause();
 		//continua o timer
-		void timerContinue();
+		void Continue();
 
 		//para o timer se nao estiver pausado já. E então retorna o tempo percorrido total pelo timer.
-		double timerEnd();
+		double End();
 		//double elapsedTime();
 	};
 }

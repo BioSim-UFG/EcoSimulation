@@ -3,13 +3,14 @@
 
 namespace SimEco{
 
-    bool  testArgs(int argc,char const *argv[]){
+    void  testArgs(int argc,char const *argv[]){
         if(argc != N_INPUT + 1 ){
             printf(RED("Número de argumentos inválido,") GRN("formato correto: ./<Executavel> <nome_da_simulacao> <numero_de_passos>\n"));
-            return false;
+            exit(intException(Exceptions::argException));
+            //return false;
         }
 
-        return true;
+        //return true;
     }
 
     int intException(enum Exceptions ex){
@@ -18,7 +19,7 @@ namespace SimEco{
 
 
     //Clock class functions
-    void Clock::timerStart(){
+    void Clock::Start(){
         //this->start = std::chrono::high_resolution_clock::now();
         //int id = timers.size();
         //timers[id] = (Clock_count){};
@@ -33,7 +34,7 @@ namespace SimEco{
         return id;
     }*/
 
-    void Clock::timerPause(){
+    void Clock::Pause(){
         if (timer.isPaused == true)
             return;
 
@@ -41,17 +42,17 @@ namespace SimEco{
         timer.isPaused = true;
     }
 
-    void Clock::timerContinue(){
+    void Clock::Continue(){
         timer.isPaused = false;
         //faz o start avançar o mesmo tanto de clocks que passaram durante a pausa do timer
         timer.startClock += (std::chrono::high_resolution_clock::now() - timer.pausedClock );
     }
 
-    double Clock::timerEnd(){
+    double Clock::End(){
         //this->end = std::chrono::high_resolution_clock::now();
         //elapsed = end - start;
 
-        timerPause();    //pausa o clock/timer se ele nao estiver pausado já.
+        Pause();    //pausa o clock/timer se ele nao estiver pausado já.
         
         std::chrono::duration<double> elapsed;
         elapsed = timer.pausedClock - timer.startClock;

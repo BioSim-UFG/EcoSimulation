@@ -146,7 +146,7 @@ namespace SimEco{
 			while(idxMat[zipMatPos].i == lineValue && zipMatPos < Grid::matrixSize){
 				
 				//ocupa essa celula também, se o fitness for maior que 0 e não estiver ocupada ainda
-				if(fitness[idxMat[zipMatPos].j] > 0.0f && cell.first!= idxMat[zipMatPos].j){
+				if(fitness[idxMat[zipMatPos].j] > Specie::fitnessThreshold && cell.first!= idxMat[zipMatPos].j){
 
 
 					/* USAR unordered_map para indicar quais celulas estão ocupadas, e qual o tamanho da população (dessa especie) dentro da celula

@@ -23,7 +23,8 @@ namespace SimEco{
 
         //Capacity of dispersion over geographic distance, river barriers and topographic heterogeneity
         Dispersion dispCap;
-        constexpr static float dispThreshold = 0.2500f;
+        constexpr static float dispThreshold = 0.1500f;
+        constexpr static float fitnessThreshold = 0.02f;
 
         //ideia para achar espécie, um MAP
 
