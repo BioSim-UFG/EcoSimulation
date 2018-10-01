@@ -48,16 +48,13 @@ for esp in $(\ls -d ${path}/timeStep0/${path}_Esp*_Time0); do
 		numColumns=$(head -n 1 "${pastTime}" | awk '{print NF}')
 		sortedprev=$(cat "${pastTime}" | tr ' ' '\n' | sort -V)
 		sortedprev=$(printf "%5d\n" ${sortedprev} | xargs -n${numColumns} -d'\n')
-		#echo "${sortedprev}"
 
-		#numColumns=$(head -n 1 "${i}" | awk '{print NF}')
 		sortednow=$(cat "${i}" | tr ' ' '\n' | sort -V)
 		sortednow=$(printf "%5d\n" ${sortednow} | xargs -n${numColumns} -d'\n')
-		#echo "${sortednow}"
 
 		
 		diff ${flags}yr <(echo "${sortedprev}")  <(echo "${sortednow}") #$(echo "${pastTime}" |sort -V) $(echo "${i}" | sort -V);
-		wdiff -123s "${pastTime}" "${i}"
+		wdiff -123s ${pastTime} ${i}
 
 		pastTime=${i};
  	done
