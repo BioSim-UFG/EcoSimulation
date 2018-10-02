@@ -1,6 +1,9 @@
 #include "Helper.h"
 #include <chrono>
 
+
+
+
 namespace SimEco{
 
     void  testArgs(int argc,char const *argv[]){
@@ -16,6 +19,41 @@ namespace SimEco{
     int intException(enum Exceptions ex){
        return (int) ex;
     }
+
+    /*
+        Simulation_name= Base
+        Num_Cells= 2566
+        Num_Founders= 4
+        Num_TimeSteps= 50
+        Save_Path= local
+    */
+    /*
+    void exit_error(bool test, Exept erro) {
+        if(test)
+        print(printErrro(erro));
+        exit(1);
+    }
+    */  
+    void Configuration::Configure(){
+        FILE* f;
+
+        f = fopen("Configuration.txt","r");
+
+        if(f == NULL){
+            perror(RED("Erro ao abrir arquivo de Configuração\n"));
+            exit( intException(Exceptions::fileException) );
+        }
+
+        fscanf(f, "Simulation_name= %s\n", NAME);
+        fscanf(f,"Num_Cells= %u\n",&MAX_CELLS);
+        fscanf(f,"Num_Founders= %u\n",&NUM_FOUNDERS);
+        fscanf(f, "Num_TimeSteps= %u\n",&TIMESTEPS);
+        fscanf(f, "Save_Path= %s\n", SAVEPATH);
+
+        fclose(f);
+    }
+
+
 
 
     //Clock class functions

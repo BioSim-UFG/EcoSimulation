@@ -55,6 +55,18 @@ namespace SimEco{
 		double End();
 		//double elapsedTime();
 	};
+
+	class Configuration
+	{	public:
+		static char* NAME;
+		static char* SAVEPATH;
+		static unsigned int MAX_CELLS;
+		static unsigned int NUM_FOUNDERS;
+		static unsigned int TIMESTEPS;
+
+		void Configure();
+	};
+
 }
 
 #endif

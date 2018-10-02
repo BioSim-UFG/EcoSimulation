@@ -12,11 +12,14 @@
 using namespace SimEco;
 
 
+
 //no futuro podemos usar argumentos (argv) para passar o nome do arquivo de founders
+
 int main(int argc,char const *argv[]){
 	
-	testArgs(argc,argv);
-		
+	//testArgs(argc,argv);
+	Configuration* Base;
+	Base->Configure();	
 	
 
 	Simulation *simulacao;
@@ -31,10 +34,10 @@ int main(int argc,char const *argv[]){
 
 		/***** lendo Serie Climatica das Celulas *****/
 
-	int numero_de_timeSteps = atoi(argv[2])+1; // 50 tempos + tempo zero
+	int numero_de_timeSteps = Configuration::TIMESTEPS+1; // 50 tempos + tempo zero
 	Cell::cell_climates = new Climate *[numero_de_timeSteps];
 	for(size_t i=0; i<numero_de_timeSteps; i++)
-		Cell::cell_climates[i] = new Climate[MAX_CELLS];
+		Cell::cell_climates[i] = new Climate[Configuration::MAX_CELLS];
 
 
 	printf(GRN("Lendo serie Climatica... ")); fflush(stdout);
@@ -82,12 +85,12 @@ int main(int argc,char const *argv[]){
 	/**************************INICIANDO SIMULAÇÃO*******************************/
 	/*******INICIALIZANDO ESPECIES FOUNDERS*********/
 
-	grid = new Grid(num_cells, NUM_FOUNDERS);
+	grid = new Grid(num_cells, Configuration::NUM_FOUNDERS);
 
 	//printf("\n * * * * * * * * * * * * * * * * * * * * * * *\n\n"); fflush(stdout);
 	printf(LGTGRN(BOLD("Iniciando Simulação \n"))); fflush(stdout);
 	
-	simulacao = new Simulation(*grid, argv[1]);		//calcula o tempo -1 (tempo ZERO)
+	simulacao = new Simulation(*grid, Configuration::NAME);		//calcula o tempo -1 (tempo ZERO)
 
 
 

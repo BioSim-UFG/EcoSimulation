@@ -2,10 +2,11 @@
 #define GRID_H
 
 #include "SimTypes.h"
+#include "Helper.h"
 #include <unordered_map>
 
-#define MAX_CELLS 2566
-#define NUM_FOUNDERS 4
+//#define MAX_CELLS 2566
+//#define NUM_FOUNDERS 4
 
 
 using namespace std;
@@ -16,7 +17,7 @@ namespace SimEco
 
 
 	 public:
-		
+			
 		Specie *species;
 		uint speciesSize;
 		
@@ -39,7 +40,7 @@ namespace SimEco
 
 		void setFounders(Specie sp[], size_t sp_num);
 		void addCell(const Cell &novaCelula);
-		void addCells(const array<Cell, MAX_CELLS> &novasCelulas);    //pega o vector novasCelulas e copia/passa os elementos para a Grid
+		//void addCells(const array<Cell, Configuration::MAX_CELLS> &novasCelulas);    //pega o vector novasCelulas e copia/passa os elementos para a Grid
 
 
 		Cell* getCellat(uint index);

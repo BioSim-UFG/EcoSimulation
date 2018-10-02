@@ -99,7 +99,7 @@ namespace SimEco{
 		fscanf(maxPptn_arq, "%*[^\n]\n"); //ignora a primeira linha
 		fscanf(NPP_arq, "%*[^\n]\n");     //ignora a primeira linha
 
-		for (i = 0; i < MAX_CELLS; i++){
+		for (i = 0; i < Configuration::MAX_CELLS; i++){
 			
 			if (feof(minTemp_arq) || feof(maxTemp_arq) || feof(minPptn_arq) || feof(maxPptn_arq) || feof(NPP_arq) )
 				break;

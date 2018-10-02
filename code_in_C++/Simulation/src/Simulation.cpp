@@ -12,7 +12,7 @@ namespace SimEco{
 
 		create_Directory();	//cria diretorio de saida/resultados da simulação
 
-		Specie *founders = new Specie[NUM_FOUNDERS]; /*vetor de classes */
+		Specie *founders = new Specie[Configuration::NUM_FOUNDERS]; /*vetor de classes */
 
 		printf(BLU("\tLendo especies Founders... ")); fflush(stdout);
 		carrega_founders("../../input/SpecieData.txt" , founders);
@@ -23,7 +23,7 @@ namespace SimEco{
 		*/
 
 		//coloca os founders em suas celulas
-		grid.setFounders(founders, NUM_FOUNDERS);
+		grid.setFounders(founders, Configuration::NUM_FOUNDERS);
 
 		cout<<BLU("\tCalculando tempo ZERO\n"); fflush(stdout);
 		//aqui faz o trabalho de preparação da simulação, usando a(s) especie(s) fundadora(s)
@@ -376,7 +376,7 @@ namespace SimEco{
 
 		int i;
 		fscanf(src, "%*[^\n]\n"); //pula primeira linha
-		for (i = 0; i < NUM_FOUNDERS; i++){
+		for (i = 0; i < Configuration::NUM_FOUNDERS; i++){
 			if (feof(src))
 				break;
 			//lê valores do nicho e de capacidade de dispersão
@@ -389,11 +389,11 @@ namespace SimEco{
 			//printf("geidisp: %f\n", dispersionCapacity.Geo);
 		}
 
-		if (i < NUM_FOUNDERS){
+		if (i < Configuration::NUM_FOUNDERS){
 			printf(LGTYEL(BOLD("\n\tATENÇÃO, numero de founders em %s insuficiente\n")), founders_input);
 			printf(LGTYEL(BOLD("\tReplicando founders para tamanho necessário.\n\t")));
 			int num_lidos = i;
-			for (i; i < NUM_FOUNDERS; i++)
+			for (i; i < Configuration::NUM_FOUNDERS; i++)
 			{
 				founders[i] = *new Specie(founders[i % num_lidos]);
 			}
