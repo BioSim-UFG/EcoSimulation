@@ -58,8 +58,8 @@ namespace SimEco{
 
 	class Configuration
 	{	public:
-		static char* NAME;
-		static char* SAVEPATH;
+		static char NAME[65];
+		static char SAVEPATH[265];
 		static unsigned int MAX_CELLS;
 		static unsigned int NUM_FOUNDERS;
 		static unsigned int TIMESTEPS;

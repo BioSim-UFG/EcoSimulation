@@ -33,7 +33,14 @@ namespace SimEco{
         print(printErrro(erro));
         exit(1);
     }
-    */  
+    */
+
+    char Configuration::NAME[];
+    char Configuration::SAVEPATH[];
+    unsigned int  Configuration::MAX_CELLS;
+    unsigned int  Configuration::NUM_FOUNDERS;
+    unsigned int  Configuration::TIMESTEPS;
+
     void Configuration::Configure(){
         FILE* f;
 
