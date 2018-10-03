@@ -70,11 +70,10 @@ namespace SimEco{
 		//delete &cellsPopulation;
 	}
 	
-	float Specie::reachability(const Connectivity &destCellConn ){
-		float result = 0.0f;
-		result = destCellConn.Geo * this->dispCap.Geo;
-		result = max(result, destCellConn.Topo * this->dispCap.Topo);
+	/*float Specie::reachability(const Connectivity &destCellConn ){
+		float result;
+		result = max(destCellConn.Geo * this->dispCap.Geo, destCellConn.Topo * this->dispCap.Topo);
 		result = max(result, destCellConn.River * this->dispCap.River);
 		return result;
-	}
+	}*/
 }

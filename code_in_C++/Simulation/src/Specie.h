@@ -42,6 +42,12 @@ namespace SimEco{
         
     };
 
+    inline float Specie::reachability(const Connectivity &destCellConn){
+        float result;
+        result = max(destCellConn.Geo * this->dispCap.Geo, destCellConn.Topo * this->dispCap.Topo);
+        result = max(result, destCellConn.River * this->dispCap.River);
+        return result;
+    }
 }
 
 #endif
