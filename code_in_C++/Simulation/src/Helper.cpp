@@ -1,5 +1,6 @@
 #include "Helper.h"
 #include <chrono>
+#include <string.h>
 
 
 
@@ -21,13 +22,6 @@ namespace SimEco{
     }
 
     /*
-        Simulation_name= Base
-        Num_Cells= 2566
-        Num_Founders= 4
-        Num_TimeSteps= 50
-        Save_Path= local
-    */
-    /*
     void exit_error(bool test, Exept erro) {
         if(test)
         print(printErrro(erro));
@@ -43,7 +37,6 @@ namespace SimEco{
 
     void Configuration::Configure(){
         FILE* f;
-
         f = fopen("Configuration.txt","r");
 
         if(f == NULL){
@@ -56,6 +49,13 @@ namespace SimEco{
         fscanf(f,"Num_Founders= %u\n",&NUM_FOUNDERS);
         fscanf(f, "Num_TimeSteps= %u\n",&TIMESTEPS);
         fscanf(f, "Save_Path= %s\n", SAVEPATH);
+
+        char aux[sizeof(SAVEPATH)];
+        for(int i=0 ;SAVEPATH[i]; i++)
+            aux[i] = tolower(SAVEPATH[i]);
+
+        if(strcmp(aux, "local") == 0)
+            strcpy(SAVEPATH, "./Results");
 
         fclose(f);
     }

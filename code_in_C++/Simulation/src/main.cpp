@@ -18,9 +18,14 @@ using namespace SimEco;
 int main(int argc,char const *argv[]){
 	
 	//testArgs(argc,argv);
-	Configuration* Base;
-	Base->Configure();	
-	
+	Configuration* simConf;
+	simConf->Configure();
+
+	printf(UNDL("Simulation name") ": %-16.16s  ", simConf->NAME);
+	printf(UNDL("TimeSteps") ": %u\n", simConf->TIMESTEPS);
+	printf(UNDL("Num Cells") ": %-20u    ", simConf->MAX_CELLS);
+	printf(UNDL("Num Founders") ": %u\n", simConf->NUM_FOUNDERS);
+	printf(UNDL("Save Path") ": %s\n", simConf->SAVEPATH);
 
 	Simulation *simulacao;
 	Grid *grid;
