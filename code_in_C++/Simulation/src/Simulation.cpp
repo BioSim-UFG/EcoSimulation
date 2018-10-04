@@ -118,6 +118,23 @@ namespace SimEco{
 				processSpecieTimeStep(especie, fitness);
 				//printf("total celulas ocupadas %u\n", especie.celulas_IdxSize);
 
+				/*
+				//se a especie se especializar, então devemos criar uma nova espécie, 
+				//e arrumar as celulas que estão presentes ( da ancestral e a nova)
+				pair<uint, float> cellsNewSpecie[especie.cellsPopulation.size()];		//tamanho maximo de celulas ocupadas pela nova especie]
+				uint i=0;
+				for (auto const &cellPop: especie.cellsPopulation){
+					if(é uma das células que a nova espécie está presente){
+						cellsNewSpecie[i] = cellPop;
+						especie.cellsPopulation.erase(cellPop.first);	//remove da lista de celulas da especie ancestral
+						i++;
+					}
+				}
+
+				//aqui tem que redimensionar... btf que vamos ter que usar vector mesmo
+				_grid.species[_grid.speciesSize] = *new... ou vector.insert? ... Specie(especie.niche, especie.dispCapability, cellsNewSpecie, i);
+
+				*/
 			}
 			sprintf(dir+len, "%d", timeStep);
 			recordTimeStepFiles(dir, timeStep);

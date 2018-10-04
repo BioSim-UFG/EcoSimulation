@@ -26,7 +26,8 @@ namespace SimEco{
 		copy(niche.begin(), niche.end(), this->niche.begin());
     }
 
-	Specie::Specie(const array<NicheValue, NUM_ENV_VARS> &niche, const Dispersion &dispCapacity, uint cellIdxs[], uint cellIdxsSize){
+	Specie::Specie(const array<NicheValue, NUM_ENV_VARS> &niche, const Dispersion &dispCapacity, pair<uint, float> cellsPop[], uint cellPopSize)
+	{
 		_name = _nSpecies;
 		_nSpecies++;
 		dispCap = dispCapacity;
@@ -36,9 +37,9 @@ namespace SimEco{
 		//celulas_IdxSize = cellIdxsSize;
 		cellsPopulation.reserve(1024 + 512);
 
-		for(int i=0; i<cellIdxsSize; i++){
+		for(int i=0; i<cellPopSize; i++){
 			//substituir 1 pela população que seria aqui. (passar objeto da especie original como argumento da função?)
-			cellsPopulation.insert( {cellIdxs[i],1.0f } );
+			cellsPopulation.insert(cellsPop[i]);
 		}
 
 		copy(niche.begin(), niche.end(), this->niche.begin());
