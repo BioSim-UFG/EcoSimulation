@@ -21,7 +21,7 @@ namespace SimEco{
 		//celulas_Idx[0] = cellIdx;
 		//celulas_IdxSize = 1;
 		cellsPopulation.reserve(1024+512);
-		cellsPopulation.insert({cellIdx, 1});	// coloca população da celula cellIdx como 1
+		cellsPopulation.insert({cellIdx, 1.0f});	// coloca população da celula cellIdx como 1
 
 		copy(niche.begin(), niche.end(), this->niche.begin());
     }
@@ -38,7 +38,7 @@ namespace SimEco{
 
 		for(int i=0; i<cellIdxsSize; i++){
 			//substituir 1 pela população que seria aqui. (passar objeto da especie original como argumento da função?)
-			cellsPopulation.insert( {cellIdxs[i],1 } );
+			cellsPopulation.insert( {cellIdxs[i],1.0f } );
 		}
 
 		copy(niche.begin(), niche.end(), this->niche.begin());
@@ -69,11 +69,5 @@ namespace SimEco{
 		//celulas_Idx = NULL;
 		//delete &cellsPopulation;
 	}
-	
-	/*float Specie::reachability(const Connectivity &destCellConn ){
-		float result;
-		result = max(destCellConn.Geo * this->dispCap.Geo, destCellConn.Topo * this->dispCap.Topo);
-		result = max(result, destCellConn.River * this->dispCap.River);
-		return result;
-	}*/
+
 }

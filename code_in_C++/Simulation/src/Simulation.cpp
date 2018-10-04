@@ -81,7 +81,7 @@ namespace SimEco{
 
 				//adiciona célula na lista de celulas ocupadas (pela especie)
 				//founder.celulas_Idx[founder.celulas_IdxSize++] = idxMat[zipMatPos].j;
-				founder.cellsPopulation.insert( {(uint)idxMat[zipMatPos].j, (short)1} );
+				founder.cellsPopulation.insert( {(uint)idxMat[zipMatPos].j, 1.0f} );
 			}
 
 			zipMatPos++;
@@ -117,6 +117,7 @@ namespace SimEco{
 				//printf("\nProcessando especie %u", spcIdx); fflush(stdout);
 				processSpecieTimeStep(especie, fitness);
 				//printf("total celulas ocupadas %u\n", especie.celulas_IdxSize);
+
 			}
 			sprintf(dir+len, "%d", timeStep);
 			recordTimeStepFiles(dir, timeStep);
@@ -157,14 +158,14 @@ namespace SimEco{
 						//specie.celulas_Idx[specie.celulas_IdxSize++] = idxMat[zipMatPos].j;
 
 						//coloca a celula idxMat[zipMatPos].j como ocupada, com 1 de população
-						specie.cellsPopulation.insert( {(uint)idxMat[zipMatPos].j, 1} );	//obs: insert() só adiciona o par {chave,valor}, se nao existir a chave ainda
+						specie.cellsPopulation.insert( {(uint)idxMat[zipMatPos].j, 1.0f} );	//obs: insert() só adiciona o par {chave,valor}, se nao existir a chave ainda
 					}
 				}
 				else if( fitness[idxMat[zipMatPos].j] <= 0.0f){
 					//remove celula da lista
 					//specie.celulas_IdxSize--;
 					auto cellIterator = specie.cellsPopulation.find((uint)idxMat[zipMatPos].j);
-					//remove se a celula, se tiver sindo encontrada
+					//remove se a celula, se tiver sindo encontrada/se ela existir
 					if( cellIterator != specie.cellsPopulation.end() )
 						specie.cellsPopulation.erase(cellIterator);
 				}

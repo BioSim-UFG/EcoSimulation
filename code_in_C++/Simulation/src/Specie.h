@@ -17,25 +17,24 @@ namespace SimEco{
 
         //uint *celulas_Idx;        //indice das celulas que esta presente
         //uint celulas_IdxSize;
-        unordered_map<uint, short> cellsPopulation;
+        unordered_map<uint, float> cellsPopulation;
         float curSize;          //number of members/population;    Mas pra que float???  10.5 animais?
         float growth;           //taxa de crescimento
 
         //Capacity of dispersion over geographic distance, river barriers and topographic heterogeneity
         Dispersion dispCap;
-        constexpr static float dispThreshold = 0.1500f;
-        constexpr static float fitnessThreshold = 0.02f;
+        constexpr static float dispThreshold = 0.1500f;     //minimum viable dispersion capacity
+        constexpr static float fitnessThreshold = 0.02f;    //minimum viable specie fitness in a cell
 
-        //ideia para achar espécie, um MAP
-
+        
+        float reachability(const Connectivity &destCellConn );
+        
         //criação de uma espécie numa única célula
         Specie(const array<NicheValue, NUM_ENV_VARS> &niche, const Dispersion &dispCapacity, uint CellIdx);
         //criação de uma especie já espalhada por várias células
         Specie(const array<NicheValue, NUM_ENV_VARS> &niche, const Dispersion &dispCapacity, uint cellIdxs[], uint cellIdxsSize);
         
-        float reachability(const Connectivity &destCellConn );
-        //usar um array de bits de comprimento fixo, tamanho = total de células na grid
-        
+        //construtor copy
         Specie(const Specie &src);
         Specie();
         ~Specie();
