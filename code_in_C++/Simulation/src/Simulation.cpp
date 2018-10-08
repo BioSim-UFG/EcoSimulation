@@ -12,10 +12,12 @@ namespace SimEco{
 
 		create_Directory();	//cria diretorio de saida/resultados da simulação
 
-		Specie *founders = new Specie[Configuration::NUM_FOUNDERS]; /*vetor de classes */
+		//Specie *founders = new Specie[Configuration::NUM_FOUNDERS]; /*vetor de classes */
+
+
 
 		printf(BLU("\tLendo especies Founders... ")); fflush(stdout);
-		carrega_founders("../../input/SpecieData.txt" , founders);
+		carrega_founders("../../input/SpecieData.txt" , grid.species);
 		printf(BOLD(LGTBLU("OK!\n"))); fflush(stdout);
 
 		/*for(size_t i=0 ; i < NUM_FOUNDERS; i++)
@@ -23,11 +25,11 @@ namespace SimEco{
 		*/
 
 		//coloca os founders em suas celulas
-		grid.setFounders(founders, Configuration::NUM_FOUNDERS);
+		//grid.setFounders(founders);
 
 		cout<<BLU("\tCalculando tempo ZERO\n"); fflush(stdout);
 		//aqui faz o trabalho de preparação da simulação, usando a(s) especie(s) fundadora(s)
-		for(uint i=0; i<_grid.speciesSize; i++){
+		for(uint i=0; i<_grid.species.size(); i++){
 			processFounder_timeZero(_grid.species[i]);
 		}
 
@@ -38,7 +40,7 @@ namespace SimEco{
 		system(comand.c_str());
 		recordTimeStepFiles((path).c_str(), 0);
 		
-		delete[] founders;
+		//delete[] founders;
 	}
 
 
@@ -110,7 +112,7 @@ namespace SimEco{
 			fflush(stdout);
 
 			//processa cada timeStep
-			for(uint spcIdx=0; spcIdx<_grid.speciesSize; spcIdx++){
+			for(uint spcIdx=0; spcIdx<_grid.species.size(); spcIdx++){
 				Specie &especie = _grid.species[spcIdx];
 				calcSpecieFitness(especie, timeStep, fitness);	//obtem os fitness's da espécie
 
@@ -355,7 +357,7 @@ namespace SimEco{
 	inline void Simulation::recordTimeStepFiles(const char *path, int timeStep){
 
 		char fname[80];
-		for(uint i = 0; i < _grid.speciesSize ; i++){
+		for(uint i = 0; i < _grid.species.size() ; i++){
 			//sprintf(fname, "%s/timeStep%u", path, i);
 			sprintf(fname, "%s/%s_Esp%d_Time%d", path, _name, _grid.species[i]._name, timeStep);
 			recordSpecieFile(fname, timeStep, _grid.species[i]);
@@ -381,7 +383,7 @@ namespace SimEco{
 		fclose(f);
 	}
 
-	void Simulation::carrega_founders(const char *founders_input, Specie founders[]){
+	void Simulation::carrega_founders(const char *founders_input, vector<Specie> &founders){
 		Dispersion dispersionCapacity;
 		array<NicheValue, NUM_ENV_VARS> niche;
 		uint cellIdx;
@@ -403,7 +405,9 @@ namespace SimEco{
 			fscanf(src, "%u", &cellIdx);
 			fscanf(src, "\n");
 
-			founders[i] = *new Specie(niche, dispersionCapacity, cellIdx);
+			//founders[i] = *new Specie(niche, dispersionCapacity, cellIdx);
+			founders.emplace_back(niche, dispersionCapacity, cellIdx);
+
 			//printf("geidisp: %f\n", dispersionCapacity.Geo);
 		}
 
@@ -411,9 +415,11 @@ namespace SimEco{
 			printf(LGTYEL(BOLD("\n\tATENÇÃO, numero de founders em %s insuficiente\n")), founders_input);
 			printf(LGTYEL(BOLD("\tReplicando founders para tamanho necessário.\n\t")));
 			int num_lidos = i;
-			for (i; i < Configuration::NUM_FOUNDERS; i++)
-			{
-				founders[i] = *new Specie(founders[i % num_lidos]);
+			for (i; i < Configuration::NUM_FOUNDERS; i++){
+				//founders[i] = *new Specie(founders[i % num_lidos]);
+				founders.emplace_back(founders[i % num_lidos].niche, 
+									  founders[i % num_lidos].dispCap, 
+									  founders[i % num_lidos].cellsPopulation.begin()->first);
 			}
 		}
 

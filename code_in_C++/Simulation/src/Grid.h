@@ -4,6 +4,7 @@
 #include "SimTypes.h"
 #include "Helper.h"
 #include <unordered_map>
+#include <vector>
 
 //#define MAX_CELLS 2566
 //#define NUM_FOUNDERS 4
@@ -18,8 +19,10 @@ namespace SimEco
 
 	 public:
 			
-		Specie *species;
-		uint speciesSize;
+		//Specie *species;
+		vector<Specie> species;
+
+		//uint speciesSize;
 		
 		//static Cell *cells;
 		static int cellsSize;
@@ -38,7 +41,8 @@ namespace SimEco
 		void setCells(Cell celulas[], size_t size);    //seta as celulas
 		void setCellsConnectivity(Connectivity *adjMatrix, size_t size);    //passa a matriz de adjacencia, e lá dentro compacta ela
 
-		void setFounders(Specie sp[], size_t sp_num);
+		//void setFounders(Specie sp[], size_t sp_num);
+		
 		void addCell(const Cell &novaCelula);
 		//void addCells(const array<Cell, Configuration::MAX_CELLS> &novasCelulas);    //pega o vector novasCelulas e copia/passa os elementos para a Grid
 

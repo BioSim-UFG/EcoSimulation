@@ -50,7 +50,7 @@ namespace SimEco{
 		//celulas_IdxSize = 0;
 	}
 
-
+	/*
 	Specie::Specie(const SimEco::Specie &src){
 		_name = _nSpecies;
 		Specie::_nSpecies++;
@@ -62,7 +62,7 @@ namespace SimEco{
 		dispCap = src.dispCap;
 		this->niche = src.niche;
 		this->cellsPopulation = src.cellsPopulation;
-	}
+	}*/
 
 	Specie::~Specie(){
 		//printf(YEL("destrutor de Specie - end. %p\n"),this);

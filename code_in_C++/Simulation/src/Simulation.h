@@ -6,6 +6,7 @@
 #include "SimTypes.h"
 #include <math.h>
 #include <string.h>
+#include <vector>
 
 namespace SimEco{
 
@@ -44,7 +45,7 @@ namespace SimEco{
 	   public:
 		
 		Simulation(Grid & grid, const char *name);
-		void carrega_founders(const char *founders_input, Specie founders[]);
+		void carrega_founders(const char *founders_input, vector<Specie> &founders);
 		void run(int nSteps);
 
 	};

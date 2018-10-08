@@ -7,6 +7,8 @@
 
 #include "decompressData.h"
 
+#define VECTOR_BLOCK_SIZE 20
+
 
 using namespace std;
 
@@ -24,14 +26,15 @@ namespace SimEco{
 		//cells = new Cell[num_cells];
 		cellsSize = num_cells;
 		//species = (Specie *)malloc( sizeof(Specie) * num_species );
-		species = new Specie[num_species];
-		speciesSize = num_species;
+		//species = new Specie[num_species];
+		//speciesSize = num_species;
+		//species.resize(num_species);
 	}
 
 	Grid::~Grid(){
 		//printf(YEL("destrutor de Grid - end. %p\n"), this);
-		delete[] species;
-		species = NULL;
+		//delete[] species;
+		//species = NULL;
 	}
 
 	//recebe e compacta matriz de adjacencia		//depois atualizar e deixar como o load_cellsConnectivy()
@@ -56,7 +59,7 @@ namespace SimEco{
 		return index<cellsSize ? &cells[index] : nullptr;
 	}*/
 
-
+	/*
 	void Grid::setFounders(Specie sp[], size_t sp_size){
 		int i = 0;
 		//Cell &celula = this->cells[positions[i]];
@@ -74,7 +77,7 @@ namespace SimEco{
 		}
 		//celula.numSpecies += sp_size;
 	}
-
+	*/
 	int Grid::setCellsClimate(const char *minTemp_src, const char *maxTemp_src, const char *minPptn_src, const char *maxPptn_src, const char *NPP_src,
 							 size_t timeSteps)
 	{
