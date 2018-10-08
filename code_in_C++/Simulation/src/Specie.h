@@ -32,7 +32,7 @@ namespace SimEco{
         //criação de uma espécie numa única célula
         Specie(const array<NicheValue, NUM_ENV_VARS> &niche, const Dispersion &dispCapacity, uint CellIdx);
         //criação de uma especie já espalhada por várias células
-        Specie(const array<NicheValue, NUM_ENV_VARS> &niche, const Dispersion &dispCapacity, pair <uint, float>cellsPop[], uint cellPopSize);
+        Specie(const array<NicheValue, NUM_ENV_VARS> &niche, const Dispersion &dispCapacity, pair<uint, float> cellsPop[], uint cellPopSize);
         
         //construtor copy
         //Specie(const Specie &src);
