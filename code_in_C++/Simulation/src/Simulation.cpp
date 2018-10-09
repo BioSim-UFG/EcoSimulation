@@ -138,10 +138,13 @@ namespace SimEco{
 					}
 				}
 
-				//aqui tem que redimensionar... btf que vamos ter que usar vector mesmo
+				//um dos problemas é que isso pode invalidar o iterato( caso vector tenha que realocar e se mover na memória)
+				//solução:1°: armazenar as novas espécies em vector temporário, e depois copiar pro vector original
+				//			desvantagem: custo da copia
+				//		  2°: fazer o loop isando índices ao inves de iterator 
+				//			desvantagem: _grid.species.erase() vai ter q ser alterado, podendo ficar mais complexo o código
 				_grid.species.emplace_back(especie.niche, especie.dispCap, cellsNewSpecie, i);
 				*/
-
 
 				// FUNCIONANDO OK!
 				//se a especie for extinta:
