@@ -123,9 +123,6 @@ namespace SimEco{
 				calcSpecieFitness(especie, timeStep, fitness);	//obtem os fitness's da espécie
 
 				processSpecieTimeStep(especie, fitness);
-				if(especie.cellsPopulation.size() != especie.totalPopulation)
-					abort();
-
 
 				/*
 				//se a especie se especializar, então devemos criar uma nova espécie, 
@@ -145,7 +142,7 @@ namespace SimEco{
 				_grid.species.emplace_back(especie.niche, especie.dispCap, cellsNewSpecie, i);
 				*/
 
-				
+
 				// FUNCIONANDO OK!
 				//se a especie for extinta:
 				if(especie.totalPopulation < Specie::popThreshold){
@@ -408,7 +405,7 @@ namespace SimEco{
 									  founders[i % num_lidos].cellsPopulation.begin()->first);
 			}
 		}
-		
+
 		fclose(src);
 	}
 
