@@ -84,6 +84,7 @@ namespace SimEco{
 				//adiciona célula na lista de celulas ocupadas (pela especie)
 				//founder.celulas_Idx[founder.celulas_IdxSize++] = idxMat[zipMatPos].j;
 				founder.cellsPopulation.insert( {(uint)idxMat[zipMatPos].j, 1.0f} );
+				founder.totalPopulation+=1.0f;
 			}
 
 			zipMatPos++;
@@ -112,31 +113,47 @@ namespace SimEco{
 			fflush(stdout);
 
 			//processa cada timeStep
-			for(uint spcIdx=0; spcIdx<_grid.species.size(); spcIdx++){
-				Specie &especie = _grid.species[spcIdx];
+			//for(uint spcIdx=0; spcIdx<_grid.species.size(); spcIdx++){
+			//	Specie &especie = _grid.species[spcIdx];
+			//se uma espécie se especializar, ela vai ser adicionada no final, mas ela nao pode ser processada ainda nesse loop
+			//auto it_oldEnd = _grid.species.cend();	
+			for(auto it=_grid.species.begin(); it != _grid.species.cend() ;){
+				auto &especie = *it;
 				calcSpecieFitness(especie, timeStep, fitness);	//obtem os fitness's da espécie
 
-				//printf("\nProcessando especie %u", spcIdx); fflush(stdout);
 				processSpecieTimeStep(especie, fitness);
-				//printf("total celulas ocupadas %u\n", especie.celulas_IdxSize);
-				
+
+
 				/*
 				//se a especie se especializar, então devemos criar uma nova espécie, 
-				//e arrumar as celulas que estão presentes ( da ancestral e a nova)
+				//e arrumar em que celulas que estão presentes ( da ancestral e a nova)
 				pair<uint, float> *cellsNewSpecie = new pair<uint, float>[especie.cellsPopulation.size()]; //tamanho maximo de celulas ocupadas pela nova especie]
 				uint i=0;
 				for (auto const &cellPop: especie.cellsPopulation){
 					if(é uma das células que a nova espécie está presente){
 						cellsNewSpecie[i] = cellPop;
 						especie.cellsPopulation.erase(cellPop.first);	//remove da lista de celulas da especie ancestral
+						especie.totalPopulation -= cellPop.second;
 						i++;
 					}
 				}
 
 				//aqui tem que redimensionar... btf que vamos ter que usar vector mesmo
-				//_grid.species[_grid.speciesSize] = *new... ou vector.insert? ... Specie(especie.niche, especie.dispCapability, cellsNewSpecie, i);
 				_grid.species.emplace_back(especie.niche, especie.dispCap, cellsNewSpecie, i);
 				*/
+
+				
+				// FUNCIONANDO OK!
+				//se a especie for extinta:
+				if(especie.totalPopulation < Specie::popThreshold){
+					it = _grid.species.erase(it);	//retorna o novo iterator da posição correspondente ao do elemento removido
+					printf("espécie extinta!");
+				}
+				else
+					++it;	//só aumenta o iterator se não remover um elemnto do vector
+				
+
+				//++it;
 			}
 			sprintf(dir+len, "%d", timeStep);
 			recordTimeStepFiles(dir, timeStep);
@@ -177,7 +194,9 @@ namespace SimEco{
 						//specie.celulas_Idx[specie.celulas_IdxSize++] = idxMat[zipMatPos].j;
 
 						//coloca a celula idxMat[zipMatPos].j como ocupada, com 1 de população
-						specie.cellsPopulation.insert( {(uint)idxMat[zipMatPos].j, 1.0f} );	//obs: insert() só adiciona o par {chave,valor}, se nao existir a chave ainda
+						auto sucess = specie.cellsPopulation.insert( {(uint)idxMat[zipMatPos].j, 1.0f} );	//obs: insert() só adiciona o par {chave,valor}, se nao existir a chave ainda
+						if(sucess.second == true)
+							specie.totalPopulation+=1.0f;	//Só aumenta a população se conseguiu inserir um NOVO elemento no mapa, ou seja, acabou de ocupar a célula
 					}
 				}
 				else if( fitness[idxMat[zipMatPos].j] <= 0.0f){
@@ -185,8 +204,10 @@ namespace SimEco{
 					//specie.celulas_IdxSize--;
 					auto cellIterator = specie.cellsPopulation.find((uint)idxMat[zipMatPos].j);
 					//remove se a celula, se tiver sindo encontrada/se ela existir
-					if( cellIterator != specie.cellsPopulation.end() )
+					if( cellIterator != specie.cellsPopulation.end() ){
+						specie.totalPopulation-=cellIterator->second;		//diminui a população daquela espécie
 						specie.cellsPopulation.erase(cellIterator);
+					}
 				}
 
 				zipMatPos++;
