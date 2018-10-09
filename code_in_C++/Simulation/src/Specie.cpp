@@ -27,8 +27,7 @@ namespace SimEco{
 		copy(niche.begin(), niche.end(), this->niche.begin());
     }
 
-	Specie::Specie(const array<NicheValue, NUM_ENV_VARS> &niche, const Dispersion &dispCapacity, pair<uint, float> cellsPop[], uint cellPopSize)
-	{
+	Specie::Specie(const array<NicheValue, NUM_ENV_VARS> &niche, const Dispersion &dispCapacity, pair<uint, float> cellsPop[], uint cellPopSize){
 		_name = _nSpecies;
 		_nSpecies++;
 		dispCap = dispCapacity;
@@ -72,5 +71,4 @@ namespace SimEco{
 		//celulas_Idx = NULL;
 		//delete &cellsPopulation;
 	}
-
 }

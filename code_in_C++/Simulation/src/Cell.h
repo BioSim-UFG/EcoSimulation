@@ -36,7 +36,7 @@ namespace SimEco
         Cell();
         ~Cell();
 
-};
+    };
 
 
 }

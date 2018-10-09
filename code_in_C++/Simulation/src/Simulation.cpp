@@ -83,8 +83,9 @@ namespace SimEco{
 
 				//adiciona célula na lista de celulas ocupadas (pela especie)
 				//founder.celulas_Idx[founder.celulas_IdxSize++] = idxMat[zipMatPos].j;
-				founder.cellsPopulation.insert( {(uint)idxMat[zipMatPos].j, 1.0f} );
-				founder.totalPopulation+=1.0f;
+				//founder.cellsPopulation.insert( {(uint)idxMat[zipMatPos].j, 1.0f} );
+				//founder.totalPopulation+=1.0f;
+				founder.insertCellPop((uint)idxMat[zipMatPos].j, 1.0f);
 			}
 
 			zipMatPos++;
@@ -122,6 +123,8 @@ namespace SimEco{
 				calcSpecieFitness(especie, timeStep, fitness);	//obtem os fitness's da espécie
 
 				processSpecieTimeStep(especie, fitness);
+				if(especie.cellsPopulation.size() != especie.totalPopulation)
+					abort();
 
 
 				/*
@@ -150,9 +153,8 @@ namespace SimEco{
 					printf("espécie extinta!");
 				}
 				else
-					++it;	//só aumenta o iterator se não remover um elemnto do vector
+					++it;	//só aumenta o iterator se não remover um elemento do vector
 				
-
 				//++it;
 			}
 			sprintf(dir+len, "%d", timeStep);
@@ -194,20 +196,23 @@ namespace SimEco{
 						//specie.celulas_Idx[specie.celulas_IdxSize++] = idxMat[zipMatPos].j;
 
 						//coloca a celula idxMat[zipMatPos].j como ocupada, com 1 de população
-						auto sucess = specie.cellsPopulation.insert( {(uint)idxMat[zipMatPos].j, 1.0f} );	//obs: insert() só adiciona o par {chave,valor}, se nao existir a chave ainda
+						/*auto sucess = specie.cellsPopulation.insert( {(uint)idxMat[zipMatPos].j, 1.0f} );	//obs: insert() só adiciona o par {chave,valor}, se nao existir a chave ainda
 						if(sucess.second == true)
 							specie.totalPopulation+=1.0f;	//Só aumenta a população se conseguiu inserir um NOVO elemento no mapa, ou seja, acabou de ocupar a célula
+						*/
+						specie.insertCellPop((uint)idxMat[zipMatPos].j, 1.0f);
 					}
 				}
 				else if( fitness[idxMat[zipMatPos].j] <= 0.0f){
-					//remove celula da lista
-					//specie.celulas_IdxSize--;
-					auto cellIterator = specie.cellsPopulation.find((uint)idxMat[zipMatPos].j);
+
+					/*auto cellIterator = specie.cellsPopulation.find((uint)idxMat[zipMatPos].j);
 					//remove se a celula, se tiver sindo encontrada/se ela existir
 					if( cellIterator != specie.cellsPopulation.end() ){
 						specie.totalPopulation-=cellIterator->second;		//diminui a população daquela espécie
 						specie.cellsPopulation.erase(cellIterator);
 					}
+					*/
+					specie.eraseCellPop( idxMat[zipMatPos].j );
 				}
 
 				zipMatPos++;
@@ -365,6 +370,48 @@ namespace SimEco{
 		//printf("vertice %d -> x-%f   y-%f\n\n",nPoints+2,NichePoly->v[nPoints+2].x, NichePoly->v[nPoints+2].y );
 	}
 
+	void Simulation::carrega_founders(const char *founders_input, vector<Specie> &founders){
+		Dispersion dispersionCapacity;
+		array<NicheValue, NUM_ENV_VARS> niche;
+		uint cellIdx;
+
+		FILE *src = fopen(founders_input, "r");
+		if (src == NULL){
+			perror(RED("Erro ao abrir SpecieData.txt"));
+			exit(intException(Exceptions::fileException));
+		}
+
+		int i;
+		fscanf(src, "%*[^\n]\n"); //pula primeira linha
+		for (i = 0; i < Configuration::NUM_FOUNDERS; i++){
+			if (feof(src))
+				break;
+			//lê valores do nicho e de capacidade de dispersão
+			fscanf(src, "%f %f %f %f", &niche[0].minimum, &niche[0].maximum, &niche[1].minimum, &niche[1].maximum);
+			fscanf(src, "%f %f %f", &dispersionCapacity.Geo, &dispersionCapacity.Topo, &dispersionCapacity.River);
+			fscanf(src, "%u", &cellIdx);
+			fscanf(src, "\n");
+
+			//founders[i] = *new Specie(niche, dispersionCapacity, cellIdx);
+			founders.emplace_back(niche, dispersionCapacity, cellIdx);
+			//printf("geidisp: %f\n", dispersionCapacity.Geo);
+		}
+
+		if (i < Configuration::NUM_FOUNDERS){
+			printf(LGTYEL(BOLD("\n\tATENÇÃO, numero de founders em %s insuficiente\n")), founders_input);
+			printf(LGTYEL(BOLD("\tReplicando founders para tamanho necessário.\n\t")));
+			int num_lidos = i;
+			for (i; i < Configuration::NUM_FOUNDERS; i++){
+				//founders[i] = *new Specie(founders[i % num_lidos]);
+				founders.emplace_back(founders[i % num_lidos].niche, 
+									  founders[i % num_lidos].dispCap, 
+									  founders[i % num_lidos].cellsPopulation.begin()->first);
+			}
+		}
+		
+		fclose(src);
+	}
+
 
 	/***********************************************************************************/
 
@@ -376,7 +423,6 @@ namespace SimEco{
 	}
 
 	inline void Simulation::recordTimeStepFiles(const char *path, int timeStep){
-
 		char fname[80];
 		for(uint i = 0; i < _grid.species.size() ; i++){
 			//sprintf(fname, "%s/timeStep%u", path, i);
@@ -404,46 +450,5 @@ namespace SimEco{
 		fclose(f);
 	}
 
-	void Simulation::carrega_founders(const char *founders_input, vector<Specie> &founders){
-		Dispersion dispersionCapacity;
-		array<NicheValue, NUM_ENV_VARS> niche;
-		uint cellIdx;
-
-		FILE *src = fopen(founders_input, "r");
-		if (src == NULL){
-			perror(RED("Erro ao abrir SpecieData.txt"));
-			exit(intException(Exceptions::fileException));
-		}
-
-		int i;
-		fscanf(src, "%*[^\n]\n"); //pula primeira linha
-		for (i = 0; i < Configuration::NUM_FOUNDERS; i++){
-			if (feof(src))
-				break;
-			//lê valores do nicho e de capacidade de dispersão
-			fscanf(src, "%f %f %f %f", &niche[0].minimum, &niche[0].maximum, &niche[1].minimum, &niche[1].maximum);
-			fscanf(src, "%f %f %f", &dispersionCapacity.Geo, &dispersionCapacity.Topo, &dispersionCapacity.River);
-			fscanf(src, "%u", &cellIdx);
-			fscanf(src, "\n");
-
-			//founders[i] = *new Specie(niche, dispersionCapacity, cellIdx);
-			founders.emplace_back(niche, dispersionCapacity, cellIdx);
-
-			//printf("geidisp: %f\n", dispersionCapacity.Geo);
-		}
-
-		if (i < Configuration::NUM_FOUNDERS){
-			printf(LGTYEL(BOLD("\n\tATENÇÃO, numero de founders em %s insuficiente\n")), founders_input);
-			printf(LGTYEL(BOLD("\tReplicando founders para tamanho necessário.\n\t")));
-			int num_lidos = i;
-			for (i; i < Configuration::NUM_FOUNDERS; i++){
-				//founders[i] = *new Specie(founders[i % num_lidos]);
-				founders.emplace_back(founders[i % num_lidos].niche, 
-									  founders[i % num_lidos].dispCap, 
-									  founders[i % num_lidos].cellsPopulation.begin()->first);
-			}
-		}
-
-		fclose(src);
-	}
+	
 }
