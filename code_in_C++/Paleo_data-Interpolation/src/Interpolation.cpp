@@ -148,7 +148,9 @@ int main(){
 		char temp_str[100];
 		sprintf(temp_str,"T%.0f",b);
 		streamsize size = strlen(temp_str);
-		arq_outMinTemp.write(temp_str, size);
+
+		//começa a escrever a primeira linha de "titulo" da tabela, isto é, a que informa os timesteps
+		arq_outMinTemp.write(temp_str, size);		
 		arq_outMaxTemp.write(temp_str, size);
 		arq_outMinPPTN.write(temp_str, size);
 		arq_outMaxPPTN.write(temp_str, size);
@@ -175,6 +177,7 @@ int main(){
 			// ~BUG: todas variaveis estão retornando com valor 0 ( menos NPP) -> provavel erro de calculo na função getClimCell()
 			paleoClimate.getClimCell(cell, b, &SATMin, &SATMax, &PPTNMin, &PPTNMax, &NPP);
 
+			// aqui começa a escrever os valores já interpolados nos arquivos de saida
 			sprintf(temp_str, "%.3f", SATMin);			arq_outMinTemp.write(temp_str, strlen(temp_str));
 			sprintf(temp_str, "%.3f", SATMax);          arq_outMaxTemp.write(temp_str, strlen(temp_str));
 			sprintf(temp_str, "%.3f", PPTNMin);         arq_outMinPPTN.write(temp_str, strlen(temp_str));
@@ -191,6 +194,7 @@ int main(){
 				sprintf(temp_str, "\t%.3f", NPP);			arq_outNPP.write(temp_str, strlen(temp_str));
 			}
 
+			//pula uma linha de cada arquivo de saida
 			arq_outMinTemp.write("\n", 1);
 			arq_outMaxTemp.write("\n", 1);
 			arq_outMinPPTN.write("\n", 1);
