@@ -1,4 +1,4 @@
-Simulation_name= Debug
+Simulation_name= Debug2
 Num_Cells= 2566
 Num_Founders= 4
 Num_TimeSteps= 50
