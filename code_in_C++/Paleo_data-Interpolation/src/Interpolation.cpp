@@ -125,6 +125,8 @@ int main(){
 
 	fstream arq_outMinTemp, arq_outMaxTemp, arq_outMinPPTN, arq_outMaxPPTN, arq_outNPP;
 	fstream arq_teste;
+
+	/*
 	try{
 		arq_outMinTemp.open( output_path+outSuffix+ " - MinTemp.txt", ios::trunc | ios::out);
 		arq_outMaxTemp.open( output_path+outSuffix+ " - MaxTemp.txt", ios::trunc | ios::out);
@@ -141,14 +143,15 @@ int main(){
 	clock_t startClock, endClock;
 
 	startClock = clock();
-	try
-	{	//o que é nt?
+	try{	//o que é nt?
 		int nt = (b - e) / s;
 
 		char temp_str[100];
 		sprintf(temp_str,"T%.0f",b);
 		streamsize size = strlen(temp_str);
-		arq_outMinTemp.write(temp_str, size);
+
+		//começa a escrever a primeira linha de "titulo" da tabela, isto é, a que informa os timesteps
+		arq_outMinTemp.write(temp_str, size);		
 		arq_outMaxTemp.write(temp_str, size);
 		arq_outMinPPTN.write(temp_str, size);
 		arq_outMaxPPTN.write(temp_str, size);
@@ -175,6 +178,7 @@ int main(){
 			// ~BUG: todas variaveis estão retornando com valor 0 ( menos NPP) -> provavel erro de calculo na função getClimCell()
 			paleoClimate.getClimCell(cell, b, &SATMin, &SATMax, &PPTNMin, &PPTNMax, &NPP);
 
+			// aqui começa a escrever os valores já interpolados nos arquivos de saida
 			sprintf(temp_str, "%.3f", SATMin);			arq_outMinTemp.write(temp_str, strlen(temp_str));
 			sprintf(temp_str, "%.3f", SATMax);          arq_outMaxTemp.write(temp_str, strlen(temp_str));
 			sprintf(temp_str, "%.3f", PPTNMin);         arq_outMinPPTN.write(temp_str, strlen(temp_str));
@@ -191,6 +195,7 @@ int main(){
 				sprintf(temp_str, "\t%.3f", NPP);			arq_outNPP.write(temp_str, strlen(temp_str));
 			}
 
+			//pula uma linha de cada arquivo de saida
 			arq_outMinTemp.write("\n", 1);
 			arq_outMaxTemp.write("\n", 1);
 			arq_outMinPPTN.write("\n", 1);
@@ -203,6 +208,69 @@ int main(){
 		exit(1);
 	} catch(exception &e){
 		cout << "Standard exception: " << e.what() <<endl;
+	}
+	*/
+
+	try{
+		arq_outMinTemp.open(output_path + outSuffix + " - MinTemp.stream", ios::trunc | ios::out | ios::binary);
+		arq_outMaxTemp.open( output_path+outSuffix+ " - MaxTemp.stream", ios::trunc | ios::out | ios::binary);
+		arq_outMinPPTN.open( output_path+outSuffix+ " - MinPPTN.stream", ios::trunc | ios::out | ios::binary);
+		arq_outMaxPPTN.open( output_path+outSuffix+ " - MaxPPTN.stream", ios::trunc | ios::out | ios::binary);
+		arq_outNPP.open(output_path + outSuffix + " - NPP.stream", ios::trunc | ios::out | ios::binary);
+	}catch (const fstream::failure &e){
+		printf(RED("Erro ao abrir arquivo de saida %s\n"), e.what()); // ~DebugLog
+		exit(1);
+	}
+	printf(GRN("\tArquivos de saida abertos com sucesso\n")); // ~DebugLog
+
+	
+	clock_t startClock, endClock;
+
+	startClock = clock();
+
+	try
+	{
+		int nt = (b - e) / s;
+		nt+=1;	//numero de timeSteps mais o timeStep 0(zero)
+		//grava quantos timeSteps (linhas) vão ter na stream
+		arq_outMinTemp.write( (const char*)&nt, sizeof(int) );
+		arq_outMaxTemp.write( (const char*)&nt, sizeof(int) );
+		arq_outMinPPTN.write( (const char*)&nt, sizeof(int) );
+		arq_outMaxPPTN.write( (const char*)&nt, sizeof(int) );
+		arq_outNPP.write( (const char*)&nt, sizeof(int) );
+
+		for (int i = 0; i < nt; i++){
+
+			//grava quantas células (colunas) vão ter nesse timeStep
+			int numCells = paleoClimate.getCellsLen();
+
+			arq_outMinTemp.write( (const char*)&numCells, sizeof(int) );
+			arq_outMaxTemp.write( (const char*)&numCells, sizeof(int) );
+			arq_outMinPPTN.write( (const char*)&numCells, sizeof(int) );
+			arq_outMaxPPTN.write( (const char*)&numCells, sizeof(int) );
+			arq_outNPP.write( (const char*)&numCells, sizeof(int) );
+			
+			float SATMin, SATMax, PPTNMin, PPTNMax, NPP;
+
+			for (int cell = 0; cell < numCells; cell++){
+				//calcula o clima da célula usando interpolação
+				paleoClimate.getClimCell(cell, b-(i*s), &SATMin, &SATMax, &PPTNMin, &PPTNMax, &NPP);
+
+				// aqui começa a escrever os valores já interpolados nos arquivos de saida
+				arq_outMinTemp.write( (const char*)&SATMin, sizeof(float));
+				arq_outMaxTemp.write( (const char*)&SATMax, sizeof(float));
+				arq_outMinPPTN.write( (const char*)&PPTNMin, sizeof(float));
+				arq_outMaxPPTN.write( (const char*)&PPTNMax, sizeof(float));
+				arq_outNPP.write( (const char*)&NPP, sizeof(float));
+			}
+		}
+	}
+	catch (const fstream::failure &e){
+		printf(RED("Erro ao escrever em arquivo de saida %s\n"), e.what()); // ~DebugLog
+		exit(1);
+	}
+	catch (exception &e){
+		cout << "Standard exception: " << e.what() << endl;
 	}
 
 	printf(GRN("\tArquivos de saida escritos com sucesso\n")); // ~DebugLog

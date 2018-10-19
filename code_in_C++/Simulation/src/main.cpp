@@ -46,11 +46,17 @@ int main(int argc,char const *argv[]){
 
 
 	printf(GRN("Lendo serie Climatica... ")); fflush(stdout);
-	int celulas_lidasClima = Grid::setCellsClimate("../../output/DummyHex2566 - Output - MinTemp.txt", 		//climas de todas as celulas em todos os tempos
+	/*int celulas_lidasClima = Grid::setCellsClimate("../../output/DummyHex2566 - Output - MinTemp.txt", 		//climas de todas as celulas em todos os tempos
 												   "../../output/DummyHex2566 - Output - MaxTemp.txt",
 												   "../../output/DummyHex2566 - Output - MinPPTN.txt",
 												   "../../output/DummyHex2566 - Output - MaxPPTN.txt",
 												   "../../output/DummyHex2566 - Output - NPP.txt", numero_de_timeSteps);
+	*/
+	int celulas_lidasClima = Grid::setCellsClimate("../../output/DummyHex2566 - Output - MinTemp.stream", //climas de todas as celulas em todos os tempos
+												   "../../output/DummyHex2566 - Output - MaxTemp.stream",
+												   "../../output/DummyHex2566 - Output - MinPPTN.stream",
+												   "../../output/DummyHex2566 - Output - MaxPPTN.stream",
+												   "../../output/DummyHex2566 - Output - NPP.stream", numero_de_timeSteps);
 	printf(BOLD(LGTGRN("OK!\n"))); fflush(stdout);
 
 

@@ -78,10 +78,12 @@ namespace SimEco{
 		//celula.numSpecies += sp_size;
 	}
 	*/
+
+	//lê a serie climatica das celulas, e retorna o número de celulas lidas
 	int Grid::setCellsClimate(const char *minTemp_src, const char *maxTemp_src, const char *minPptn_src, const char *maxPptn_src, const char *NPP_src,
 							 size_t timeSteps)
 	{
-
+		/*
 		FILE *minTemp_arq = fopen(minTemp_src, "r");
 		FILE *maxTemp_arq = fopen(maxTemp_src, "r");
 		FILE *minPptn_arq = fopen(minPptn_src, "r");
@@ -120,14 +122,70 @@ namespace SimEco{
 			fscanf(maxPptn_arq, "%*[^\n]\n");
 			fscanf(NPP_arq, "%*[^\n]\n");
 		}
+		*/
+		
+		FILE *minTemp_arq = fopen(minTemp_src, "rb");
+		FILE *maxTemp_arq = fopen(maxTemp_src, "rb");
+		FILE *minPptn_arq = fopen(minPptn_src, "rb");
+		FILE *maxPptn_arq = fopen(maxPptn_src, "rb");
+		FILE *NPP_arq = fopen(NPP_src, "rb");
 
+		if (minTemp_arq == NULL){ printf(RED("Erro ao abrir %s\n"), minTemp_src); 	exit( intException(Exceptions::fileException) ); }
+		if (maxTemp_arq == NULL){ printf(RED("Erro ao abrir %s\n"), maxTemp_src); 	exit( intException(Exceptions::fileException) ); }
+		if (minPptn_arq == NULL){ printf(RED("Erro ao abrir %s\n"), minPptn_src); 	exit( intException(Exceptions::fileException) ); }
+		if (maxPptn_arq == NULL){ printf(RED("Erro ao abrir %s\n"), maxPptn_src); 	exit( intException(Exceptions::fileException) ); }
+		if (NPP_arq == NULL){ printf(RED("Erro ao abrir %s\n"), NPP_src); 		exit( intException(Exceptions::fileException) ); }
+
+		int i, j;
+		int nTimeSteps, nCells, temp;
+
+		//lê a quantidade de timeSteps(linhas) que a(s) stream(s) têm
+		bool errorFlag=false;
+		fread(&nTimeSteps, sizeof(int), 1, minTemp_arq);
+		fread(&temp, sizeof(int), 1, maxTemp_arq);		if(temp!=nTimeSteps) errorFlag = true;
+		fread(&temp, sizeof(int), 1, minPptn_arq);		if(temp!=nTimeSteps) errorFlag = true;
+		fread(&temp, sizeof(int), 1, maxPptn_arq);		if(temp!=nTimeSteps) errorFlag = true;
+		fread(&temp, sizeof(int), 1, NPP_arq);			if(temp!=nTimeSteps) errorFlag = true;
+		
+		if(errorFlag){
+			printf(RED("quantidade de timeSteps diferem entre arquivos de clima das Células"));
+			exit(intException(Exceptions::configurationException));
+		}
+
+		for (i = nTimeSteps-1; i >= 0; i--){
+			
+			if (feof(minTemp_arq) || feof(maxTemp_arq) || feof(minPptn_arq) || feof(maxPptn_arq) || feof(NPP_arq) )
+				break;
+
+			fread(&nCells, sizeof(int), 1, minTemp_arq);
+			fread(&temp, sizeof(int), 1, maxTemp_arq);		if(temp!=nCells) errorFlag = true;
+			fread(&temp, sizeof(int), 1, minPptn_arq);		if(temp!=nCells) errorFlag = true;
+			fread(&temp, sizeof(int), 1, maxPptn_arq);		if(temp!=nCells) errorFlag = true;
+			fread(&temp, sizeof(int), 1, NPP_arq);			if(temp!=nCells) errorFlag = true;
+		
+			if(errorFlag){
+				printf(RED("quantidade de celulas no timeStep %d diferem entre arquivos de clima das Células"), i);
+				exit(intException(Exceptions::configurationException));
+			}
+
+			for (j = 0; j < nCells; j++){
+				fread(&(Cell::cell_climates[i][j].envValues[climVar::Temp].minimum), sizeof(float), 1, minTemp_arq);
+				fread(&(Cell::cell_climates[i][j].envValues[climVar::Temp].maximum), sizeof(float), 1, maxTemp_arq);
+				fread(&(Cell::cell_climates[i][j].envValues[climVar::Pptn].minimum), sizeof(float), 1, minPptn_arq);
+				fread(&(Cell::cell_climates[i][j].envValues[climVar::Pptn].maximum), sizeof(float), 1, maxPptn_arq);
+				fread(&(Cell::cell_climates[i][j].NPP), sizeof(float), 1, NPP_arq);
+			}
+
+		}
+		
 		fclose(minTemp_arq);
 		fclose(maxTemp_arq);
 		fclose(minPptn_arq);
 		fclose(maxPptn_arq);
 		fclose(NPP_arq);
 
-		return i;
+		//return i;
+		return nCells;
 	}
 
 	//Lê dos arquivos comprimidos de conectividade das celulas.

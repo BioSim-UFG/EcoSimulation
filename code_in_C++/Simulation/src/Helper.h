@@ -12,7 +12,7 @@
 
 namespace SimEco{
 
-	enum class Exceptions {fileException=1, decompStrException, memRealocException, argException = 4};
+	enum class Exceptions {fileException=1, decompStrException, memRealocException, argException, configurationException=5};
 	
 	int intException(enum Exceptions ex);
 	void testArgs(int argc,char const *argv[]);
