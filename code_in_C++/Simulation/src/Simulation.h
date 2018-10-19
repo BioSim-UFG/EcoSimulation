@@ -39,8 +39,8 @@ namespace SimEco{
 		//void create_initial_file();
 		void create_Directory();
 
-		void recordTimeStepFiles(const char *path, int timeStep);
-		void recordSpecieFile(const char *path, int timeStep, Specie &sp);
+		//void recordTimeStepFiles(const char *path, int timeStep);
+		//void recordSpecieFile(const char *path, int timeStep, Specie &sp);
 
 	   public:
 		

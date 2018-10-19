@@ -38,7 +38,7 @@ namespace SimEco{
 		string path = "Results/" + string(_name) + "/timeStep0";
 		string comand = "mkdir -p " + path;
 		system(comand.c_str());
-		recordTimeStepFiles((path).c_str(), 0);
+		recordTimeStepFiles((path).c_str(), 0, _grid, _name);
 		
 		//delete[] founders;
 	}
@@ -158,7 +158,7 @@ namespace SimEco{
 				//++it;
 			}
 			sprintf(dir+len, "%d", timeStep);
-			recordTimeStepFiles(dir, timeStep);
+			recordTimeStepFiles(dir, timeStep, _grid, _name);
 		}
 
 		delete fitness;
@@ -421,7 +421,7 @@ namespace SimEco{
 		sprintf(pasta,"mkdir -p Results/%s",_name);
 		system(pasta);
 	}
-
+/*
 	inline void Simulation::recordTimeStepFiles(const char *path, int timeStep){
 		char fname[80];
 		for(uint i = 0; i < _grid.species.size() ; i++){
@@ -449,6 +449,6 @@ namespace SimEco{
 
 		fclose(f);
 	}
-
+	*/
 	
 }

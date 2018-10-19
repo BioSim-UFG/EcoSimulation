@@ -1,4 +1,6 @@
 #include "Helper.h"
+#include "Grid.h"
+
 #include <chrono>
 #include <string.h>
 
@@ -27,6 +29,20 @@ namespace SimEco{
         print(printErrro(erro));
         exit(1);
     }
+    */
+
+   /*
+   void recordTimeStepFiles(Simulation &sim,int timeStep){
+       int i;
+       char fname[200];
+       for(i=0 ; i< sim->grid.species.size(); i++){
+
+          // sprintf(fname, "%s/%s_Esp%d_Time%d", path, _name, _grid.species[i]._name, timeStep);
+          sptintf(fname, "%s/%s_Esp%d_Time%d", Configuration::SAVEPATH, _name, _grid.species[i]._name, timeStep)
+       }
+
+
+   }
     */
 
     char Configuration::NAME[];
@@ -59,7 +75,6 @@ namespace SimEco{
 
         fclose(f);
     }
-
 
 
 
@@ -108,4 +123,37 @@ namespace SimEco{
         return elapsed.count();
     }
     */
+
+    void recordTimeStepFiles(const char *path, int timeStep, Grid g, const char *simName){
+        char fname[80];
+        for (uint i = 0; i < g.species.size(); i++)
+        {
+            //sprintf(fname, "%s/timeStep%u", path, i);
+            sprintf(fname, "%s/%s_Esp%d_Time%d", path, simName, g.species[i]._name, timeStep);
+            recordSpecieFile(fname, timeStep, g.species[i]);
+        }
+    }
+
+    void recordSpecieFile(const char *path, int timeStep, Specie &sp)
+    {
+
+        FILE *f = fopen(path, "w");
+        if (f == NULL)
+        {
+            printf(RED("Falha ao abrir o arquivo %s\n"), path);
+            fflush(stdout);
+            fclose(f);
+            exit(intException(Exceptions::fileException));
+        }
+
+        int cont = 0;
+        for (auto &cellInfo : sp.cellsPopulation)
+        {
+            fprintf(f, "%5u ", cellInfo.first); //escreve o numero de cada célula ocupada pela espécie (no timeStep indicado)
+            if ((++cont) % 11 == 0)
+                fprintf(f, "\n");
+        }
+
+        fclose(f);
+    }
 }

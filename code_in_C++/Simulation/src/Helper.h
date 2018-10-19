@@ -2,6 +2,9 @@
 #define HELPER_H
 
 #include "color.h"
+#include "Grid.h"
+#include "Specie.h"
+#include "SimTypes.h"
 
 #include <iostream>
 #include <chrono>
@@ -16,6 +19,11 @@ namespace SimEco{
 	
 	int intException(enum Exceptions ex);
 	void testArgs(int argc,char const *argv[]);
+
+	//##########Fase de testes####
+
+	void recordSpecieFile(const char *path, int timeStep, Specie &sp);
+	void recordTimeStepFiles(const char *path, int timeStep, Grid g, const char *simName);
 
 	//Timer class
 	class Clock
@@ -67,6 +75,8 @@ namespace SimEco{
 		void Configure();
 	};
 
+
+	
 }
 
 #endif
