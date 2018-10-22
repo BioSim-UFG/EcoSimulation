@@ -125,21 +125,23 @@ namespace SimEco{
     */
 
     void recordTimeStepFiles(const char *path, int timeStep, Grid g, const char *simName){
-        char fname[80];
-        for (uint i = 0; i < g.species.size(); i++)
-        {
+        char fnameTxt[83];
+        char fnameBin[80];
+        for (uint i = 0; i < g.species.size(); i++){
             //sprintf(fname, "%s/timeStep%u", path, i);
-            sprintf(fname, "%s/%s_Esp%d_Time%d", path, simName, g.species[i]._name, timeStep);
-            recordSpecieFile(fname, timeStep, g.species[i]);
+            sprintf(fnameTxt, "%s/%s_Esp%d_Time%d.txt", path, simName, g.species[i]._name, timeStep);
+            recordSpecieTxtFile(fnameTxt, timeStep, g.species[i]);
+
+            sprintf(fnameBin, "%s/%s_Esp%d_Time%d", path, simName, g.species[i]._name, timeStep);
+            recordSpecieFile(fnameBin, timeStep, g.species[i]);
         }
     }
 
-    void recordSpecieFile(const char *path, int timeStep, Specie &sp)
-    {
+    void recordSpecieTxtFile(const char *path, int timeStep, Specie &sp){
 
         FILE *f = fopen(path, "w");
-        if (f == NULL)
-        {
+        
+        if (f == NULL){
             printf(RED("Falha ao abrir o arquivo %s\n"), path);
             fflush(stdout);
             fclose(f);
@@ -147,11 +149,30 @@ namespace SimEco{
         }
 
         int cont = 0;
-        for (auto &cellInfo : sp.cellsPopulation)
-        {
+        for (auto &cellInfo : sp.cellsPopulation){
             fprintf(f, "%5u ", cellInfo.first); //escreve o numero de cada célula ocupada pela espécie (no timeStep indicado)
             if ((++cont) % 11 == 0)
                 fprintf(f, "\n");
+        }
+
+        fclose(f);
+    }
+
+    void recordSpecieFile(const char *path, int timeStep, Specie &sp){
+
+        FILE *f = fopen(path, "wb");
+
+        if (f == NULL){
+            printf(RED("Falha ao abrir o arquivo %s\n"), path);
+            fflush(stdout);
+            fclose(f);
+            exit(intException(Exceptions::fileException));
+        }
+
+        for (auto &cellInfo : sp.cellsPopulation){
+            //grava no arquivo uma célula ocupada, primeiro o índice da célula e logo em seguida sua população
+            fwrite(&cellInfo.first, sizeof(uint), 1, f);
+            fwrite(&cellInfo.second, sizeof(float), 1, f);
         }
 
         fclose(f);
