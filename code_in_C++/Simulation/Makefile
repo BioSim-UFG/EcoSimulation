@@ -17,11 +17,11 @@ BDIR = bin
 
 # object files ( .o)
 ODIR = $(BDIR)
-_OBJ = Cell.o Simulation.o Specie.o main.o Grid.o decompressData.o Helper.o
+_OBJ = Specie.o Cell.o Grid.o Simulation.o main.o decompressData.o Helper.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 # headers
-_DEPS = color.h Cell.h Simulation.h Specie.h Grid.h SimTypes.h decompressData.h Helper.h  
+_DEPS = SimTypes.h Specie.h Cell.h Grid.h Simulation.h decompressData.h color.h Helper.h  
 DEPS = $(patsubst %,$(SRCDIR)/%,$(_DEPS))
 
 #target .c files

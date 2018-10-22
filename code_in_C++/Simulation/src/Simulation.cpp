@@ -10,7 +10,7 @@
 namespace SimEco{
 	Simulation::Simulation(Grid &grid, const char* name): _grid(grid) , _name(name)/*, founders(founders), foundersSize(founders_size)*/{
 
-		create_Directory(_name);	//cria diretorio de saida/resultados da simulação
+		create_SimulationDirectory(_name); //cria diretorio de saida/resultados da simulação
 
 		//Specie *founders = new Specie[Configuration::NUM_FOUNDERS]; /*vetor de classes */
 

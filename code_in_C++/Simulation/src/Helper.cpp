@@ -1,5 +1,4 @@
 #include "Helper.h"
-#include "Grid.h"
 
 #include <chrono>
 #include <string.h>
@@ -140,7 +139,6 @@ namespace SimEco{
     }
 
     void recordSpecieTxtFile(const char *path, int timeStep, Specie &sp){
-
         FILE *f = fopen(path, "w");
         
         if (f == NULL){
@@ -153,16 +151,16 @@ namespace SimEco{
         int cont = 0;
         for (auto &cellInfo : sp.cellsPopulation){
             fprintf(f, "%5u ", cellInfo.first); //escreve o numero de cada célula ocupada pela espécie (no timeStep indicado)
-            fprintf(f, "%.4f ",cellInfo.second); //escreve o numero de população em cada célula
-            if ((++cont) % 11 == 0)
+            fprintf(f, "%.4f\n",cellInfo.second); //escreve o numero de população em cada célula
+            /*if ((++cont) % 11 == 0)
                 fprintf(f, "\n");
+                */
         }
 
         fclose(f);
     }
 
     void recordSpecieFile(const char *path, int timeStep, Specie &sp){
-
         FILE *f = fopen(path, "wb");
 
         if (f == NULL){
@@ -182,7 +180,7 @@ namespace SimEco{
     }
 
     //cria o diretorio no caminho ( e o caminho se o tal nao existir ainda), apenas se ele não existir
-    void create_Directory(const char *simName){
+    void create_SimulationDirectory(const char *simName){
         char pasta[80];
         sprintf(pasta, "mkdir -p Results/%s", simName);
         system(pasta);

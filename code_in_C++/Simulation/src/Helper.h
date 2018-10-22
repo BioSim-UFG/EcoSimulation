@@ -1,10 +1,10 @@
 #ifndef HELPER_H
 #define HELPER_H
 
-#include "color.h"
 #include "Grid.h"
 #include "Specie.h"
 #include "SimTypes.h"
+#include "color.h"
 
 #include <iostream>
 #include <chrono>
@@ -22,32 +22,25 @@ namespace SimEco{
 
 	//##########Fase de testes####
 
-	void create_Directory(const char *simName);
-
-	inline void recordSpecieTxtFile(const char *path, int timeStep, Specie &sp);
-	inline void recordSpecieFile(const char *path, int timeStep, Specie &sp);
+	void create_SimulationDirectory(const char *simName);
 
 	void recordTimeStepFiles(const char *path, int timeStep, Grid g, const char *simName);
+
+	void recordSpecieTxtFile(const char *path, int timeStep, Specie &sp);
+	void recordSpecieFile(const char *path, int timeStep, Specie &sp);
+
 
 
 	//Timer class
 	class Clock
 	{   
-		//e se lançar mais de um timer? por exemplo, um timer pra execução toda, e outro só pra parte que calcula um time step?
-		//por isso alterei pra classe suportar mais de umm timer ao mesmo tempo
-		// ....
-		//vi q na vdd era só criar outro objeto timer, então retirei essa feature
 		private:
-
 		typedef struct {
 			std::chrono::high_resolution_clock::time_point startClock;
 			std::chrono::high_resolution_clock::time_point pausedClock;
 			bool isPaused;
-			//std::chrono::high_resolution_clock::period elapsedPause;
-			//std::chrono::high_resolution_clock::time_point last;
 		}Clock_count;
 
-		//std::unordered_map<int, Clock_count> timers;
 		Clock_count timer;
 
 		public:
@@ -56,14 +49,10 @@ namespace SimEco{
 		//std::chrono::duration<double> elapsed;
 
 		void Start();
-
-		//void timerStart(int id);
-
 		//pausa o timer
 		void Pause();
 		//continua o timer
 		void Continue();
-
 		//para o timer se nao estiver pausado já. E então retorna o tempo percorrido total pelo timer.
 		double End();
 		//double elapsedTime();
@@ -80,8 +69,6 @@ namespace SimEco{
 		void Configure();
 	};
 
-
-	
 }
 
 #endif
