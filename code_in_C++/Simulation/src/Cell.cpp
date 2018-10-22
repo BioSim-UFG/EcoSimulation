@@ -1,16 +1,26 @@
-#include "Cell.h"
 #include <execinfo.h>
 #include <unistd.h>
+
+#include "Cell.h"
+
+
 namespace SimEco
 {
+	vector<vector<unsigned int > > Cell::speciesPopulation;
 	Climate** Cell::cell_climates;
 	//unsigned int Cell::totalCells = 0;
 
 	Cell::Cell(){
+		//speciesPopulation.resize(conf.MAX_CELLS);
 		//speciesInside = NULL;
 		//numSpecies = 0;
 		//speciesInside = (Specie **)malloc(sizeof(Specie *) * Cell::MaxCapacity);
 	}
+
+	void Cell::setMaxCells(unsigned int size){
+		speciesPopulation.resize(size);
+	}
+	
 	Cell::~Cell(){ /*--totalCells;*/ }
 	/*
 	void Cell::addSpecie(Specie *specie){

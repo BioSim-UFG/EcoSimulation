@@ -1,8 +1,10 @@
 #ifndef CELL_H
 #define CELL_H
 
-#include "SimTypes.h"
+#include <vector>
 
+#include "SimTypes.h"
+#include "Helper.h"
 
 using namespace std;
 
@@ -12,6 +14,8 @@ namespace SimEco
     class Cell{
 
         public:
+
+        static vector< vector< unsigned int> > speciesPopulation; 
 
         /* coloquei um vetor da classe ( nao objeto) para melhor acesso e perfomance,
          e também por ser assim que os dados são acessados e tratados na GPU*/
@@ -35,7 +39,7 @@ namespace SimEco
         //void delSpecie(uint index);
         Cell();
         ~Cell();
-
+        void setMaxCells(unsigned int size);
     };
 
 

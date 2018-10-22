@@ -129,6 +129,8 @@ namespace SimEco{
         char fnameBin[80];
         for (uint i = 0; i < g.species.size(); i++){
             //sprintf(fname, "%s/timeStep%u", path, i);
+           
+           
             sprintf(fnameTxt, "%s/%s_Esp%d_Time%d.txt", path, simName, g.species[i]._name, timeStep);
             recordSpecieTxtFile(fnameTxt, timeStep, g.species[i]);
 
@@ -151,6 +153,7 @@ namespace SimEco{
         int cont = 0;
         for (auto &cellInfo : sp.cellsPopulation){
             fprintf(f, "%5u ", cellInfo.first); //escreve o numero de cada célula ocupada pela espécie (no timeStep indicado)
+            fprintf(f, "%.4f ",cellInfo.second); //escreve o numero de população em cada célula
             if ((++cont) % 11 == 0)
                 fprintf(f, "\n");
         }

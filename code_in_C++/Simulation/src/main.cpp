@@ -13,7 +13,6 @@ using namespace SimEco;
 
 
 
-//no futuro podemos usar argumentos (argv) para passar o nome do arquivo de founders
 
 int main(int argc,char const *argv[]){
 	
@@ -29,7 +28,9 @@ int main(int argc,char const *argv[]){
 
 	Simulation *simulacao;
 	Grid *grid;
-	//Cell *celulas;	/* vetor de celulas */
+	Cell *cell;
+
+	
 	//Specie *founders = (Specie *)malloc(sizeof(Specie) * NUM_FOUNDERS);
 	Clock *timeCounter = new Clock();
 
@@ -94,6 +95,9 @@ int main(int argc,char const *argv[]){
 	}
 
 	/**************************INICIANDO SIMULAÇÃO*******************************/
+
+	cell->setMaxCells(Configuration::MAX_CELLS);
+
 	/*******INICIALIZANDO ESPECIES FOUNDERS*********/
 
 	grid = new Grid(num_cells, Configuration::NUM_FOUNDERS);
