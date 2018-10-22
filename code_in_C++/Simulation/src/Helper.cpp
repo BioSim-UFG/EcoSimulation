@@ -180,4 +180,11 @@ namespace SimEco{
 
         fclose(f);
     }
+
+    //cria o diretorio no caminho ( e o caminho se o tal nao existir ainda), apenas se ele não existir
+    void create_Directory(const char *simName){
+        char pasta[80];
+        sprintf(pasta, "mkdir -p Results/%s", simName);
+        system(pasta);
+    }
 }

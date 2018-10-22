@@ -36,11 +36,8 @@ namespace SimEco{
 		float* calcSpecieFitness(const Specie &specie, uint timeStep, float *fitness);
 		//cria o poligono (já clipado) da curva do nicho
 		void NicheCurve(const float MinTol, const float MaxTol, const float MinEnv, const float MaxEnv, poly_t &NichePoly);
-		//void create_initial_file();
-		void create_Directory();
-
-		//void recordTimeStepFiles(const char *path, int timeStep);
-		//void recordSpecieFile(const char *path, int timeStep, Specie &sp);
+		
+	
 
 	   public:
 		

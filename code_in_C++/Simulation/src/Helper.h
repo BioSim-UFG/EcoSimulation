@@ -22,6 +22,8 @@ namespace SimEco{
 
 	//##########Fase de testes####
 
+	void create_Directory(const char *simName);
+
 	inline void recordSpecieTxtFile(const char *path, int timeStep, Specie &sp);
 	inline void recordSpecieFile(const char *path, int timeStep, Specie &sp);
 

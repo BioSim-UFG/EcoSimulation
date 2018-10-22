@@ -10,7 +10,7 @@
 namespace SimEco{
 	Simulation::Simulation(Grid &grid, const char* name): _grid(grid) , _name(name)/*, founders(founders), foundersSize(founders_size)*/{
 
-		create_Directory();	//cria diretorio de saida/resultados da simulação
+		create_Directory(_name);	//cria diretorio de saida/resultados da simulação
 
 		//Specie *founders = new Specie[Configuration::NUM_FOUNDERS]; /*vetor de classes */
 
@@ -413,42 +413,6 @@ namespace SimEco{
 	}
 
 
-	/***********************************************************************************/
 
-	//cria o diretorio no caminho ( e o caminho se o tal nao existir ainda), apenas se ele não existir
-	inline void Simulation::create_Directory(){
-		char pasta[80];
-		sprintf(pasta,"mkdir -p Results/%s",_name);
-		system(pasta);
-	}
-/*
-	inline void Simulation::recordTimeStepFiles(const char *path, int timeStep){
-		char fname[80];
-		for(uint i = 0; i < _grid.species.size() ; i++){
-			//sprintf(fname, "%s/timeStep%u", path, i);
-			sprintf(fname, "%s/%s_Esp%d_Time%d", path, _name, _grid.species[i]._name, timeStep);
-			recordSpecieFile(fname, timeStep, _grid.species[i]);
-		}
-	}
-
-	inline void Simulation::recordSpecieFile(const char *path, int timeStep, Specie &sp){
-
-		FILE *f = fopen(path, "w");
-		if(f == NULL){
-			printf(RED("Falha ao abrir o arquivo %s\n"),path );fflush(stdout);
-			fclose(f);
-			exit( intException(Exceptions::fileException) );
-		}
-
-		int cont =0;
-		for (auto &cellInfo: sp.cellsPopulation){
-			fprintf(f, "%5u ", cellInfo.first);	//escreve o numero de cada célula ocupada pela espécie (no timeStep indicado)
-			if ((++cont) % 11 == 0)
-				fprintf(f, "\n");
-		}
-
-		fclose(f);
-	}
-	*/
 	
 }
