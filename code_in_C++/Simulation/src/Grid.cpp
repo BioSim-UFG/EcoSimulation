@@ -152,7 +152,7 @@ namespace SimEco{
 			exit(intException(Exceptions::configurationException));
 		}
 
-		for (i = nTimeSteps-1; i >= 0; i--){
+		for (i = 0; i < nTimeSteps; i++){
 			
 			if (feof(minTemp_arq) || feof(maxTemp_arq) || feof(minPptn_arq) || feof(maxPptn_arq) || feof(NPP_arq) )
 				break;

@@ -230,6 +230,8 @@ int main(){
 
 	try
 	{
+
+		//aqui vai ter problema de arredondamento dependendo dos valores
 		int nt = (b - e) / s;
 		nt+=1;	//numero de timeSteps mais o timeStep 0(zero)
 		//grava quantos timeSteps (linhas) vão ter na stream
@@ -254,7 +256,7 @@ int main(){
 
 			for (int cell = 0; cell < numCells; cell++){
 				//calcula o clima da célula usando interpolação
-				paleoClimate.getClimCell(cell, b-(i*s), &SATMin, &SATMax, &PPTNMin, &PPTNMax, &NPP);
+				paleoClimate.getClimCell(cell, (i*s), &SATMin, &SATMax, &PPTNMin, &PPTNMax, &NPP);
 
 				// aqui começa a escrever os valores já interpolados nos arquivos de saida
 				arq_outMinTemp.write( (const char*)&SATMin, sizeof(float));

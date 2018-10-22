@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 Simulation_name= TesteT
-=======
-Simulation_name= Debug2
->>>>>>> 05cdfd15368b85ba22ad63194d8210aa6fc09d01
 Num_Cells= 2566
 Num_Founders= 4
 Num_TimeSteps= 50
