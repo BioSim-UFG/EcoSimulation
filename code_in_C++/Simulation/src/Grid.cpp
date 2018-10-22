@@ -152,6 +152,9 @@ namespace SimEco{
 			exit(intException(Exceptions::configurationException));
 		}
 
+		//pega o numero de timeSteps minimo, entre o obtido no arquivo stream e o passado como argumento da função.
+		nTimeSteps = min((size_t)nTimeSteps, timeSteps);
+
 		for (i = 0; i < nTimeSteps; i++){
 			
 			if (feof(minTemp_arq) || feof(maxTemp_arq) || feof(minPptn_arq) || feof(maxPptn_arq) || feof(NPP_arq) )

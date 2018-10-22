@@ -1,5 +1,5 @@
-Simulation_name= TesteT
+Simulation_name= TesteT2
 Num_Cells= 2566
 Num_Founders= 4
-Num_TimeSteps= 50
+Num_TimeSteps= 5
 Save_Path= local
