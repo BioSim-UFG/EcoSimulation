@@ -151,12 +151,13 @@ namespace SimEco{
 				//se a especie for extinta:
 				if(especie.totalPopulation < Specie::popThreshold){
 					it = _grid.species.erase(it);	//retorna o novo iterator da posição correspondente ao do elemento removido
-					printf("espécie extinta!");
+					//printf("espécie extinta!");
 				}
 				else
 					++it;	//só aumenta o iterator se não remover um elemento do vector
 				
 				//++it;
+				
 			}
 			sprintf(dir+len, "%d", timeStep);
 			recordTimeStepFiles(dir, timeStep, _grid, _name);

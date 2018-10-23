@@ -52,21 +52,32 @@ default: $(OBJ)
 
 #fast, optimized compiling mode
 fast: opt2
-opt3: EXTFLG = -O3 -march=native -Wno-unused-result
+opt3: EXTFLG+= -O3 -march=native -Wno-unused-result
 opt3: ECHOMSG = "fast, optimized compiling mode level 3\n"
 opt3: default
 
-opt2: EXTFLG = -O2 -march=native -Wno-unused-result
+opt2: EXTFLG+= -O2 -march=native -Wno-unused-result
 opt2: ECHOMSG = "fast, optimized compiling mode level 2\n"
 opt2: default
 
-opt1: EXTFLG = -O1 -march=native -Wno-unused-result
+opt1: EXTFLG+= -O1 -march=native -Wno-unused-result
 opt1: ECHOMSG = "fast, optimized compiling mode level 1\n"
 opt1: default
 
-debug: EXTFLG = -ggdb3 -O0 -fno-inline-functions -DGLIBCXX_DEBUG -rdynamic
+debug: EXTFLG+= -ggdb3 -O0 -fno-inline-functions -DGLIBCXX_DEBUG -rdynamic
 debug: ECHOMSG = "Debugging compiling mode \n"
 debug: default
+
+profile: EXTFLG+= -pg -g
+profile: ECHOMSG+= "profiling default compiling mode \n"
+profile: default
+
+profile_fast: EXTFLG+= -pg -g
+profile_fast:
+	@echo 'profile mode'
+profile_fast: opt3
+
+#profile%: ECHOMSG+= "profiling $@ compiling mode \n"
 
 all:
 	@touch $(SRCDIR)/*

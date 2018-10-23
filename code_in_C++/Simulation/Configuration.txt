@@ -1,5 +1,5 @@
-Simulation_name= Sim_5M_to_present
+Simulation_name= profiling
 Num_Cells= 2566
 Num_Founders= 4
-Num_TimeSteps= 10000
+Num_TimeSteps= 100
 Save_Path= local
