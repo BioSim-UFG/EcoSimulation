@@ -35,9 +35,15 @@ namespace SimEco{
 		cout<<BLU("OK\n"); fflush(stdout);
 
 		//grava os resultados do timeStep
-		system( ("rm -r Results/"+string(_name)).c_str() );
 		string path = "Results/" + string(_name) + "/timeStep0";
+		#ifdef __linux__
+		system( ("rm -r Results/"+string(_name)).c_str() );
 		string comand = "mkdir -p " + path;
+		#elif _WIN32
+		system( ("rmdir /s Results/"+string(_name)).c_str() );
+		string comand = "mkdir " + path;
+		#endif
+
 		system(comand.c_str());
 		recordTimeStepFiles((path).c_str(), 0, _grid, _name);
 		
