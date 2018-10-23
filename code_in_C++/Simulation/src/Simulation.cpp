@@ -27,11 +27,12 @@ namespace SimEco{
 		//coloca os founders em suas celulas
 		//grid.setFounders(founders);
 
-		cout<<BLU("\tCalculando tempo ZERO\n"); fflush(stdout);
+		cout<<BLU("\tCalculando tempo ZERO... "); fflush(stdout);
 		//aqui faz o trabalho de preparação da simulação, usando a(s) especie(s) fundadora(s)
 		for(uint i=0; i<_grid.species.size(); i++){
 			processFounder_timeZero(_grid.species[i]);
 		}
+		cout<<BLU("OK\n"); fflush(stdout);
 
 		//grava os resultados do timeStep
 		system( ("rm -r Results/"+string(_name)).c_str() );
