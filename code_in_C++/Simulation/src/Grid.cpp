@@ -177,6 +177,8 @@ namespace SimEco{
 				fread(&(Cell::cell_climates[i][j].envValues[climVar::Pptn].minimum), sizeof(float), 1, minPptn_arq);
 				fread(&(Cell::cell_climates[i][j].envValues[climVar::Pptn].maximum), sizeof(float), 1, maxPptn_arq);
 				fread(&(Cell::cell_climates[i][j].NPP), sizeof(float), 1, NPP_arq);
+
+				Cell::cell_climates[i][j].K = Cell::calcK(Cell::cell_climates[i][j].NPP);
 			}
 
 		}

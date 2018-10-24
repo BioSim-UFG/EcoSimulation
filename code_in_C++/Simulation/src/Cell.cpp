@@ -20,6 +20,14 @@ namespace SimEco
 	void Cell::setMaxCells(unsigned int size){
 		speciesPopulation.resize(size);
 	}
+
+	float Cell::calcK(float NPP){
+        float K;
+        float area =0.5;
+        K = (NPP * area)/ 50000 ;
+        return K;
+	}
+
 	
 	Cell::~Cell(){ /*--totalCells;*/ }
 	/*

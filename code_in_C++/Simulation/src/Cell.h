@@ -35,6 +35,8 @@ namespace SimEco
             return Cell::cell_climates[timeStepIndex];
         }
 
+        static float calcK(float NPP);
+
         //void addSpecie(Specie *specie);
         //void delSpecie(uint index);
         Cell();
