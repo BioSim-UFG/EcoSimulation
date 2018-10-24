@@ -126,7 +126,7 @@ __device__ void NicheCurve(float MinTol, float MidTol, float MaxTol,float MinEnv
     //printf("vertice %d -> x-%f   y-%f\n\n",nSteps+2,NichePoly->v[nSteps+2].x, NichePoly->v[nSteps+2].y );
 }
 
-/*__host__ __device__*/__global__ void SimEco::Simulation::calcSpecieFitness(float * SpNiche,float * LocEnv,float * Fitness){
+/*__host__ __device__*/__global__ void calcFitness(float * SpNiche,float * LocEnv,float * Fitness){
     // Declare auxiliary private data
 
     unsigned int espIndex =(blockDim.x * blockIdx.x) + threadIdx.x; //indice da especie
