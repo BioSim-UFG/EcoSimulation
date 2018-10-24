@@ -33,7 +33,7 @@ namespace SimEco{
 		void processFounder_timeZero(Specie &founder);
 		void processSpecieTimeStep(Specie &specie, float *fitness);
 		//calcula o fitness, e retorna o ponteiro do vetor resultante
-		float* calcSpecieFitness(const Specie &specie, uint timeStep, float *fitness);
+		void calcSpecieFitness(const Specie &specie, uint timeStep, float *fitness);
 		//cria o poligono (já clipado) da curva do nicho
 		void NicheCurve(const float MinTol, const float MaxTol, const float MinEnv, const float MaxEnv, poly_t &NichePoly);
 		

@@ -3,7 +3,7 @@ CC=gcc				#C compiler
 CPPC=g++			#C++ compiler
 CFLAGS=-lz -lm -std=c++14		#standard g++ flags
 NVC=nvcc			#CUDA compiler
-NVFLAGS=-use_fast_math -O2		#CUDA compiler flags
+NVFLAGS=-use_fast_math --std=c++14	#CUDA compiler flags
 PSC=fpc				#pascal compiler
 PFLAGS=-Fl/usr/local/cuda/lib64 -Mdelphi	#pascal compiler flags
 
@@ -17,11 +17,11 @@ BDIR = bin
 
 # object files ( .o)
 ODIR = $(BDIR)
-_OBJ = Specie.o Cell.o Grid.o Simulation.o main.o decompressData.o Helper.o
+_OBJ = Specie.o Cell.o Grid.o Simulation.o main.o decompressData.o Helper.o libCuda.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 # headers
-_DEPS = SimTypes.h Specie.h Cell.h Grid.h Simulation.h decompressData.h color.h Helper.h  
+_DEPS = SimTypes.h Specie.h Cell.h Grid.h Simulation.h decompressData.h color.h cudaErrorCheck.h Helper.h
 DEPS = $(patsubst %,$(SRCDIR)/%,$(_DEPS))
 
 #target .c files
@@ -52,19 +52,23 @@ default: $(OBJ)
 
 #fast, optimized compiling mode
 fast: opt2
-opt3: EXTFLG+= -O3 -march=native -Wno-unused-result
+opt3: CFLAGS+= -O3 -march=native -Wno-unused-result
+opt3: NVFLAGS+= -O3
 opt3: ECHOMSG = "fast, optimized compiling mode level 3\n"
 opt3: default
 
-opt2: EXTFLG+= -O2 -march=native -Wno-unused-result
+opt2: CFLAGS+= -O2 -march=native -Wno-unused-result
+opt2: NVFLAGS+= -O2
 opt2: ECHOMSG = "fast, optimized compiling mode level 2\n"
 opt2: default
 
-opt1: EXTFLG+= -O1 -march=native -Wno-unused-result
+opt1: CFLAGS+= -O1 -march=native -Wno-unused-result
+opt1: NVFLAGS+= -O1
 opt1: ECHOMSG = "fast, optimized compiling mode level 1\n"
 opt1: default
 
-debug: EXTFLG+= -ggdb3 -O0 -fno-inline-functions -DGLIBCXX_DEBUG -rdynamic
+debug: CFLAGS+= -ggdb3 -O0 -fno-inline-functions -DGLIBCXX_DEBUG -rdynamic
+debug: NVFLAGS+= -O3 -g -G
 debug: ECHOMSG = "Debugging compiling mode \n"
 debug: default
 

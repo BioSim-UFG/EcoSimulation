@@ -231,7 +231,7 @@ namespace SimEco{
 	}
 
 	//calcula o fitness de uma especie em um determinado timeStep (copiei e adaptei a função que tinhamos pra GPU)
-	float* Simulation::calcSpecieFitness(const Specie &specie, uint timeStep, float *fitness){
+	void Simulation::calcSpecieFitness(const Specie &specie, uint timeStep, float *fitness){
 
 		float StdAreaNoOverlap=0, StdSimBetweenCenters=0;
 
@@ -304,7 +304,6 @@ namespace SimEco{
 			//if(LocFitness !=0 )printf("LocFit-%.8f  CELL- %d \n",LocFitness,cellIdx);
 		}
 
-		return fitness;
 	}
 
 	//cria poligono do nicho já clipado com variaveis do Ambiente ( aka celula) (também copiado e adaptado da GPU)
