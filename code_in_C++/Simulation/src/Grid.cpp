@@ -17,7 +17,7 @@ namespace SimEco{
 	Connectivity *Grid::connectivityMatrix = NULL;
 	MatIdx_2D *Grid::indexMatrix = NULL;
 	unordered_map<uint, uint> Grid::indexMap;
-	u_int Grid::matrixSize = 0;
+	uint Grid::matrixSize = 0;
 
 	//Cell *Grid::cells;
 	int Grid::cellsSize = 0;
@@ -39,7 +39,7 @@ namespace SimEco{
 
 	//recebe e compacta matriz de adjacencia		//depois atualizar e deixar como o load_cellsConnectivy()
 	void Grid::setCellsConnectivity(Connectivity *adjMatrix, size_t size){
-		u_int pos=0;
+		uint pos=0;
 
 		for(int i=0; i<size; i++){
 			for(int j=0; j<size; j++){
@@ -202,7 +202,7 @@ namespace SimEco{
 		byte *geobuffer_start, *topobuffer_start, *riversbuffer_start;	//ponteiros para o inicio do buffer
 		size_t geoSize = 0, topoSize = 0, riversSize = 0;
 
-		u_int compressedMat_size = 0;
+		uint compressedMat_size = 0;
 
 		FILE *geo_arq = fopen(geoConectivity_src,"rb");
 		FILE *topo_arq = fopen(topoConectivity_src,"rb");

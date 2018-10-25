@@ -8,9 +8,10 @@
 //  Modified by Shades Aug. 14 2018
 
 // PLEASE carefully read comments before using this tool, this will save you a lot of bugs that are going to be just about impossible to find.
-#ifndef COLORS_h
-#define COLORS_h
+#ifndef COLORS_H
+#define COLORS_H
 
+#ifdef __linux__
 /* FOREGROUND */
 // These codes set the actual text to the specified color
 #define RESETTEXT  "\x1B[0m" // Set all colors back to normal.
@@ -42,6 +43,41 @@
 #define BACKMAG "\x1B[45m"
 #define BACKCYN "\x1B[46m"
 #define BACKWHT "\x1B[47m"
+
+#elif _WIN32
+/* FOREGROUND */
+// These codes set the actual text to the specified color
+#define RESETTEXT "" // Set all colors back to normal.
+#define FOREBLK ""  // Black
+#define FORERED ""  // Red
+#define FOREGRN ""  // Green
+#define FOREYEL ""  // Yellow
+#define FOREBLU ""  // Blue
+#define FOREMAG ""  // Magenta
+#define FORECYN ""  // Cyan
+#define FOREWHT ""  // White
+
+#define FORELGTBLK "" // Light Black
+#define FORELGTRED "" // Light Red
+#define FORELGTGRN "" // Light Green
+#define FORELGTYEL "" // Light Yellow
+#define FORELGTBLU "" // Light Blue
+#define FORELGTMAG "" // Light Magenta
+#define FORELGTCYN "" // Light Cyan
+#define FORELGTWHT "" // Light White
+
+/* BACKGROUND */
+// These codes set the background color behind the text.
+#define BACKBLK ""
+#define BACKRED ""
+#define BACKGRN ""
+#define BACKYEL ""
+#define BACKBLU ""
+#define BACKMAG ""
+#define BACKCYN ""
+#define BACKWHT ""
+
+#endif
 
 // These will set the text color and then set it back to normal afterwards.
 #define BLK(x) FOREBLK x RESETTEXT
@@ -103,6 +139,7 @@
 
 // Example usage: cout << SetForeRED << "This text and all text after it will be red until RESETTEXT is called in some way" << endl;
 
+#ifdef __linux__
 #define BOLD(x) "\x1B[1m" x "\x1B[22m"          // Embolden text then unbolden it.
 #define BRIGHT(x) "\x1B[1m" x "\x1B[22m"        // Brighten text then unbrighten it. (Same as bold but is available for program clarity)
 #define UNDL(x) "\x1B[4m" x "\x1B[24m"          // Underline text then reset it.
@@ -116,5 +153,16 @@
 #define SetUNDL "\x1B[4m" // Underline text indefinitely.
 
 // Example usage: cout << setBOLD << "I and all text after me will be BOLD/Bright until RESETTEXT is called in some way!" << endl;
+
+#elif _WIN32
+
+#define BOLD(x) x
+#define BRIGHT(x) x
+#define UNDL(x) x
+#define SetBOLD " "
+#define SetBRIGHT " "
+#define SetUNDL " "
+
+#endif
 
 #endif

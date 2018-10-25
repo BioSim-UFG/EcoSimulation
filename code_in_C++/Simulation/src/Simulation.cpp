@@ -4,7 +4,9 @@
 #include "Specie.h"
 
 #include "Helper.h"
+#ifdef __NVCC__
 #include "cudaErrorCheck.h"
+#endif
 
 #include <iostream>
 #include <cmath>

@@ -4,6 +4,9 @@
 // como varios objetos do tipo simulation
 
 #include "SimTypes.h"
+#if defined(_WIN32) || defined(_WIN64)
+#define _USE_MATH_DEFINES
+#endif
 #include <math.h>
 #include <string.h>
 #include <vector>

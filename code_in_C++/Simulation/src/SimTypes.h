@@ -6,6 +6,12 @@
 
 #define NUM_ENV_VARS 2
 
+#if defined(_WIN32) || defined(_WIN64)
+typedef unsigned uint;
+typedef unsigned u_int;
+
+#endif
+
 
 using namespace std;
 
