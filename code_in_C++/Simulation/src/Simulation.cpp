@@ -2,7 +2,9 @@
 #include "Cell.h"
 #include "Grid.h"
 #include "Specie.h"
+
 #include "Helper.h"
+#include "cudaErrorCheck.h"
 
 #include <iostream>
 #include <cmath>
@@ -102,7 +104,6 @@ namespace SimEco{
 	}
 
 	void Simulation::run(int nSteps){
-		float *fitness = new float[_grid.cellsSize];
 		this->_timeSteps = nSteps;
 
 		//cria um subdiretorio para cada timestep
@@ -115,6 +116,18 @@ namespace SimEco{
 			system(comand);
 		}
 
+
+		//aloca memória para o calculo dos fitness's
+		float *fitness = new float[_grid.cellsSize];
+		/*
+		float *d_espNiche, *d_cellEnv, *d_fitness;
+
+		CudaSafeCall(cudaMalloc(&d_espNiche, sizeof(NicheValue) * NUM_ENV_VARS * _grid.species.size()));
+		CudaSafeCall(cudaMalloc(&d_cellEnv, sizeof(float) * NUM_ENV_VARS * _grid.cellsSize));
+		CudaSafeCall(cudaMalloc(&d_fitness, sizeof(float) * _grid.species.size() * _grid.cellsSize));
+
+		CudaSafeCall(cudaMemcpy(d_espNiche, _grid.))
+		*/
 		//timeStep começa em 1, pois deve pular o timeStep Zero (pois ele já foi calculado antes).
 		for(int timeStep = 1; timeStep< _timeSteps; timeStep++){
 			printf(BLU("\r\tProcessando timeStep ") "%d/%d", timeStep, _timeSteps-1);
@@ -230,8 +243,9 @@ namespace SimEco{
 		//specie.celulas_Idx = (uint *)realloc(specie.celulas_Idx, sizeof(uint) * specie.celulas_IdxSize);
 	}
 
+
 	//calcula o fitness de uma especie em um determinado timeStep (copiei e adaptei a função que tinhamos pra GPU)
-	float* Simulation::calcSpecieFitness(const Specie &specie, uint timeStep, float *fitness){
+	void Simulation::calcSpecieFitness(const Specie &specie, uint timeStep, float *fitness){
 
 		float StdAreaNoOverlap=0, StdSimBetweenCenters=0;
 
@@ -304,11 +318,11 @@ namespace SimEco{
 			//if(LocFitness !=0 )printf("LocFit-%.8f  CELL- %d \n",LocFitness,cellIdx);
 		}
 
-		return fitness;
 	}
-
+	
 	//cria poligono do nicho já clipado com variaveis do Ambiente ( aka celula) (também copiado e adaptado da GPU)
-	void Simulation::NicheCurve(const float MinTol, const float MaxTol, const float MinEnv, const float MaxEnv, poly_t &nichePoly){
+	void Simulation::NicheCurve(const float MinTol, const float MaxTol, const float MinEnv, const float MaxEnv, poly_t &nichePoly)
+	{
 		// nichePoly must be nPoints+3 long
 		float erfX = 0, erfY = 0;
 		float PhiNum = 0;
@@ -317,12 +331,12 @@ namespace SimEco{
 		// Read input data
 		const float mi = ((MaxTol + MinTol) / 2.0f);
 		const float sigma = (MaxTol - mi) / 2.0f;
-		const float &a =     MinTol;
-		const float &b =     MaxTol;
-	
-		float x;// = MaxTol;
-		const float &MinimumMax = MaxTol < MaxEnv? MaxTol:MaxEnv;
-		const float &MaximumMin = MinTol > MinEnv? MinTol:MinEnv;
+		const float &a = MinTol;
+		const float &b = MaxTol;
+
+		float x; // = MaxTol;
+		const float &MinimumMax = MaxTol < MaxEnv ? MaxTol : MaxEnv;
+		const float &MaximumMin = MinTol > MinEnv ? MinTol : MinEnv;
 		float p, Tmp;
 		//float Step = ((b-a) / nPoints);
 		const float Step = ((MinimumMax - MaximumMin) / nPoints);
@@ -330,68 +344,72 @@ namespace SimEco{
 		x = MinimumMax;
 		nichePoly.v[0].x = x;
 		nichePoly.v[0].y = 0.0f;
-	
+
 		//printf("MaximumMin=%f MinimumMax=%f\t Step=%f\n",MaximumMin,MinimumMax,Step );
 		//printf("vertice %d -> x-%f   y-%f\n",0,NichePoly->v[0].x, NichePoly->v[0].y );
-		for(int i = 0; i <= nPoints; i++){
+		for (int i = 0; i <= nPoints; i++)
+		{
 			// https://en.wikipedia.org/wiki/Truncated_normal_distribution
 			Tmp = (x - mi) / sigma;
-			PhiNum = (1.0f/sqrtf(2.0f*pi))*expf((-0.5f)*(Tmp*Tmp));
+			PhiNum = (1.0f / sqrtf(2.0f * pi)) * expf((-0.5f) * (Tmp * Tmp));
 			//PhiNum = (rsqrt (2.0f*pi))*expf((-0.5f)*(Tmp*Tmp));
 
 			// Error function of (x1)
-			erfX = ((b-mi) / sigma) / sqrtf(2.0f);
+			erfX = ((b - mi) / sigma) / sqrtf(2.0f);
 			Tmp = fabsf(erfX);
 
 			//aqui escolher entre qual dos dois usar
 			//erfY = 1.0f-(1.0f/powf(1.0f+(ErfA*Tmp)+(ErfB*(Tmp*Tmp))+(ErfC*powf(Tmp,3.0f))+(ErfD*powf(Tmp,4.0f)),4.0f));
-			erfY=erff(Tmp); 
+			erfY = erff(Tmp);
 
-			if(erfX < 0.0f)
+			if (erfX < 0.0f)
 				erfY = -1.0f * erfY;
-			
-			PhiDen1 = (1.0f+erfY) / 2.0f;
+
+			PhiDen1 = (1.0f + erfY) / 2.0f;
 			// Error function of (x2)
-			erfX = ((a-mi) / sigma) / sqrtf(2.0f);
+			erfX = ((a - mi) / sigma) / sqrtf(2.0f);
 			Tmp = fabs(erfX);
 
 			//aqui escolher entre qual dos dois usar
 			//erfY = 1.0f-(1.0f/powf(1.0f+(ErfA*Tmp)+(ErfB*(Tmp*Tmp))+(ErfC*powf(Tmp,3.0f))+(ErfD*powf(Tmp,4.0f)),4.0f));
-			erfY=erff(Tmp);
+			erfY = erff(Tmp);
 
-			if(erfX < 0.0f)
+			if (erfX < 0.0f)
 				erfY = -1.0f * erfY;
 
-			PhiDen2 = (1.0f+erfY) / 2.0f;
+			PhiDen2 = (1.0f + erfY) / 2.0f;
 			p = (PhiNum / (sigma * (PhiDen1 - PhiDen2)));
 
-			nichePoly.v[i+1].x = x;
-			nichePoly.v[i+1].y = p;
+			nichePoly.v[i + 1].x = x;
+			nichePoly.v[i + 1].y = p;
 			//printf("vertice %d -> x-%f   y-%f\n",i+1,NichePoly->v[i+1].x, NichePoly->v[i+1].y );
 			x = x - Step;
 
 			//printf("erff(Tmp) = %f", erfY);
 		}
 
-		nichePoly.v[nPoints+2].x = nichePoly.v[nPoints+1].x;
-		nichePoly.v[nPoints+2].y = 0.0f;
+		nichePoly.v[nPoints + 2].x = nichePoly.v[nPoints + 1].x;
+		nichePoly.v[nPoints + 2].y = 0.0f;
 		//printf("vertice %d -> x-%f   y-%f\n\n",nPoints+2,NichePoly->v[nPoints+2].x, NichePoly->v[nPoints+2].y );
 	}
 
-	void Simulation::carrega_founders(const char *founders_input, vector<Specie> &founders){
+	void Simulation::carrega_founders(const char *founders_input, vector<Specie> &founders)
+	{
 		Dispersion dispersionCapacity;
 		array<NicheValue, NUM_ENV_VARS> niche;
 		uint cellIdx;
 
 		FILE *src = fopen(founders_input, "r");
-		if (src == NULL){
+		if (src == NULL)
+		{
 			perror(RED("Erro ao abrir SpecieData.txt"));
 			exit(intException(Exceptions::fileException));
 		}
 
 		int i;
 		fscanf(src, "%*[^\n]\n"); //pula primeira linha
-		for (i = 0; i < Configuration::NUM_FOUNDERS; i++){
+		for (i = 0; i < Configuration::NUM_FOUNDERS; i++)
+		{
 			if (feof(src))
 				break;
 			//lê valores do nicho e de capacidade de dispersão
@@ -405,15 +423,17 @@ namespace SimEco{
 			//printf("geidisp: %f\n", dispersionCapacity.Geo);
 		}
 
-		if (i < Configuration::NUM_FOUNDERS){
+		if (i < Configuration::NUM_FOUNDERS)
+		{
 			printf(LGTYEL(BOLD("\n\tATENÇÃO, numero de founders em %s insuficiente\n")), founders_input);
 			printf(LGTYEL(BOLD("\tReplicando founders para tamanho necessário.\n\t")));
 			int num_lidos = i;
-			for (i; i < Configuration::NUM_FOUNDERS; i++){
+			for (i; i < Configuration::NUM_FOUNDERS; i++)
+			{
 				//founders[i] = *new Specie(founders[i % num_lidos]);
-				founders.emplace_back(founders[i % num_lidos].niche, 
-									  founders[i % num_lidos].dispCap, 
-									  founders[i % num_lidos].cellsPopulation.begin()->first);
+				founders.emplace_back(founders[i % num_lidos].niche,
+										founders[i % num_lidos].dispCap,
+										founders[i % num_lidos].cellsPopulation.begin()->first);
 			}
 		}
 
