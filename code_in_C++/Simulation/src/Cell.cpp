@@ -21,13 +21,15 @@ namespace SimEco
 		speciesPopulation.resize(size);
 	}
 
+	
+	//forçando mandar commit
+
 	float Cell::calcK(float NPP){
         float K;
         float area =0.5;
         K = (NPP * area)/ 50000 ;
         return K;
 	}
-
 	
 	Cell::~Cell(){ /*--totalCells;*/ }
 	/*
