@@ -8,7 +8,7 @@
 #include <string.h>
 #include <vector>
 
-#include "cuda_runtime.h"
+//#include "cuda_runtime.h"
 
 namespace SimEco{
 

@@ -6,7 +6,7 @@
 
 namespace SimEco
 {
-	vector<vector<unsigned int > > Cell::speciesPopulation;
+	vector< unordered_set<Specie * > > Cell::speciesPopulation;
 	Climate** Cell::cell_climates;
 	//unsigned int Cell::totalCells = 0;
 
