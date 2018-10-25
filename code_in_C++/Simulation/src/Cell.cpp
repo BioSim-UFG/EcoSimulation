@@ -6,7 +6,7 @@
 
 namespace SimEco
 {
-	vector<vector<unsigned int > > Cell::speciesPopulation;
+	vector< unordered_set<Specie * > > Cell::speciesPopulation;
 	Climate** Cell::cell_climates;
 	//unsigned int Cell::totalCells = 0;
 
@@ -19,6 +19,16 @@ namespace SimEco
 
 	void Cell::setMaxCells(unsigned int size){
 		speciesPopulation.resize(size);
+	}
+
+	
+	//forçando mandar commit
+
+	float Cell::calcK(float NPP){
+        float K;
+        float area =0.5;
+        K = (NPP * area)/ 50000 ;
+        return K;
 	}
 	
 	Cell::~Cell(){ /*--totalCells;*/ }

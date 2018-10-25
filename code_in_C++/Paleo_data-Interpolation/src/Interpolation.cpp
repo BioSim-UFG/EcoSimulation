@@ -9,6 +9,15 @@
 #include <string.h>
 #include <time.h>
 
+#ifdef _WIN32
+	#define SYSCLEAR_STR "CLS"
+#elif __linux__
+	#define SYSCLEAR_STR "clear"
+#else
+#define SYSCLEAR_STR ""
+#endif
+
+
 using namespace std;
 using namespace SimEco;
 
@@ -48,8 +57,7 @@ int main(){
 		scanf("%d", &numero_de_linhas);
 	}
 
-	system("clear");    //for unix
-	//system("CLS");      //for DOS ( windows);
+	system(SYSCLEAR_STR);
 
 	printf("Is the paleoclimate file ' 'xPLASIM.All3DMats.Single.Zip.Stream' '?\n");
 	printf("Type ENTER or \"Y\" if yes, or the correct name of the paleoclimate file\n");
@@ -63,9 +71,7 @@ int main(){
 		paleoClimFile = input_str;
 	}
 
-	system("clear");    //for unix
-	//system("CLS");      //for DOS ( windows);
-
+	system(SYSCLEAR_STR);
 	printf("Would you like to use the suffix '!OutPaleoClim - Var.txt*'?\n\n");
 	printf("Type ENTER or \"Y\" if yes, or type the suffix for the output files\n");
 	printf("If you would like to customize the suffix, enter only a single word (e.g. ''ClimDat'')\n");
@@ -78,9 +84,7 @@ int main(){
 		outSuffix.assign( input_str);
 	}
 
-
-	system("clear");    //for unix
-	//system("CLS");      //for DOS ( windows);
+	system(SYSCLEAR_STR);
 	printf("Would you like to start 5M years ago?\n\n");
 	printf("Type ENTER or \"Y\" if yes, or enter the starting time in thousand of years ago (5000 = 5Mya)\n");
 
@@ -92,8 +96,7 @@ int main(){
 		b = stod(input_str, NULL);
 	}
 
-	system("clear"); //for unix
-	//system("CLS");      //for DOS ( windows);
+	system(SYSCLEAR_STR);
 	printf("Would you like to end in the present time?\n\n");
 	printf("Type ENTER or \"Y\" if yes, or enter the ending time in thousand of years ago (1000 = 1Mya)\n");
 
@@ -105,8 +108,7 @@ int main(){
 		e = stod(input_str);
 	}
 
-	system("clear"); //for unix
-	//system("CLS");      //for DOS ( windows);
+	system(SYSCLEAR_STR);
 	printf("Would you like to use 500 years as time step?\n\n");
 	printf("Type ENTER or \"Y\" if yes, or enter the length of time step in thousand of years ago (0.5 = 500y)\n");
 

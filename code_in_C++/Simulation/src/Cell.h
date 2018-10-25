@@ -2,6 +2,7 @@
 #define CELL_H
 
 #include <vector>
+#include <unordered_set>
 
 #include "SimTypes.h"
 #include "Helper.h"
@@ -15,7 +16,7 @@ namespace SimEco
 
         public:
 
-        static vector< vector< unsigned int> > speciesPopulation; 
+        static vector< unordered_set< Specie* > > speciesPopulation; 
 
         /* coloquei um vetor da classe ( nao objeto) para melhor acesso e perfomance,
          e também por ser assim que os dados são acessados e tratados na GPU*/
@@ -34,6 +35,10 @@ namespace SimEco
         static inline Climate *getTimeClimates(uint timeStepIndex){
             return Cell::cell_climates[timeStepIndex];
         }
+
+        
+        //forçando mandar commit
+        static float calcK(float NPP);
 
         //void addSpecie(Specie *specie);
         //void delSpecie(uint index);

@@ -182,7 +182,12 @@ namespace SimEco{
     //cria o diretorio no caminho ( e o caminho se o tal nao existir ainda), apenas se ele não existir
     void create_SimulationDirectory(const char *simName){
         char pasta[80];
+        #ifdef __linux__
         sprintf(pasta, "mkdir -p Results/%s", simName);
+        #elif _WIN32
+        sprintf(pasta, "mkdir Results/%s", simName);
+        #endif
+        
         system(pasta);
     }
 }
