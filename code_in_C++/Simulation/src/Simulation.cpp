@@ -95,7 +95,7 @@ namespace SimEco{
 				//founder.cellsPopulation.insert( {(uint)idxMat[zipMatPos].j, 1.0f} );
 				//founder.totalPopulation+=1.0f;
 				founder.insertCellPop((uint)idxMat[zipMatPos].j, 1.0f);
-				Cell::speciesPopulation[(uint)idxMat[zipMatPos].j].insert(&founder);
+				Cell::speciesPresent[(uint)idxMat[zipMatPos].j].insert(&founder);
 
 			}
 
@@ -143,7 +143,7 @@ namespace SimEco{
 			for(auto it=_grid.species.begin(); it != _grid.species.cend() ;){
 				auto &especie = *it;
 				calcSpecieFitness(especie, timeStep, fitness);	//obtem os fitness's da espécie
-				
+
 				processSpecieTimeStep(especie, fitness);
 
 				/*
@@ -172,6 +172,9 @@ namespace SimEco{
 				//se a especie for extinta:
 				if(especie.totalPopulation < Specie::popThreshold){
 					it = _grid.species.erase(it);	//retorna o novo iterator da posição correspondente ao do elemento removido
+					for(auto cell: it->cellsPopulation){	//percorre por todas as células que ocupava e a remove de lá
+						Cell::speciesPresent[cell.first].erase(&especie);
+					}
 					//printf("espécie extinta!");
 				}
 				else
@@ -224,7 +227,7 @@ namespace SimEco{
 							specie.totalPopulation+=1.0f;	//Só aumenta a população se conseguiu inserir um NOVO elemento no mapa, ou seja, acabou de ocupar a célula
 						*/
 						specie.insertCellPop((uint)idxMat[zipMatPos].j, 1.0f);
-						Cell::speciesPopulation[ (uint)idxMat[zipMatPos].j ].insert(&specie);
+						Cell::speciesPresent[ (uint)idxMat[zipMatPos].j ].insert(&specie);
 					}
 				}
 				else if( fitness[idxMat[zipMatPos].j] <= 0.0f){
@@ -237,7 +240,7 @@ namespace SimEco{
 					}
 					*/
 					specie.eraseCellPop( idxMat[zipMatPos].j );
-					Cell::speciesPopulation[ (uint)idxMat[zipMatPos].j ].erase(&specie);
+					Cell::speciesPresent[ (uint)idxMat[zipMatPos].j ].erase(&specie);
 				}
 
 				zipMatPos++;

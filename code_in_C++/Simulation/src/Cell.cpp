@@ -6,19 +6,19 @@
 
 namespace SimEco
 {
-	vector< unordered_set<Specie * > > Cell::speciesPopulation;
+	vector< unordered_set<Specie * > > Cell::speciesPresent;
 	Climate** Cell::cell_climates;
 	//unsigned int Cell::totalCells = 0;
 
 	Cell::Cell(){
-		//speciesPopulation.resize(conf.MAX_CELLS);
+		//speciesPresent.resize(conf.MAX_CELLS);
 		//speciesInside = NULL;
 		//numSpecies = 0;
 		//speciesInside = (Specie **)malloc(sizeof(Specie *) * Cell::MaxCapacity);
 	}
 
 	void Cell::setMaxCells(unsigned int size){
-		speciesPopulation.resize(size);
+		speciesPresent.resize(size);
 	}
 
 	

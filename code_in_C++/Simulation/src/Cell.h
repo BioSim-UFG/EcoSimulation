@@ -16,7 +16,7 @@ namespace SimEco
 
         public:
 
-        static vector< unordered_set< Specie* > > speciesPopulation; 
+        static vector< unordered_set< Specie* > > speciesPresent; 
 
         /* coloquei um vetor da classe ( nao objeto) para melhor acesso e perfomance,
          e também por ser assim que os dados são acessados e tratados na GPU*/

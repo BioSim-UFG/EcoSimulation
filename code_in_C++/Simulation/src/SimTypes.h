@@ -29,7 +29,6 @@ namespace SimEco
 	typedef struct{
 		array<EnvValue, NUM_ENV_VARS> envValues;    // Temperature and precipitation -> min and max for both
 		float NPP;
-		//forçando a mandar commit
 		float K;		//Const value generated based on NPP to determine maximum resource availability in cell
 	}Climate;
 
