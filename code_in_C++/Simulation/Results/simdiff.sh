@@ -44,7 +44,7 @@ fi
 path1=$1
 path2=$2
 
-for file1 in $(\ls -d ${path1}/timeStep*/${path1}_Esp*_Time*); do
+for file1 in $(\ls -d ${path1}/timeStep*/${path1}_Esp*_Time*.txt); do
 
 
 	file2=${file1//$path1/$path2}
