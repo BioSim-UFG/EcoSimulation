@@ -1,13 +1,13 @@
 SHELL = /bin/sh
 CC=gcc				#C compiler
 CPPC=g++			#C++ compiler
-CFLAGS=-lz -lm -std=c++11		#standard g++ flags
+CFLAGS=-lz -lm -std=c++11 -ffast-math	#standard g++ flags
 NVC=nvcc			#CUDA compiler
 NVFLAGS=-use_fast_math -O2		#CUDA compiler flags
 PSC=fpc				#pascal compiler
 PFLAGS=-Fl/usr/local/cuda/lib64 -Mdelphi	#pascal compiler flags
 
-ECHOMSG= ''
+ECHOMSG := 'Normal compiling mode\n'
 
 
 # src dir
@@ -43,10 +43,10 @@ $(BDIR)/%.o: $(SRCDIR)/%.cu $(DEPS)
 
 
 # normal compiling mode
-default: ECHOMSG := 'Normal compiling mode\n'
 default: $(OBJ)
 	@$(CPPC) $^ -o Prog.exe $(CFLAGS)$(EXTFLG)
-	@printf $(ECHOMSG)
+	@echo $(ECHOMSG)
+#	@printf $(ECHOMSG)
 	@echo 'All compiled'
 
 #fast, optimized compiling mode
@@ -72,5 +72,9 @@ all:
 	@echo 'touching all src files'
 
 clean: 
+ifeq ($(OS),Windows_NT)
+	@del "$(ODIR)\*.o"
+else
 	@find -name '*.o' -delete
+endif
 	@echo 'deleted .o files'

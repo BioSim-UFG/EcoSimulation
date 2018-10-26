@@ -103,7 +103,7 @@ int main(int argc,char const *argv[]){
 	grid = new Grid(num_cells, Configuration::NUM_FOUNDERS);
 
 	//printf("\n * * * * * * * * * * * * * * * * * * * * * * *\n\n"); fflush(stdout);
-	printf(LGTGRN(BOLD("Iniciando Simulação \n"))); fflush(stdout);
+	printf(LGTGRN(BOLD("Iniciando Simulacao \n"))); fflush(stdout);
 	
 	simulacao = new Simulation(*grid, Configuration::NAME);		//calcula o tempo -1 (tempo ZERO)
 

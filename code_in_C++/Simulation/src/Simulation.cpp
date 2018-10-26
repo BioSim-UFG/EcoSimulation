@@ -39,12 +39,13 @@ namespace SimEco{
 		cout<<BLU("OK\n"); fflush(stdout);
 
 		//grava os resultados do timeStep
-		string path = "Results/" + string(_name) + "/timeStep0";
 		#ifdef __linux__
+		string path = "Results/" + string(_name) + "/timeStep0";
 		system( ("rm -r Results/"+string(_name)).c_str() );
 		string comand = "mkdir -p " + path;
 		#elif _WIN32
-		system( ("rmdir /s Results/"+string(_name)).c_str() );
+		string path = "Results\\" + string(_name) + "\\timeStep0";
+		system( ("rmdir /s /q Results\\"+string(_name)).c_str() );
 		string comand = "mkdir " + path;
 		#endif
 
@@ -112,11 +113,19 @@ namespace SimEco{
 
 		//cria um subdiretorio para cada timestep
 		char dir[50], comand[61];
+#ifdef __linux__
 		sprintf(dir, "Results/%s/timeStep", _name);
+#elif _WIN32
+		sprintf(dir, "Results\\%s\\timeStep", _name);
+#endif
 		int len = strlen(dir);
 		for(int i=0; i< nSteps; i++){
 			sprintf(dir+len,"%d",i);
+#ifdef __linux__
 			sprintf(comand, "mkdir -p %s &", dir);
+#elif __WIN32
+			sprintf(comand, "mkdir %s &", dir);
+#endif
 			system(comand);
 		}
 

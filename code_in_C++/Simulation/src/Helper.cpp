@@ -185,7 +185,7 @@ namespace SimEco{
         #ifdef __linux__
         sprintf(pasta, "mkdir -p Results/%s", simName);
         #elif _WIN32
-        sprintf(pasta, "mkdir Results/%s", simName);
+        sprintf(pasta, "mkdir Results\%s", simName);
         #endif
         
         system(pasta);
