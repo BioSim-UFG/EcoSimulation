@@ -49,7 +49,7 @@ for file1 in $(\ls -d ${path1}/timeStep*/${path1}_Esp*_Time*.txt); do
 
 	file2=${file1//$path1/$path2}
 
-	diff --strip-trailing-cr ${file1} ${file2} ${flags}
+	diff --strip-trailing-cr ${file1} --label ${file1/*\//''} ${file2} --label ${file2/*\//''} ${flags}
 	#descomentar para ver estatisticas ( porcentagem de semelhanca/diferença, quantidade de itens diferentes, etc)
 	#wdiff ${file1} ${file2} -123s
 
