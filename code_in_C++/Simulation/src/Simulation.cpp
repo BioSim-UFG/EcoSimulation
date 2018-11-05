@@ -113,19 +113,20 @@ namespace SimEco{
 
 		//cria um subdiretorio para cada timestep
 		char dir[50], comand[61];
-#ifdef __linux__
+		#ifdef __linux__
 		sprintf(dir, "Results/%s/timeStep", _name);
-#elif _WIN32
+		#elif __WIN32
 		sprintf(dir, "Results\\%s\\timeStep", _name);
-#endif
+		#endif
+		
 		int len = strlen(dir);
 		for(int i=0; i< nSteps; i++){
 			sprintf(dir+len,"%d",i);
-#ifdef __linux__
+		#ifdef __linux__
 			sprintf(comand, "mkdir -p %s &", dir);
-#elif __WIN32
+		#elif __WIN32
 			sprintf(comand, "mkdir %s &", dir);
-#endif
+		#endif
 			system(comand);
 		}
 

@@ -46,7 +46,7 @@ int main(int argc,char const *argv[]){
 		Cell::cell_climates[i] = new Climate[Configuration::MAX_CELLS];
 
 
-	printf(GRN("Lendo serie Climatica... ")); fflush(stdout);
+	printf(GRN("Lendo serie Climatica temporal... ")); fflush(stdout);
 	/*int celulas_lidasClima = Grid::setCellsClimate("../../output/DummyHex2566 - Output - MinTemp.txt", 		//climas de todas as celulas em todos os tempos
 												   "../../output/DummyHex2566 - Output - MaxTemp.txt",
 												   "../../output/DummyHex2566 - Output - MinPPTN.txt",
