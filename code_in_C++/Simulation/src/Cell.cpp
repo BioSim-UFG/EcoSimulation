@@ -8,6 +8,8 @@ namespace SimEco
 {
 	vector< unordered_set<Specie * > > Cell::speciesPresent;
 	Climate** Cell::cell_climates;
+	vector< vector<float> > Cell::NPPs;
+	vector<float> Cell::area;
 	//unsigned int Cell::totalCells = 0;
 
 	Cell::Cell(){

@@ -42,8 +42,13 @@ int main(int argc,char const *argv[]){
 
 	int numero_de_timeSteps = Configuration::TIMESTEPS+1; // 50 tempos + tempo zero
 	Cell::cell_climates = new Climate *[numero_de_timeSteps];
-	for(size_t i=0; i<numero_de_timeSteps; i++)
+	Cell::NPPs.reserve(numero_de_timeSteps);
+	for(size_t i=0; i<numero_de_timeSteps; i++){
 		Cell::cell_climates[i] = new Climate[Configuration::MAX_CELLS];
+		Cell::NPPs[i].reserve(Configuration::MAX_CELLS);
+	}
+	Cell::area.reserve(Configuration::MAX_CELLS);
+	
 
 
 	printf(GRN("Lendo serie Climatica temporal... ")); fflush(stdout);
@@ -60,8 +65,11 @@ int main(int argc,char const *argv[]){
 												   "../../output/DummyHex2566 - Output - NPP.stream", numero_de_timeSteps);
 	printf(BOLD(LGTGRN("OK!\n"))); fflush(stdout);
 
+	printf(GRN("Lendo Area das celulas... "));	fflush(stdout);
+	int celulas_lidasArea = Grid::setCellsArea("../../input/DummyHex2566 - Area.txt");
+	printf(BOLD(LGTGRN("\tOK!\n")));	fflush(stdout);
 
-		/***** lendo matriz de adjacencia de Conectividade das Celulas *****/
+	/***** lendo matriz de adjacencia de Conectividade das Celulas *****/
 
 	printf(GRN("Lendo conectividade das celulas... "));	fflush(stdout);		//CONSOME muita memória temporariamente (200mb)
 	int celulas_lidasConnec = Grid::setCellsConnectivity("../../input/DummyHex2566 - Connectances - Geo.Single.Zip.Stream", 

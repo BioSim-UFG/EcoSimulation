@@ -16,15 +16,20 @@ namespace SimEco
 
         public:
 
+        // vetor com lista(sets) de ponteiros das espécies que estão presentes na célula
         static vector< unordered_set< Specie* > > speciesPresent; 
 
         /* coloquei um vetor da classe ( nao objeto) para melhor acesso e perfomance,
          e também por ser assim que os dados são acessados e tratados na GPU*/
          
-        /*aqui vai ser um vetor de vetores, onde cada subvetor tem os dados de min/max e NPP
+        /*aqui vai ser um vetor de vetores, onde cada subvetor tem os dados de min/max
 		  de um tempo i de todas as celulas, ou seja, 
 		  temos uma matriz de N tempos linhas, e K celulas colunas.*/
         static Climate **cell_climates;
+
+        /*A mesma organização/estrutura de cell_climates é aplicada para NPPs*/
+        static vector<vector<float>> NPPs;
+        static vector<float> area;
         //static const size_t num_cells = NUM_TOTAL_CELLS;
 
         //constexpr static uint MaxCapacity = 1;

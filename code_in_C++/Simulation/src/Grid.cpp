@@ -155,6 +155,7 @@ namespace SimEco{
 		//pega o numero de timeSteps minimo, entre o obtido no arquivo stream e o passado como argumento da função (respectivamente).
 		nTimeSteps = min((size_t)nTimeSteps, timeSteps);
 
+		Cell::NPPs.resize(nTimeSteps);
 		for (i = 0; i < nTimeSteps; i++){
 			
 			if (feof(minTemp_arq) || feof(maxTemp_arq) || feof(minPptn_arq) || feof(maxPptn_arq) || feof(NPP_arq) )
@@ -171,12 +172,13 @@ namespace SimEco{
 				exit(intException(Exceptions::configurationException));
 			}
 
+			Cell::NPPs[i].resize(nCells);
 			for (j = 0; j < nCells; j++){
 				fread(&(Cell::cell_climates[i][j].envValues[climVar::Temp].minimum), sizeof(float), 1, minTemp_arq);
 				fread(&(Cell::cell_climates[i][j].envValues[climVar::Temp].maximum), sizeof(float), 1, maxTemp_arq);
 				fread(&(Cell::cell_climates[i][j].envValues[climVar::Pptn].minimum), sizeof(float), 1, minPptn_arq);
 				fread(&(Cell::cell_climates[i][j].envValues[climVar::Pptn].maximum), sizeof(float), 1, maxPptn_arq);
-				fread(&(Cell::cell_climates[i][j].NPP), sizeof(float), 1, NPP_arq);
+				fread(&(Cell::NPPs[i][j]), sizeof(float), 1, NPP_arq);
 
 				//Cell::cell_climates[i][j].K = Cell::calcK(Cell::cell_climates[i][j].NPP);
 
@@ -193,6 +195,27 @@ namespace SimEco{
 
 		//return i;
 		return nCells;
+	}
+
+	int Grid::setCellsArea(const char *area_src){
+		int i;
+		FILE *arq = fopen(area_src, "r");
+
+		if(arq == NULL){
+			printf(RED("Erro ao abrir %s"), area_src);
+			exit(intException(Exceptions::fileException) );
+		}
+
+		fscanf(arq,"%*[^\n]\n");//descarta a primeira linha
+		Cell::area.resize(Configuration::MAX_CELLS);
+		for(i=0; i< Configuration::MAX_CELLS; i++){
+			if (feof(arq))
+				break;
+			
+			fscanf(arq, "%f\n", &Cell::area[i]);
+		}
+
+		return i;
 	}
 
 	//Lê dos arquivos comprimidos de conectividade das celulas.
