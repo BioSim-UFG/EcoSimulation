@@ -48,6 +48,8 @@ int main(int argc,char const *argv[]){
 		Cell::NPPs[i].reserve(Configuration::MAX_CELLS);
 	}
 	Cell::area.reserve(Configuration::MAX_CELLS);
+	Cell::current_K.reserve(Configuration::MAX_CELLS);
+	Cell::current_K.resize(Configuration::MAX_CELLS);	//aqui ocorre o resize tb pq nos outros o resize é feito em outro lugar, ja aqui não.
 	
 
 
@@ -79,10 +81,10 @@ int main(int argc,char const *argv[]){
 
 
 
-	//verificando se o numero de celulas é igual/batem, se não, pega o menor ( exclui as celulas extras)
-	u_int num_cells = min(celulas_lidasClima, celulas_lidasConnec);
-	if(celulas_lidasClima != celulas_lidasConnec){
-		printf(BOLD(LGTYEL("AVISO! numero de celulas lidas em Serie Climatica e conectividade diferem. Utilizando o menor.")));
+	//verificando se o numero de celulas é igual/batem, se não, pega o menor numero e exclui as celulas extras
+	u_int num_cells = min( min(celulas_lidasClima, celulas_lidasConnec), celulas_lidasArea );
+	if(num_cells!=celulas_lidasClima || num_cells != celulas_lidasConnec || num_cells!=celulas_lidasArea){
+		printf(BOLD(LGTYEL("AVISO! numero de celulas lidas em Serie Climatica, conectividade diferem e Areas. Utilizando o menor.")));
 
 		printf(" novo numero de celulas = %u\n", num_cells);
 		//remove as celulas extras
@@ -103,8 +105,8 @@ int main(int argc,char const *argv[]){
 	}
 
 	/**************************INICIANDO SIMULAÇÃO*******************************/
+	cell->setMaxCells(num_cells);
 
-	cell->setMaxCells(Configuration::MAX_CELLS);
 
 	/*******INICIALIZANDO ESPECIES FOUNDERS*********/
 

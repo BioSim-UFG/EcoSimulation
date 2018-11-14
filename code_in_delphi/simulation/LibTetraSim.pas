@@ -222,10 +222,10 @@ Function TSim.DoNextStep: Boolean;
       // The carrying capacity is parameterized for the simulation, so must be calculated for each simulation, and each time step
       SimGrid.Cells[c].K:= (SimGrid.Cells[c].CellData.Climate.NPP^ * SimGrid.Cells[c].CellData.Area) / 50000;
 
-                                                                                                                                                            {$IfDef DEBUG}
-                                                                                                                                                            If c = 1506 then     // SimGrid[2459]         SimGrid[2416]
-                                                                                                                                                              i:= 0;
-                                                                                                                                                            {$EndIf}
+      {$IfDef DEBUG}
+      If c = 1506 then     // SimGrid[2459]         SimGrid[2416]
+      i:= 0;
+      {$EndIf}
 
       // Threshold very small carrying capacity values
       If SimGrid.Cells[c].K <= 1E-4 then

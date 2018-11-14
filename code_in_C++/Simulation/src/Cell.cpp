@@ -10,9 +10,11 @@ namespace SimEco
 	Climate** Cell::cell_climates;
 	vector< vector<float> > Cell::NPPs;
 	vector<float> Cell::area;
+	vector<float> Cell::current_K;
 	//unsigned int Cell::totalCells = 0;
 
-	Cell::Cell(){
+	Cell::Cell()
+	{
 		//speciesPresent.resize(conf.MAX_CELLS);
 		//speciesInside = NULL;
 		//numSpecies = 0;
@@ -21,17 +23,23 @@ namespace SimEco
 
 	void Cell::setMaxCells(unsigned int size){
 		speciesPresent.resize(size);
+		area.resize(size);
+		current_K.resize(size);
+		for(auto &timeStepNPPs: NPPs)
+			timeStepNPPs.resize(size);
 	}
 
 	
 	//forçando mandar commit
 
+/*
 	float Cell::calcK(float NPP){
         float K;
         float area =0.5;
         K = (NPP * area)/ 50000 ;
         return K;
 	}
+	*/
 	
 	Cell::~Cell(){ /*--totalCells;*/ }
 	/*

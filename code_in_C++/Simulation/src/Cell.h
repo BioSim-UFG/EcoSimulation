@@ -30,7 +30,10 @@ namespace SimEco
         /*A mesma organização/estrutura de cell_climates é aplicada para NPPs*/
         static vector<vector<float>> NPPs;
         static vector<float> area;
-        //static const size_t num_cells = NUM_TOTAL_CELLS;
+
+        /*K do time step atual (K é varia com o tempo, mas não há dependencia de um K do timeStep anterior)*/
+        static vector<float> current_K;     //K = Const value generated based on NPP and area to determine maximum resource availability in cell
+        
 
         //constexpr static uint MaxCapacity = 1;
         //Specie **speciesInside; //vetor de ponteiros
@@ -43,7 +46,7 @@ namespace SimEco
 
         
         //forçando mandar commit
-        static float calcK(float NPP);
+        //static float calcK(float NPP);
 
         //void addSpecie(Specie *specie);
         //void delSpecie(uint index);

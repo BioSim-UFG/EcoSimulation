@@ -214,6 +214,7 @@ namespace SimEco{
 			
 			fscanf(arq, "%f\n", &Cell::area[i]);
 		}
+		Cell::area.resize(i);
 
 		return i;
 	}

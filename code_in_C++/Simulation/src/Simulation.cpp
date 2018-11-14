@@ -147,6 +147,15 @@ namespace SimEco{
 			printf(BLU("\r\tProcessando timeStep ") "%d/%d", timeStep, _timeSteps-1);
 			fflush(stdout);
 
+
+			//calcula o K de cada célula para ESTE timeStep
+			for(int cellIdx=0; cellIdx<Configuration::MAX_CELLS; cellIdx++){
+				auto NPP = Cell::NPPs[timeStep][cellIdx];
+				auto area = Cell::area[cellIdx];
+				Cell::current_K.at(cellIdx) =  (NPP*area) / 50000;
+			}
+
+
 			//processa cada timeStep
 			//for(uint spcIdx=0; spcIdx<_grid.species.size(); spcIdx++){
 			//	Specie &especie = _grid.species[spcIdx];
