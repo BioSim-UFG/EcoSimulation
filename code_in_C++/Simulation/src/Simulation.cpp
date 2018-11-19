@@ -60,6 +60,19 @@ namespace SimEco{
 
 	//processa o time zero pra uma especie founder especifica
 	void Simulation::processFounder_timeZero(Specie &founder){
+		
+
+		//calcula o K de cada célula para ESTE timeStep
+		for(int cellIdx=0; cellIdx<Configuration::MAX_CELLS; cellIdx++){
+			auto NPP = Cell::NPPs[0][cellIdx];
+			auto area = Cell::area[cellIdx];
+			Cell::current_K.at(cellIdx) =  (NPP*area) / 50000;
+		}
+
+
+		
+		
+		
 		/*aqui chama calcFitness e ela retorna um vetor (dinamicamente alocado lá dentro)
 		  com os fitness da especie com todas as celulas (consquentemente, vetor de tamanho Grid::cellsSize)*/
 		float *fitness = new float[_grid.cellsSize];
@@ -97,9 +110,11 @@ namespace SimEco{
 				//founder.celulas_Idx[founder.celulas_IdxSize++] = idxMat[zipMatPos].j;
 				//founder.cellsPopulation.insert( {(uint)idxMat[zipMatPos].j, 1.0f} );
 				//founder.totalPopulation+=1.0f;
-				founder.insertCellPop((uint)idxMat[zipMatPos].j, 1.0f);
-				Cell::speciesPresent[(uint)idxMat[zipMatPos].j].insert(&founder);
 
+				float initialPopulation = Cell::current_K[idxMat[zipMatPos].j] * founder.growth * fitness[idxMat[zipMatPos].j ];
+
+				founder.insertCellPop((uint)idxMat[zipMatPos].j, initialPopulation);
+				Cell::speciesPresent[(uint)idxMat[zipMatPos].j].insert(&founder);
 			}
 
 			zipMatPos++;
@@ -247,6 +262,9 @@ namespace SimEco{
 						if(sucess.second == true)
 							specie.totalPopulation+=1.0f;	//Só aumenta a população se conseguiu inserir um NOVO elemento no mapa, ou seja, acabou de ocupar a célula
 						*/
+
+						//float Population = Cell::current_K[idxMat[zipMatPos].j] * specie.growth * fitness[idxMat[zipMatPos].j];
+
 						specie.insertCellPop((uint)idxMat[zipMatPos].j, 1.0f);
 						Cell::speciesPresent[ (uint)idxMat[zipMatPos].j ].insert(&specie);
 					}
@@ -426,6 +444,7 @@ namespace SimEco{
 		Dispersion dispersionCapacity;
 		array<NicheValue, NUM_ENV_VARS> niche;
 		uint cellIdx;
+		float specieGrowth;
 
 		FILE *src = fopen(founders_input, "r");
 		if (src == NULL)
@@ -444,10 +463,11 @@ namespace SimEco{
 			fscanf(src, "%f %f %f %f", &niche[0].minimum, &niche[0].maximum, &niche[1].minimum, &niche[1].maximum);
 			fscanf(src, "%f %f %f", &dispersionCapacity.Geo, &dispersionCapacity.Topo, &dispersionCapacity.River);
 			fscanf(src, "%u", &cellIdx);
+			fscanf(src,"%f",&specieGrowth);
 			fscanf(src, "\n");
 
 			//founders[i] = *new Specie(niche, dispersionCapacity, cellIdx);
-			founders.emplace_back(niche, dispersionCapacity, cellIdx);
+			founders.emplace_back(niche, dispersionCapacity, cellIdx,specieGrowth);
 			//printf("geidisp: %f\n", dispersionCapacity.Geo);
 		}
 
@@ -461,7 +481,8 @@ namespace SimEco{
 				//founders[i] = *new Specie(founders[i % num_lidos]);
 				founders.emplace_back(founders[i % num_lidos].niche,
 										founders[i % num_lidos].dispCap,
-										founders[i % num_lidos].cellsPopulation.begin()->first);
+										founders[i % num_lidos].cellsPopulation.begin()->first,
+										founders[i % num_lidos].growth);
 			}
 		}
 

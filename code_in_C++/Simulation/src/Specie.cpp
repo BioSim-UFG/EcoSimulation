@@ -9,14 +9,14 @@ namespace SimEco{
 	*/
 	uint Specie::_nSpecies =0;
 
-    Specie::Specie(const array<NicheValue, NUM_ENV_VARS> &niche, const Dispersion &dispCapacity, uint cellIdx){
+    Specie::Specie(const array<NicheValue, NUM_ENV_VARS> &niche, const Dispersion &dispCapacity, uint cellIdx, float specieGrowth){
     	//celulaQueTo = nullptr;
 		_name = _nSpecies;
 		_nSpecies++;
 
 		dispCap = dispCapacity;
 		totalPopulation = 0.0f;
-		growth = 0.0f;
+		growth = specieGrowth;
 		//celulas_Idx = (uint *) malloc(sizeof(uint) * 1);
 		//celulas_Idx[0] = cellIdx;
 		//celulas_IdxSize = 1;
@@ -27,12 +27,12 @@ namespace SimEco{
 		copy(niche.begin(), niche.end(), this->niche.begin());
     }
 
-	Specie::Specie(const array<NicheValue, NUM_ENV_VARS> &niche, const Dispersion &dispCapacity, pair<uint, float> cellsPop[], uint cellPopSize){
+	Specie::Specie(const array<NicheValue, NUM_ENV_VARS> &niche, const Dispersion &dispCapacity, pair<uint, float> cellsPop[], uint cellPopSize, float specieGrowth){
 		_name = _nSpecies;
 		_nSpecies++;
 		dispCap = dispCapacity;
 		totalPopulation = 0.0f;
-		growth = 0.0f;
+		growth = specieGrowth;
 		//celulas_Idx = (uint *)malloc(sizeof(uint) * cellIdxsSize);
 		//celulas_IdxSize = cellIdxsSize;
 		cellsPopulation.reserve(1024 + 512);
