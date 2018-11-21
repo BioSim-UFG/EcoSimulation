@@ -263,9 +263,11 @@ namespace SimEco{
 							specie.totalPopulation+=1.0f;	//Só aumenta a população se conseguiu inserir um NOVO elemento no mapa, ou seja, acabou de ocupar a célula
 						*/
 
-						//float Population = Cell::current_K[idxMat[zipMatPos].j] * specie.growth * fitness[idxMat[zipMatPos].j];
+						float Population = cell.second * specie.growth * fitness[idxMat[zipMatPos].j];
 
-						specie.insertCellPop((uint)idxMat[zipMatPos].j, 1.0f);
+						Population = min(Population, Cell::current_K[idxMat[zipMatPos].j]);
+					
+						specie.insertCellPop((uint)idxMat[zipMatPos].j, Population);
 						Cell::speciesPresent[ (uint)idxMat[zipMatPos].j ].insert(&specie);
 					}
 				}
