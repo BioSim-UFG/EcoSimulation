@@ -15,14 +15,14 @@ namespace SimEco{
 		_nSpecies++;
 
 		dispCap = dispCapacity;
-		totalPopulation = 0.0f;
+		totalPopulation = 0.0;
 		growth = specieGrowth;
 		//celulas_Idx = (uint *) malloc(sizeof(uint) * 1);
 		//celulas_Idx[0] = cellIdx;
 		//celulas_IdxSize = 1;
 		cellsPopulation.reserve(1024+512);
-		cellsPopulation.insert({cellIdx, 1.0f});	// coloca população da celula cellIdx como 1
-		totalPopulation+=1.0f;
+		cellsPopulation.insert({cellIdx, 0.0f});	// coloca população da celula cellIdx como 1
+		totalPopulation+=0.0;
 
 		copy(niche.begin(), niche.end(), this->niche.begin());
     }
@@ -31,7 +31,7 @@ namespace SimEco{
 		_name = _nSpecies;
 		_nSpecies++;
 		dispCap = dispCapacity;
-		totalPopulation = 0.0f;
+		totalPopulation = 0.0;
 		growth = specieGrowth;
 		//celulas_Idx = (uint *)malloc(sizeof(uint) * cellIdxsSize);
 		//celulas_IdxSize = cellIdxsSize;
