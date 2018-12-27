@@ -15,7 +15,7 @@ namespace SimEco{
         
         array<NicheValue, NUM_ENV_VARS> niche;        //niche of the specie
 
-        float totalPopulation;          //number of members/population;    Mas pra que float???  10.5 animais?
+        double totalPopulation;          //number of members/population;    Mas pra que float???  10.5 animais?
         unordered_map<uint, float> cellsPopulation;
         //uint *celulas_Idx;        //indice das celulas que esta presente
         //uint celulas_IdxSize;
@@ -63,8 +63,8 @@ namespace SimEco{
 	inline pair<unordered_map<uint, float>::iterator, bool> Specie::insertCellPop(uint cellIdx, float population){
 		auto sucess = cellsPopulation.insert({cellIdx, population}); //obs: insert() só adiciona o par {chave,valor}, se nao existir a chave ainda
 		if (sucess.second == true)
-			totalPopulation += 1.0f; //Só aumenta a população se conseguiu inserir um NOVO elemento no mapa, ou seja, acabou de ocupar a célula
-		return sucess;
+            totalPopulation += population; //Só aumenta a população se conseguiu inserir um NOVO elemento no mapa, ou seja, acabou de ocupar a célula
+        return sucess;
 	}
 	inline float Specie::getCellPop(uint cellIdx){
 		if (cellsPopulation.find(cellIdx) != cellsPopulation.end())
@@ -84,10 +84,10 @@ namespace SimEco{
 		return 0;
 	}
 
-    inline float Specie::reachability(const Connectivity &destCellConn){
+    inline float Specie::reachability(const Connectivity &cellsConn){
         float result;
-        result = max(destCellConn.Geo * this->dispCap.Geo, destCellConn.Topo * this->dispCap.Topo);
-        result = max(result, destCellConn.River * this->dispCap.River);
+        result = max(cellsConn.Geo * this->dispCap.Geo, cellsConn.Topo * this->dispCap.Topo);
+        result = max(result, cellsConn.River * this->dispCap.River);
         return result;
     }
 }

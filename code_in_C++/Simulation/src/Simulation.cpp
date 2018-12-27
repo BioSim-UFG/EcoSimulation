@@ -111,8 +111,10 @@ namespace SimEco{
 				//founder.cellsPopulation.insert( {(uint)idxMat[zipMatPos].j, 1.0f} );
 				//founder.totalPopulation+=1.0f;
 
+				//consideramos que a população incial deveria ser: a capacidade com a taxa de crescimento com a adequabilidade
 				float initialPopulation = Cell::current_K[idxMat[zipMatPos].j] * founder.growth * fitness[idxMat[zipMatPos].j ];
 
+				founder.eraseCellPop(idxMat[zipMatPos].j);
 				founder.insertCellPop((uint)idxMat[zipMatPos].j, initialPopulation);
 				Cell::speciesPresent[(uint)idxMat[zipMatPos].j].insert(&founder);
 			}
@@ -229,7 +231,7 @@ namespace SimEco{
 	void Simulation::processSpecieTimeStep(Specie &specie, float *fitness){
 		//salva as celulas ocupadas do timeStep anterior
 		uint prevCelulas_IdxSize = specie.cellsPopulation.size();
-		pair<uint, short> prevCelulas[prevCelulas_IdxSize];
+		pair<uint, float> prevCelulas[prevCelulas_IdxSize];
 		copy(specie.cellsPopulation.begin(), specie.cellsPopulation.end(), prevCelulas);
 
 
@@ -238,50 +240,55 @@ namespace SimEco{
 		*/
 		const MatIdx_2D *idxMat = Grid::indexMatrix;
 		//for(uint cellIdx = 0; cellIdx < prevCelulas_IdxSize; cellIdx++){
-		for(auto &cell: prevCelulas){
+		for(auto &pastCell: prevCelulas){
 			//uint zipMatPos = Grid::indexMap[specie.celulas_Idx[cellIdx]];
-			uint zipMatPos = Grid::indexMap[cell.first];
+			uint zipMatPos = Grid::indexMap[pastCell.first];
 			uint lineValue = idxMat[zipMatPos].i;
 
-			//enquanto estiver na mesma linha (da matriz compactada), correspondente a linha da matriz de adjacencia)
+			/*enquanto estiver com mesmo valor de linha (da matriz compactada), correspondente a linha da matriz de adjacencia)
+			percorrendo as celulas na qual essa possui conectividade*/
 			while(idxMat[zipMatPos].i == lineValue && zipMatPos < Grid::matrixSize){
-				
-				//ocupa essa celula também, se o fitness for maior que 0 e não estiver ocupada ainda
-				if(fitness[idxMat[zipMatPos].j] > Specie::fitnessThreshold && cell.first!= idxMat[zipMatPos].j){
+				auto &destCell_idx = idxMat[zipMatPos].j;
 
+				double popTotal_passada;
+				popTotal_passada = specie.totalPopulation;
 
-					/* USAR unordered_map para indicar quais celulas estão ocupadas, e qual o tamanho da população (dessa especie) dentro da celula
-						ou seja, vai mapear o índice da célula ocupada para a população dela.
-					*/
-					if( specie.reachability(Grid::connectivityMatrix[zipMatPos]) >= Specie::dispThreshold ){
-						//adiciona célula na lista de celulas ocupadas (pela especie)
-						//specie.celulas_Idx[specie.celulas_IdxSize++] = idxMat[zipMatPos].j;
-
-						//coloca a celula idxMat[zipMatPos].j como ocupada, com 1 de população
-						/*auto sucess = specie.cellsPopulation.insert( {(uint)idxMat[zipMatPos].j, 1.0f} );	//obs: insert() só adiciona o par {chave,valor}, se nao existir a chave ainda
-						if(sucess.second == true)
-							specie.totalPopulation+=1.0f;	//Só aumenta a população se conseguiu inserir um NOVO elemento no mapa, ou seja, acabou de ocupar a célula
-						*/
-
-						float Population = cell.second * specie.growth * fitness[idxMat[zipMatPos].j];
-
-						Population = min(Population, Cell::current_K[idxMat[zipMatPos].j]);
+				//ocupa essa celula também, se o fitness for maior que 0
+				if(fitness[destCell_idx] >= Specie::fitnessThreshold){
 					
-						specie.insertCellPop((uint)idxMat[zipMatPos].j, Population);
-						Cell::speciesPresent[ (uint)idxMat[zipMatPos].j ].insert(&specie);
-					}
-				}
-				else if( fitness[idxMat[zipMatPos].j] <= 0.0f){
+					//se essa célula for alcançável para essa espécie
+					if( specie.reachability(Grid::connectivityMatrix[zipMatPos]) >= Specie::dispThreshold ){
+						//aqui calculamos a nova população considerando (se possivel) a antiga população naquela celula
 
-					/*auto cellIterator = specie.cellsPopulation.find((uint)idxMat[zipMatPos].j);
-					//remove se a celula, se tiver sindo encontrada/se ela existir
-					if( cellIterator != specie.cellsPopulation.end() ){
-						specie.totalPopulation-=cellIterator->second;		//diminui a população daquela espécie
-						specie.cellsPopulation.erase(cellIterator);
+						float &K = Cell::current_K[destCell_idx];
+
+						float growthPopulation = pastCell.second * specie.growth * fitness[destCell_idx];
+						float carring_k = 1-(specie.getCellPop(destCell_idx) / K);	//Velrhust logistic effect of carrying capacity
+
+						auto debug = specie.getCellPop(destCell_idx);
+						specie.addCellPop(destCell_idx, growthPopulation * carring_k);
+						auto debug2 = specie.getCellPop(destCell_idx);
+
+						//float newPopulation = specie.getCellPop(destCell_idx) + (growthPopulation*carring_k);
+						//specie.insertCellPop((uint)destCell_idx, newPopulation);
+						Cell::speciesPresent[ (uint)destCell_idx ].insert(&specie);
+
+				if( /*isinf(specie.totalPopulation)*/ debug2 < 0 ){
+					printf("\nanterior: %f \t nova: %f\n", popTotal_passada, specie.totalPopulation);
+					printf("growthPopulation: %f \t carring_k: %f \n", growthPopulation, carring_k);
+					printf("                           \t  -specie.getCellPop(%u): %f\n",destCell_idx, debug);
+					printf("                           \t  -K: %f\n", K);
+					exit(-1);
+				}
+
 					}
-					*/
-					specie.eraseCellPop( idxMat[zipMatPos].j );
-					Cell::speciesPresent[ (uint)idxMat[zipMatPos].j ].erase(&specie);
+
+					/*GLITCH: devido a baixa precisão do float, acontece de a população ser levemente maior que K*/
+
+				}
+				else if( fitness[destCell_idx] < Specie::fitnessThreshold){
+					specie.eraseCellPop( destCell_idx );
+					Cell::speciesPresent[ (uint)destCell_idx ].erase(&specie);
 				}
 
 				zipMatPos++;
