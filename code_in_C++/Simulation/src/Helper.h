@@ -22,11 +22,15 @@ namespace SimEco{
 
 	//##########Fase de testes####
 
+	//cria diretório que guardará as informações da simulação
 	void create_SimulationDirectory(const char *simName);
 
+	//guarda informações da espécie, chama recordSpecieTxtFile e recordSpecieFile
 	void recordTimeStepFiles(const char *path, int timeStep, Grid g, const char *simName);
 
+	//guarda as informações da espécie em forma de texto
 	void recordSpecieTxtFile(const char *path, int timeStep, Specie &sp);
+	//guarda as informações da espécie em forma binária
 	void recordSpecieFile(const char *path, int timeStep, Specie &sp);
 
 
@@ -44,9 +48,6 @@ namespace SimEco{
 		Clock_count timer;
 
 		public:
-		//std::chrono::high_resolution_clock::time_point start;
-		//std::chrono::high_resolution_clock::time_point end;
-		//std::chrono::duration<double> elapsed;
 
 		void Start();
 		//pausa o timer

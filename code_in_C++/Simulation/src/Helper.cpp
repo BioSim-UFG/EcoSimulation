@@ -12,37 +12,12 @@ namespace SimEco{
         if(argc != N_INPUT + 1 ){
             printf(RED("Número de argumentos inválido,") GRN("formato correto: ./<Executavel> <nome_da_simulacao> <numero_de_passos>\n"));
             exit(intException(Exceptions::argException));
-            //return false;
         }
-
-        //return true;
     }
 
     int intException(enum Exceptions ex){
        return (int) ex;
     }
-
-    /*
-    void exit_error(bool test, Exept erro) {
-        if(test)
-        print(printErrro(erro));
-        exit(1);
-    }
-    */
-
-   /*
-   void recordTimeStepFiles(Simulation &sim,int timeStep){
-       int i;
-       char fname[200];
-       for(i=0 ; i< sim->grid.species.size(); i++){
-
-          // sprintf(fname, "%s/%s_Esp%d_Time%d", path, _name, _grid.species[i]._name, timeStep);
-          sptintf(fname, "%s/%s_Esp%d_Time%d", Configuration::SAVEPATH, _name, _grid.species[i]._name, timeStep)
-       }
-
-
-   }
-    */
 
     char Configuration::NAME[];
     char Configuration::SAVEPATH[];
@@ -79,19 +54,9 @@ namespace SimEco{
 
     //Clock class functions
     void Clock::Start(){
-        //this->start = std::chrono::high_resolution_clock::now();
-        //int id = timers.size();
-        //timers[id] = (Clock_count){};
         timer.isPaused = false;
         timer.startClock = std::chrono::high_resolution_clock::now();
     }
-    /*
-    int Clock::timerStart(int id){
-        timers[id] = (Clock_count){};
-        timers[id].isPaused = false;
-        timers[id].start = std::chrono::high_resolution_clock::now();
-        return id;
-    }*/
 
     void Clock::Pause(){
         if (timer.isPaused == true)
@@ -108,21 +73,13 @@ namespace SimEco{
     }
 
     double Clock::End(){
-        //this->end = std::chrono::high_resolution_clock::now();
-        //elapsed = end - start;
-
         Pause();    //pausa o clock/timer se ele nao estiver pausado já.
         
         std::chrono::duration<double> elapsed;
         elapsed = timer.pausedClock - timer.startClock;
         return elapsed.count();
     }
-
-    /*double Clock::elapsedTime(){
-        return elapsed.count();
-    }
-    */
-
+    
     void recordTimeStepFiles(const char *path, int timeStep, Grid g, const char *simName){
         char fnameTxt[83];
         char fnameBin[80];

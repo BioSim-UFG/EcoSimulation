@@ -39,6 +39,7 @@ namespace SimEco{
 		cout<<BLU("OK\n"); fflush(stdout);
 
 		//grava os resultados do timeStep
+		//Caso já exista aquela pasta, primeiro remove-la
 		#ifdef __linux__
 		string path = "Results/" + string(_name) + "/timeStep0";
 		system( ("rm -r Results/"+string(_name)).c_str() );
@@ -61,18 +62,8 @@ namespace SimEco{
 	//processa o time zero pra uma especie founder especifica
 	void Simulation::processFounder_timeZero(Specie &founder){
 		
+		calcK(0);
 
-		//calcula o K de cada célula para ESTE timeStep
-		for(int cellIdx=0; cellIdx<Configuration::MAX_CELLS; cellIdx++){
-			auto NPP = Cell::NPPs[0][cellIdx];
-			auto area = Cell::area[cellIdx];
-			Cell::current_K.at(cellIdx) =  (NPP*area) / 50000;
-		}
-
-
-		
-		
-		
 		/*aqui chama calcFitness e ela retorna um vetor (dinamicamente alocado lá dentro)
 		  com os fitness da especie com todas as celulas (consquentemente, vetor de tamanho Grid::cellsSize)*/
 		float *fitness = new float[_grid.cellsSize];
@@ -162,14 +153,7 @@ namespace SimEco{
 			printf(BLU("\r\tProcessando timeStep ") "%d/%d", timeStep, _timeSteps-1);
 			fflush(stdout);
 
-
-			//calcula o K de cada célula para ESTE timeStep
-			for(int cellIdx=0; cellIdx<Configuration::MAX_CELLS; cellIdx++){
-				auto NPP = Cell::NPPs[timeStep][cellIdx];
-				auto area = Cell::area[cellIdx];
-				Cell::current_K.at(cellIdx) =  (NPP*area) / 50000;
-			}
-
+			calcK(timeStep);
 
 			//processa cada timeStep
 			//for(uint spcIdx=0; spcIdx<_grid.species.size(); spcIdx++){
@@ -489,6 +473,14 @@ namespace SimEco{
 		}
 
 		fclose(src);
+	}
+
+	void Simulation::calcK(int timestep){
+		for (int cellIdx = 0; cellIdx < Configuration::MAX_CELLS; cellIdx++){
+			auto NPP = Cell::NPPs[timestep][cellIdx];
+			auto area = Cell::area[cellIdx];
+			Cell::current_K.at(cellIdx) = (NPP * area) / 50000;
+		}
 	}
 
 

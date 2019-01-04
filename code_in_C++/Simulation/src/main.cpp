@@ -48,6 +48,8 @@ int main(int argc,char const *argv[]){
 		Cell::NPPs[i].reserve(Configuration::MAX_CELLS);
 	}
 	Cell::area.reserve(Configuration::MAX_CELLS);
+
+	//Precisa de reserve E resize? sṕ resize funciona
 	Cell::current_K.reserve(Configuration::MAX_CELLS);
 	Cell::current_K.resize(Configuration::MAX_CELLS);	//aqui ocorre o resize tb pq nos outros o resize é feito em outro lugar, ja aqui não.
 	
