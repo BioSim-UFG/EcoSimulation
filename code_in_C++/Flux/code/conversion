@@ -1,0 +1,13 @@
+
+Como descrito no artigo, se tratarmos a densidade como particulas, o movimento das outras particulas 
+tende a ir em direção a onde tem mais densidade.
+Acho que isso pode ser usado para a migração por causa do "efeito manada"
+
+
+Por que o dens-step só chama o add_source para x?? 
+não deveria chamar para y tambem?
+
+
+
+
+Podemos assumir que o vetor força é oq para as espécies?
