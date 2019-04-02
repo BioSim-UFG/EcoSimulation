@@ -9,5 +9,10 @@ não deveria chamar para y tambem?
 
 
 
+**PARA A SIMULAÇÃO**
 
 Podemos assumir que o vetor força é oq para as espécies?
+
+Podemos usar a função Specie::reachability para checar os boundaries?
+
+
