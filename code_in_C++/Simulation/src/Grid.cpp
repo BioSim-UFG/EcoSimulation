@@ -19,6 +19,10 @@ namespace SimEco{
 	unordered_map<uint, uint> Grid::indexMap;
 	uint Grid::matrixSize = 0;
 
+
+	vector<uint> Grid::cellsNeighbors;
+	unordered_map<uint, uint> Grid::neighborIndexMap;
+
 	//Cell *Grid::cells;
 	int Grid::cellsSize = 0;
 
@@ -217,6 +221,33 @@ namespace SimEco{
 		Cell::area.resize(i);
 
 		return i;
+	}
+
+	void Grid::setCellsNeighbors(const char *vizinhos_src){
+		/** formato do arquivo:
+		 * cada linha é uma relação de vizinhança direta,
+		 * primeira coluna é a celula focada, e a segunda celuna é a vizinha dela
+		 * terceira coluna pode ser ignorada
+		 */
+		FILE *vizinhos_arq = fopen(vizinhos_src,"r");
+		if(vizinhos_arq == NULL){ printf(RED("Erro ao abrir arquivo %s\n"), vizinhos_src); 		exit( intException(Exceptions::fileException) );}
+
+		int initial_vector_estimated_size = 4 * 2566;
+		Grid::cellsNeighbors.reserve(initial_vector_estimated_size);
+
+		uint cellId, neighborId;
+		while(!feof(vizinhos_arq)){
+			fscanf(vizinhos_arq, "%d %d %*[^\n]\n", &cellId, &neighborId);
+			cellId--; neighborId--;	//no arquivo as celulas são numeradas de 1 a n, mas para a simulação deve ser de 0 a n-1
+			
+			//coloca no map, onde começa a "lista" de vizinhos daquela célula especifica (cellId)
+			if(neighborIndexMap.count(cellId)==0){
+				neighborIndexMap[cellId] = cellsNeighbors.size();
+			}
+			cellsNeighbors.push_back(neighborId);
+		}
+
+		cellsNeighbors.shrink_to_fit();
 	}
 
 	//Lê dos arquivos comprimidos de conectividade das celulas.
