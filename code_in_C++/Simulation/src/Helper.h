@@ -20,9 +20,8 @@ namespace SimEco{
 	int intException(enum Exceptions ex);
 	void testArgs(int argc,char const *argv[]);
 
-	//##########Fase de testes####
-
 	void create_SimulationDirectory(const char *simName);
+    void create_SubDir(const char *_name,int nSteps);
 
 	void recordTimeStepFiles(const char *path, int timeStep, Grid g, const char *simName);
 
