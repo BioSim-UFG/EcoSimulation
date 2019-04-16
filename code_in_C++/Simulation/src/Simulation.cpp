@@ -242,11 +242,11 @@ namespace SimEco{
 		//for(uint cellIdx = 0; cellIdx < prevCelulas_IdxSize; cellIdx++){
 		for(auto &pastCell: prevCelulas){
 			//uint zipMatPos = Grid::indexMap[specie.celulas_Idx[cellIdx]];
-			uint zipMatPos = Grid::indexMap[pastCell.first];
+			uint zipMatPos = Grid::indexMap[pastCell.first];	//indexMap[k] retorna o índice de onde começa a info da celula de ID 'k'
 			uint lineValue = idxMat[zipMatPos].i;
 
-			/*enquanto estiver com mesmo valor de linha (da matriz compactada), correspondente a linha da matriz de adjacencia)
-			percorrendo as celulas na qual essa possui conectividade*/
+			/*enquanto estiver com mesmo valor de linha (da matriz compactada), correspondente a linha da matriz original), 
+			então estará percorrendo as celulas na qual essa possui conectividade*/
 			while(idxMat[zipMatPos].i == lineValue && zipMatPos < Grid::matrixSize){
 				auto &destCell_idx = idxMat[zipMatPos].j;
 
