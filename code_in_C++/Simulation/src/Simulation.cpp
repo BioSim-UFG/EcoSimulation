@@ -129,6 +129,7 @@ namespace SimEco{
 		this->_timeSteps = nSteps;
 
 		//cria um subdiretorio para cada timestep
+		//function create_SubDir(const char *_name, int nSteps)
 		char dir[50], comand[61];
 		#ifdef __linux__
 		sprintf(dir, "Results/%s/timeStep", _name);

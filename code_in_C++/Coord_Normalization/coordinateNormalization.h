@@ -11,7 +11,6 @@ class Normalize{
       double normalizeLongitude(double longitude);
       void checkLong(double longitude);
       void checkLat(double latitude);
-      void getMaxMin();
       void createNormalizedFile();
       void treatFile();
       void generatePathNames(std::string file_path, std::string file_name, std::string file_extension);
