@@ -241,8 +241,26 @@ namespace SimEco{
 		*/
 		const MatIdx_2D *idxMat = Grid::indexMatrix;
 
-	for(int k=0; k<20; k++){
+		float diffusion_rate = 0.01;
+		int N = Grid::cellsSize;
+		float a = Simulation::_Dtime*diffusion_rate * N*N;
 
+		for(int k=0; k<20; k++){
+
+			for(int i=0; i<N;i++){
+				//aqui vai ser preciso acessar a população da espécie na celula[i], porém e se ainda não existir essa espécie na celula[i]?
+				//primeiro precisaria checar se existe, caso ainda não
+				//aí será necessário criar essa espécie lá, então marcar que a espécie ocupa a celula[i] (é biderecional) para então colocar a população
+				//o que no final gasta muitas ações
+
+				//minha proposta, deixa pra lá toda essa economia de memória e criar uma matriz de adjacencia mesmo. pode ser grande,
+				//mas até agora não usamos nada além de 100mb de RAM, então não iremos passar de 1 gb de RAM numa simulação completa
+			}
+
+		}
+
+
+/*
 		
 		//for(uint cellIdx = 0; cellIdx < prevCelulas_IdxSize; cellIdx++){
 		for(auto &pastCell: prevCelulas){
@@ -250,16 +268,10 @@ namespace SimEco{
 			uint zipMatPos = Grid::indexMap[pastCell.first];	//indexMap[k] retorna o índice de onde começa a info da celula de ID 'k'
 			uint lineValue = idxMat[zipMatPos].i;
 
-			/*enquanto estiver com mesmo valor de linha (da matriz compactada), correspondente a linha da matriz original), 
-			então estará percorrendo as celulas na qual essa possui conectividade*/
+			//enquanto estiver com mesmo valor de linha (da matriz compactada), correspondente a linha da matriz original), 
+			//então estará percorrendo as celulas na qual essa possui conectividade
 			while(idxMat[zipMatPos].i == lineValue && zipMatPos < Grid::matrixSize){
 				auto &destCell_idx = idxMat[zipMatPos].j;
-
-
-
-
-
-				/*
 				//ocupa essa celula também, se o fitness for maior que 0
 				if(fitness[destCell_idx] >= Specie::fitnessThreshold){
 					
@@ -287,13 +299,12 @@ namespace SimEco{
 					Cell::speciesPresent[ (uint)destCell_idx ].erase(&specie);
 				}
 
-				*/
 
 				zipMatPos++;
 			}
 
 		}
-	}
+				*/
 		//specie.celulas_Idx = (uint *)realloc(specie.celulas_Idx, sizeof(uint) * specie.celulas_IdxSize);
 	}
 
