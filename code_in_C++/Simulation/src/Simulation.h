@@ -23,6 +23,7 @@ namespace SimEco{
 	  private:
 	  	const char *_name;
 		uint _timeSteps = 0;
+		uint _Dtime = 10;	//cada time step == 10 mil anos
 		Grid &_grid;		//referencia para a grid
 		//Specie *founders;	//referencia para array de especies ( fundadoras nesse caso)
 		//uint foundersSize;

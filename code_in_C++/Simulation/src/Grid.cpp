@@ -201,6 +201,35 @@ namespace SimEco{
 		return nCells;
 	}
 
+
+	int Grid::setCellsCoordinates(const char *long_src, const char *lat_src){
+		int i, n_cells1, n_cells2;
+		FILE *arq_long = fopen(long_src, "rb");
+		FILE *arq_lat = fopen(lat_src, "rb");
+
+		if(arq_long == NULL){ printf(RED("Erro ao abrir %s"), long_src);	exit(intException(Exceptions::fileException) ); }
+		if(arq_lat == NULL){ printf(RED("Erro ao abrir %s"), lat_src);		exit(intException(Exceptions::fileException) ); }
+
+		fread(&n_cells1, sizeof(int), 1, arq_long);
+		fread(&n_cells2, sizeof(int), 1, arq_lat);
+		if(n_cells1 != n_cells2){
+			perror("Quantidade de coordenadas de Latitude e Longitude diferem!\n");
+			exit(intException(Exceptions::configurationException));
+		}
+
+		Cell::coordinate.resize(n_cells1);
+		for(i=0;i<n_cells1;i++){
+			fread(&(Cell::coordinate[i].Long), sizeof(float), 1, arq_long);
+			fread(&(Cell::coordinate[i].Lat),sizeof(float), 1, arq_lat);
+		}
+
+		fclose(arq_lat);
+		fclose(arq_long);
+
+		return n_cells1;
+	}
+
+
 	int Grid::setCellsArea(const char *area_src){
 		int i;
 		FILE *arq = fopen(area_src, "r");

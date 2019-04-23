@@ -67,6 +67,13 @@ int main(int argc,char const *argv[]){
 	printf(BOLD(LGTGRN("OK!\n"))); fflush(stdout);
 
 
+	/***** lendo arquivos de coordenadas das celulas**********/
+	printf(GRN("Lendo Coordenadas das celulas... "));	fflush(stdout);
+	int celulas_lidasCoord = Grid::setCellsCoordinates("../../output/DummyHex2566 - Output - Longitude.stream",
+													  "../../output/DummyHex2566 - Output - Latitude.stream");
+	printf(BOLD(LGTGRN("\tOK!\n")));	fflush(stdout);
+
+
 	/***** lendo arquivo da area das celulas**********/
 	printf(GRN("Lendo Area das celulas... "));	fflush(stdout);
 	int celulas_lidasArea = Grid::setCellsArea("../../input/DummyHex2566 - Area.txt");

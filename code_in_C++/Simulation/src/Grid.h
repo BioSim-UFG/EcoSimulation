@@ -66,17 +66,20 @@ namespace SimEco
 
 		Cell* getCellat(uint index);
 
-		//lê a serie climatica das celulas, e retorna o número de celulas lidas;
+		//lê e armazena a serie climatica das celulas, e retorna o número de celulas lidas;
 		static int setCellsClimate(const char *minTemp_src, const char *maxTemp_src, const char *minPptn_src, const char *maxPptn_src, const char *NPP_src,
 								size_t timeSteps);
 
-		//lê a area de todas as células, e retorna o número de celulas lidas;
+		//lê e armazena as coordenadas, que devem estar normalizadas (entre 0-1), e retorna o numero de celulas lidas;
+		static int setCellsCoordinates(const char *long_src, const char *lat_src);
+
+		//lê e armazena a area de todas as células, e retorna o número de celulas lidas;
 		static int setCellsArea(const char *area_src);
 
-		//lê os vizinhos de todas as células;
+		//lê e armazena os vizinhos de todas as células;
 		static void setCellsNeighbors(const char *vizinhos_src);
 
-		//lê a conectividade de todas as celulas, e retorna o número de celulas lidas;
+		//lê e armazena a conectividade de todas as celulas, e retorna o número de celulas lidas;
 		static int setCellsConnectivity(const char *geo_src, const char *topo_src, const char *rivers_src);
 	};
 }

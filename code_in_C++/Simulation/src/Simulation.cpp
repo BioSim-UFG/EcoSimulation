@@ -240,6 +240,10 @@ namespace SimEco{
 			espalhar a especie a partir daquela célula especifica.
 		*/
 		const MatIdx_2D *idxMat = Grid::indexMatrix;
+
+	for(int k=0; k<20; k++){
+
+		
 		//for(uint cellIdx = 0; cellIdx < prevCelulas_IdxSize; cellIdx++){
 		for(auto &pastCell: prevCelulas){
 			//uint zipMatPos = Grid::indexMap[specie.celulas_Idx[cellIdx]];
@@ -251,9 +255,11 @@ namespace SimEco{
 			while(idxMat[zipMatPos].i == lineValue && zipMatPos < Grid::matrixSize){
 				auto &destCell_idx = idxMat[zipMatPos].j;
 
-				double popTotal_passada;
-				popTotal_passada = specie.totalPopulation;
 
+
+
+
+				/*
 				//ocupa essa celula também, se o fitness for maior que 0
 				if(fitness[destCell_idx] >= Specie::fitnessThreshold){
 					
@@ -273,29 +279,21 @@ namespace SimEco{
 						//float newPopulation = specie.getCellPop(destCell_idx) + (growthPopulation*carring_k);
 						//specie.insertCellPop((uint)destCell_idx, newPopulation);
 						Cell::speciesPresent[ (uint)destCell_idx ].insert(&specie);
-
-				if( /*isinf(specie.totalPopulation)*/ debug2 < 0 ){
-					printf("\nanterior: %f \t nova: %f\n", popTotal_passada, specie.totalPopulation);
-					printf("growthPopulation: %f \t carring_k: %f \n", growthPopulation, carring_k);
-					printf("                           \t  -specie.getCellPop(%u): %f\n",destCell_idx, debug);
-					printf("                           \t  -K: %f\n", K);
-					exit(-1);
-				}
-
 					}
-
-					/*GLITCH: devido a baixa precisão do float, acontece de a população ser levemente maior que K*/
-
+					//GLITCH: devido a baixa precisão do float, acontece de a população ser levemente maior que K
 				}
 				else if( fitness[destCell_idx] < Specie::fitnessThreshold){
 					specie.eraseCellPop( destCell_idx );
 					Cell::speciesPresent[ (uint)destCell_idx ].erase(&specie);
 				}
 
+				*/
+
 				zipMatPos++;
 			}
 
 		}
+	}
 		//specie.celulas_Idx = (uint *)realloc(specie.celulas_Idx, sizeof(uint) * specie.celulas_IdxSize);
 	}
 
@@ -449,24 +447,21 @@ namespace SimEco{
 		//printf("vertice %d -> x-%f   y-%f\n\n",nPoints+2,NichePoly->v[nPoints+2].x, NichePoly->v[nPoints+2].y );
 	}
 
-	void Simulation::carrega_founders(const char *founders_input, vector<Specie> &founders)
-	{
+	void Simulation::carrega_founders(const char *founders_input, vector<Specie> &founders){
 		Dispersion dispersionCapacity;
 		array<NicheValue, NUM_ENV_VARS> niche;
 		uint cellIdx;
 		float specieGrowth;
 
 		FILE *src = fopen(founders_input, "r");
-		if (src == NULL)
-		{
+		if (src == NULL){
 			perror(RED("Erro ao abrir SpecieData.txt"));
 			exit(intException(Exceptions::fileException));
 		}
 
 		int i;
 		fscanf(src, "%*[^\n]\n"); //pula primeira linha
-		for (i = 0; i < Configuration::NUM_FOUNDERS; i++)
-		{
+		for (i = 0; i < Configuration::NUM_FOUNDERS; i++){
 			if (feof(src))
 				break;
 			//lê valores do nicho e de capacidade de dispersão
@@ -481,13 +476,11 @@ namespace SimEco{
 			//printf("geidisp: %f\n", dispersionCapacity.Geo);
 		}
 
-		if (i < Configuration::NUM_FOUNDERS)
-		{
+		if (i < Configuration::NUM_FOUNDERS){
 			printf(LGTYEL(BOLD("\n\tATENÇÃO, numero de founders em %s insuficiente\n")), founders_input);
 			printf(LGTYEL(BOLD("\tReplicando founders para tamanho necessário.\n\t")));
 			int num_lidos = i;
-			for (i; i < Configuration::NUM_FOUNDERS; i++)
-			{
+			for (i; i < Configuration::NUM_FOUNDERS; i++){
 				//founders[i] = *new Specie(founders[i % num_lidos]);
 				founders.emplace_back(founders[i % num_lidos].niche,
 										founders[i % num_lidos].dispCap,

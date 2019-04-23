@@ -616,7 +616,7 @@ namespace SimEco
 		if(firstInterpolation || (! projAnomalies))
 			return;
 
-	// Convert anomalies from current climate
+		// Convert anomalies from current climate
 
 		// Temperature
 		// Additive anomalies for temperature
