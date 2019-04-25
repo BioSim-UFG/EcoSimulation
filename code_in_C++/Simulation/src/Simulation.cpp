@@ -253,8 +253,14 @@ namespace SimEco{
 				//aí será necessário criar essa espécie lá, então marcar que a espécie ocupa a celula[i] (é biderecional) para então colocar a população
 				//o que no final gasta muitas ações
 
+				//Não precisaria colocar a espécie em celula[i] apenas se ela realmente for migrar para la? porque pelo que eu vi ele não faz nenhuma 
+				//checagem de movimento.
+
 				//minha proposta, deixa pra lá toda essa economia de memória e criar uma matriz de adjacencia mesmo. pode ser grande,
 				//mas até agora não usamos nada além de 100mb de RAM, então não iremos passar de 1 gb de RAM numa simulação completa
+				
+				//cara, que nem a gente discutiu, para depois expandir vai ser ruim, mas sinceramente acho que não deve acabar tanto problema mesmo não
+				//acho ate uma boa ideia.
 			}
 
 		}
