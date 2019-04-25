@@ -26,9 +26,10 @@ namespace SimEco
 		  de um tempo i de todas as celulas, ou seja, 
 		  temos uma matriz de N tempos linhas, e K celulas colunas.*/
         static Climate **cell_climates;
-
         /*A mesma organização/estrutura de cell_climates é aplicada para NPPs*/
         static vector<vector<float>> NPPs;
+
+        static vector<Coord> coordinate;    //coordenada da celula
         static vector<float> area;
 
         /*K do time step atual (K é varia com o tempo, mas não há dependencia de um K do timeStep anterior)*/

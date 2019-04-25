@@ -50,14 +50,13 @@ int main(int argc,char const *argv[]){
 	Cell::area.reserve(Configuration::MAX_CELLS);
 	Cell::current_K.reserve(Configuration::MAX_CELLS);
 	Cell::current_K.resize(Configuration::MAX_CELLS);	//aqui ocorre o resize tb pq nos outros o resize é feito em outro lugar, ja aqui não.
+
 	
-
-
+	
+	/***** lendo arquivo da seria climatica das celulas**********/
 	printf(GRN("Lendo serie Climatica temporal... ")); fflush(stdout);
-	/*int celulas_lidasClima = Grid::setCellsClimate("../../output/DummyHex2566 - Output - MinTemp.txt", 		//climas de todas as celulas em todos os tempos
-												   "../../output/DummyHex2566 - Output - MaxTemp.txt",
-												   "../../output/DummyHex2566 - Output - MinPPTN.txt",
-												   "../../output/DummyHex2566 - Output - MaxPPTN.txt",
+	/*int celulas_lidasClima = Grid::setCellsClimate("../../output/DummyHex2566 - Output - MinTemp.txt", "../../output/DummyHex2566 - Output - MaxTemp.txt",
+												   "../../output/DummyHex2566 - Output - MinPPTN.txt", "../../output/DummyHex2566 - Output - MaxPPTN.txt",
 												   "../../output/DummyHex2566 - Output - NPP.txt", numero_de_timeSteps);
 	*/
 	int celulas_lidasClima = Grid::setCellsClimate("../../output/DummyHex2566 - Output - MinTemp.stream", //climas de todas as celulas em todos os tempos
@@ -67,12 +66,27 @@ int main(int argc,char const *argv[]){
 												   "../../output/DummyHex2566 - Output - NPP.stream", numero_de_timeSteps);
 	printf(BOLD(LGTGRN("OK!\n"))); fflush(stdout);
 
+
+	/***** lendo arquivos de coordenadas das celulas**********/
+	printf(GRN("Lendo Coordenadas das celulas... "));	fflush(stdout);
+	int celulas_lidasCoord = Grid::setCellsCoordinates("../../output/DummyHex2566 - Output - Longitude.stream",
+													  "../../output/DummyHex2566 - Output - Latitude.stream");
+	printf(BOLD(LGTGRN("\tOK!\n")));	fflush(stdout);
+
+
+	/***** lendo arquivo da area das celulas**********/
 	printf(GRN("Lendo Area das celulas... "));	fflush(stdout);
 	int celulas_lidasArea = Grid::setCellsArea("../../input/DummyHex2566 - Area.txt");
 	printf(BOLD(LGTGRN("\tOK!\n")));	fflush(stdout);
 
-	/***** lendo matriz de adjacencia de Conectividade das Celulas *****/
 
+	/***** lendo arquivo de vizinhança entre as celulas**********/
+	printf(GRN("Lendo vizinhas diretas entre celulas... ")); fflush(stdout);
+	Grid::setCellsNeighbors("../../input/DummyHex2566 - GraphNeighbors.txt");
+	printf(BOLD(LGTGRN("\tOK!\n")));	fflush(stdout);
+
+
+	/***** lendo matriz de adjacencia de Conectividade das Celulas *****/
 	printf(GRN("Lendo conectividade das celulas... "));	fflush(stdout);		//CONSOME muita memória temporariamente (200mb)
 	int celulas_lidasConnec = Grid::setCellsConnectivity("../../input/DummyHex2566 - Connectances - Geo.Single.Zip.Stream", 
 													"../../input/DummyHex2566 - Connectances - Topo.Single.Zip.Stream", 

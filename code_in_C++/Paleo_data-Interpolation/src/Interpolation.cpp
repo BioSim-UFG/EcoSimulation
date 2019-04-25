@@ -125,100 +125,17 @@ int main(){
 	PaleoClimate paleoClimate((input_path + paleoClimFile).c_str(), (input_path + presentClimFile).c_str(), numero_de_linhas, true);
 	printf(GRN("\tObjeto " BOLD("<PaleoClimate>") " criado\n"));		// ~DebugLog
 
-	fstream arq_outMinTemp, arq_outMaxTemp, arq_outMinPPTN, arq_outMaxPPTN, arq_outNPP;
-	fstream arq_teste;
-
-	/*
-	try{
-		arq_outMinTemp.open( output_path+outSuffix+ " - MinTemp.txt", ios::trunc | ios::out);
-		arq_outMaxTemp.open( output_path+outSuffix+ " - MaxTemp.txt", ios::trunc | ios::out);
-		arq_outMinPPTN.open( output_path+outSuffix+ " - MinPPTN.txt", ios::trunc | ios::out);
-		arq_outMaxPPTN.open( output_path+outSuffix+ " - MaxPPTN.txt", ios::trunc | ios::out);
-		arq_outNPP.open(output_path + outSuffix + " - NPP.txt", ios::trunc | ios::out);
-	}catch (const fstream::failure &e){
-		printf(RED("Erro ao abrir arquivo de saida %s\n"), e.what()); // ~DebugLog
-		exit(1);
-	}
-	printf(GRN("\tArquivos de saida abertos com sucesso\n")); // ~DebugLog
-
-	
-	clock_t startClock, endClock;
-
-	startClock = clock();
-	try{	//o que é nt?
-		int nt = (b - e) / s;
-
-		char temp_str[100];
-		sprintf(temp_str,"T%.0f",b);
-		streamsize size = strlen(temp_str);
-
-		//começa a escrever a primeira linha de "titulo" da tabela, isto é, a que informa os timesteps
-		arq_outMinTemp.write(temp_str, size);		
-		arq_outMaxTemp.write(temp_str, size);
-		arq_outMinPPTN.write(temp_str, size);
-		arq_outMaxPPTN.write(temp_str, size);
-		arq_outNPP.write(temp_str, size);
-
-		for(int i=1; i<=nt; i++){
-			sprintf(temp_str, "\tT%.0f", b - (i * s));
-			size = strlen(temp_str);
-			arq_outMinTemp.write(temp_str, size);
-			arq_outMaxTemp.write(temp_str, size);
-			arq_outMinPPTN.write(temp_str, size);
-			arq_outMaxPPTN.write(temp_str, size);
-			arq_outNPP.write(temp_str, size);
-		}
-		arq_outMinTemp.write("\n", 1);
-		arq_outMaxTemp.write("\n", 1);
-		arq_outMinPPTN.write("\n", 1);
-		arq_outMaxPPTN.write("\n", 1);
-		arq_outNPP.write("\n", 1);
-
-		float SATMin, SATMax, PPTNMin, PPTNMax, NPP;
-
-		for(int cell=0; cell<paleoClimate.getCellsLen(); cell++){
-			// ~BUG: todas variaveis estão retornando com valor 0 ( menos NPP) -> provavel erro de calculo na função getClimCell()
-			paleoClimate.getClimCell(cell, b, &SATMin, &SATMax, &PPTNMin, &PPTNMax, &NPP);
-
-			// aqui começa a escrever os valores já interpolados nos arquivos de saida
-			sprintf(temp_str, "%.3f", SATMin);			arq_outMinTemp.write(temp_str, strlen(temp_str));
-			sprintf(temp_str, "%.3f", SATMax);          arq_outMaxTemp.write(temp_str, strlen(temp_str));
-			sprintf(temp_str, "%.3f", PPTNMin);         arq_outMinPPTN.write(temp_str, strlen(temp_str));
-			sprintf(temp_str, "%.3f", PPTNMax);         arq_outMaxPPTN.write(temp_str, strlen(temp_str));
-			sprintf(temp_str, "%.3f", NPP);        		arq_outNPP.write(temp_str, strlen(temp_str));
-
-			for(int t=1; t<=nt; t++){
-				paleoClimate.getClimCell(cell, b-(t*s), &SATMin, &SATMax, &PPTNMin, &PPTNMax, &NPP);
-
-				sprintf(temp_str, "\t%.3f", SATMin); 		arq_outMinTemp.write(temp_str, strlen(temp_str));
-				sprintf(temp_str, "\t%.3f", SATMax); 		arq_outMaxTemp.write(temp_str, strlen(temp_str));
-				sprintf(temp_str, "\t%.3f", PPTNMin);		arq_outMinPPTN.write(temp_str, strlen(temp_str));
-				sprintf(temp_str, "\t%.3f", PPTNMax);		arq_outMaxPPTN.write(temp_str, strlen(temp_str));
-				sprintf(temp_str, "\t%.3f", NPP);			arq_outNPP.write(temp_str, strlen(temp_str));
-			}
-
-			//pula uma linha de cada arquivo de saida
-			arq_outMinTemp.write("\n", 1);
-			arq_outMaxTemp.write("\n", 1);
-			arq_outMinPPTN.write("\n", 1);
-			arq_outMaxPPTN.write("\n", 1);
-			arq_outNPP.write("\n", 1);
-		}
-
-	} catch(const fstream::failure &e) {
-		printf(RED("Erro ao escrever em arquivo de saida %s\n"), e.what()); // ~DebugLog
-		exit(1);
-	} catch(exception &e){
-		cout << "Standard exception: " << e.what() <<endl;
-	}
-	*/
+	fstream arq_outLat,arq_outLong,arq_outMinTemp, arq_outMaxTemp, arq_outMinPPTN, arq_outMaxPPTN, arq_outNPP;
+	//fstream arq_teste;
 
 	try{
-		arq_outMinTemp.open(output_path + outSuffix + " - MinTemp.stream", ios::trunc | ios::out | ios::binary);
+		arq_outLat.open(output_path + outSuffix + " - Latitude.stream", ios::trunc | ios::out | ios::binary);
+		arq_outLong.open(output_path + outSuffix + " - Longitude.stream", ios::trunc | ios::out | ios::binary);
+		arq_outMinTemp.open( output_path + outSuffix + " - MinTemp.stream", ios::trunc | ios::out | ios::binary);
 		arq_outMaxTemp.open( output_path+outSuffix+ " - MaxTemp.stream", ios::trunc | ios::out | ios::binary);
 		arq_outMinPPTN.open( output_path+outSuffix+ " - MinPPTN.stream", ios::trunc | ios::out | ios::binary);
 		arq_outMaxPPTN.open( output_path+outSuffix+ " - MaxPPTN.stream", ios::trunc | ios::out | ios::binary);
-		arq_outNPP.open(output_path + outSuffix + " - NPP.stream", ios::trunc | ios::out | ios::binary);
+		arq_outNPP.open( output_path + outSuffix + " - NPP.stream", ios::trunc | ios::out | ios::binary);
 	}catch (const fstream::failure &e){
 		printf(RED("Erro ao abrir arquivo de saida %s\n"), e.what()); // ~DebugLog
 		exit(1);
@@ -268,7 +185,21 @@ int main(){
 				arq_outNPP.write( (const char*)&NPP, sizeof(float));
 			}
 		}
+
+		int numCells = paleoClimate.getCellsLen();
+		arq_outLat.write((const char *)&numCells, sizeof(int));
+		arq_outLong.write((const char *)&numCells, sizeof(int));
+		for(int i=0 ; i < numCells; i++){
+			float Lat, Long;
+
+			paleoClimate.getLatLongCell(i, &Lat, &Long);
+			arq_outLat.write( (const char *)&Lat, sizeof(float));
+			arq_outLong.write( (const char *)&Long, sizeof(float));
+		}
 	}
+
+
+
 	catch (const fstream::failure &e){
 		printf(RED("Erro ao escrever em arquivo de saida %s\n"), e.what()); // ~DebugLog
 		exit(1);
@@ -284,6 +215,8 @@ int main(){
 	printf(MAG("Total clocks: "));printf(YEL("%lu\n"), endClock-startClock);
 	printf(MAG("Total Time:   "));printf(YEL("%lf s\n"), (double)(endClock-startClock)/CLOCKS_PER_SEC);
 
+	arq_outLat.close();
+	arq_outLong.close();
 	arq_outMinTemp.close();
 	arq_outMaxTemp.close();
 	arq_outMinPPTN.close();

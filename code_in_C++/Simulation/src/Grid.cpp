@@ -19,6 +19,10 @@ namespace SimEco{
 	unordered_map<uint, uint> Grid::indexMap;
 	uint Grid::matrixSize = 0;
 
+
+	vector<uint> Grid::cellsNeighbors;
+	unordered_map<uint, uint> Grid::neighborIndexMap;
+
 	//Cell *Grid::cells;
 	int Grid::cellsSize = 0;
 
@@ -197,6 +201,35 @@ namespace SimEco{
 		return nCells;
 	}
 
+
+	int Grid::setCellsCoordinates(const char *long_src, const char *lat_src){
+		int i, n_cells1, n_cells2;
+		FILE *arq_long = fopen(long_src, "rb");
+		FILE *arq_lat = fopen(lat_src, "rb");
+
+		if(arq_long == NULL){ printf(RED("Erro ao abrir %s"), long_src);	exit(intException(Exceptions::fileException) ); }
+		if(arq_lat == NULL){ printf(RED("Erro ao abrir %s"), lat_src);		exit(intException(Exceptions::fileException) ); }
+
+		fread(&n_cells1, sizeof(int), 1, arq_long);
+		fread(&n_cells2, sizeof(int), 1, arq_lat);
+		if(n_cells1 != n_cells2){
+			perror("Quantidade de coordenadas de Latitude e Longitude diferem!\n");
+			exit(intException(Exceptions::configurationException));
+		}
+
+		Cell::coordinate.resize(n_cells1);
+		for(i=0;i<n_cells1;i++){
+			fread(&(Cell::coordinate[i].Long), sizeof(float), 1, arq_long);
+			fread(&(Cell::coordinate[i].Lat),sizeof(float), 1, arq_lat);
+		}
+
+		fclose(arq_lat);
+		fclose(arq_long);
+
+		return n_cells1;
+	}
+
+
 	int Grid::setCellsArea(const char *area_src){
 		int i;
 		FILE *arq = fopen(area_src, "r");
@@ -217,6 +250,33 @@ namespace SimEco{
 		Cell::area.resize(i);
 
 		return i;
+	}
+
+	void Grid::setCellsNeighbors(const char *vizinhos_src){
+		/** formato do arquivo:
+		 * cada linha é uma relação de vizinhança direta,
+		 * primeira coluna é a celula focada, e a segunda celuna é a vizinha dela
+		 * terceira coluna pode ser ignorada
+		 */
+		FILE *vizinhos_arq = fopen(vizinhos_src,"r");
+		if(vizinhos_arq == NULL){ printf(RED("Erro ao abrir arquivo %s\n"), vizinhos_src); 		exit( intException(Exceptions::fileException) );}
+
+		int initial_vector_estimated_size = 4 * 2566;
+		Grid::cellsNeighbors.reserve(initial_vector_estimated_size);
+
+		uint cellId, neighborId;
+		while(!feof(vizinhos_arq)){
+			fscanf(vizinhos_arq, "%d %d %*[^\n]\n", &cellId, &neighborId);
+			cellId--; neighborId--;	//no arquivo as celulas são numeradas de 1 a n, mas para a simulação deve ser de 0 a n-1
+			
+			//coloca no map, onde começa a "lista" de vizinhos daquela célula especifica (cellId)
+			if(neighborIndexMap.count(cellId)==0){
+				neighborIndexMap[cellId] = cellsNeighbors.size();
+			}
+			cellsNeighbors.push_back(neighborId);
+		}
+
+		cellsNeighbors.shrink_to_fit();
 	}
 
 	//Lê dos arquivos comprimidos de conectividade das celulas.

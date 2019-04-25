@@ -63,6 +63,13 @@ namespace SimEco{
 	  	//le a grid model, e já armazena nas variaveis da forma desejada
 	  	void readGrid(FILE *arq);
 
+		double MinMaxLongitude[2];
+		double MinMaxLatitude[2];
+		void checkLong(double longitude);
+		void checkLat(double latitude);
+		float normalizeLatitude(float latitude);
+		float normalizeLongitude(float longitude);
+
 	  public:
 	/*construtor*/
 
@@ -80,6 +87,7 @@ namespace SimEco{
 		*/
 		void getClimCell(int c, double timeKya, float *SATMin, float *SATMax, float *PPTNMin, float *PPTNMax, float *NPP);
 		void getClimCell(int c, int timeStep,  float *SATMin, float *SATMax, float *PPTNMin, float *PPTNMax, float *NPP);
+		void getLatLongCell(int c, float *Lat , float *Long);
 		//aqui coloquei as variaveis como ponteiros, pois no cod em delphi, elas são passadas por referencia, nao por valor
 
 

@@ -22,28 +22,6 @@ namespace SimEco{
        return (int) ex;
     }
 
-    /*
-    void exit_error(bool test, Exept erro) {
-        if(test)
-        print(printErrro(erro));
-        exit(1);
-    }
-    */
-
-   /*
-   void recordTimeStepFiles(Simulation &sim,int timeStep){
-       int i;
-       char fname[200];
-       for(i=0 ; i< sim->grid.species.size(); i++){
-
-          // sprintf(fname, "%s/%s_Esp%d_Time%d", path, _name, _grid.species[i]._name, timeStep);
-          sptintf(fname, "%s/%s_Esp%d_Time%d", Configuration::SAVEPATH, _name, _grid.species[i]._name, timeStep)
-       }
-
-
-   }
-    */
-
     char Configuration::NAME[];
     char Configuration::SAVEPATH[];
     unsigned int  Configuration::MAX_CELLS;
@@ -189,5 +167,28 @@ namespace SimEco{
         #endif
         
         system(pasta);
+    }
+
+    void create_SubDir(const char *_name,int nSteps){
+
+		//cria um subdiretorio para cada timestep
+		char dir[50], comand[61];
+		#ifdef __linux__
+		sprintf(dir, "Results/%s/timeStep", _name);
+		#elif __WIN32
+		sprintf(dir, "Results\\%s\\timeStep", _name);
+		#endif
+		
+		int len = strlen(dir);
+		for(int i=0; i< nSteps; i++){
+			sprintf(dir+len,"%d",i);
+		#ifdef __linux__
+			sprintf(comand, "mkdir -p %s &", dir);
+		#elif __WIN32
+			sprintf(comand, "mkdir %s &", dir);
+		#endif
+			system(comand);
+		}
+
     }
 }

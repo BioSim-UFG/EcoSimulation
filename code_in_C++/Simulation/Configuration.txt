@@ -1,4 +1,4 @@
-Simulation_name= new2
+Simulation_name= debug_readNeighbors
 Num_Cells= 2566
 Num_Founders= 4
 Num_TimeSteps= 50

@@ -45,6 +45,11 @@ namespace SimEco
 		size_t cur_pos=0;		//posição atual (em bytes) da stream
 		size_t total_bytes = 0;
 
+		MinMaxLongitude[0] = +180;
+		MinMaxLongitude[1] = -180;
+		MinMaxLatitude[0] = +90;
+		MinMaxLatitude[1] = -180;
+
 		projAnomalies = projectAnnomalies;	//~NOTA: por que copia o valor, sendo que ele só é lido uma vez no contrutor todo?
 		this->modelGridnCells = modelGridnCells;
 
@@ -68,7 +73,6 @@ namespace SimEco
 			//aqui usar algo para "cancelar a criação do objeto", como um throw (exceptions e etc)
 		}
 
-
 		// ~BUG CORRIGIDO: antes, se o inteiro que queremos obter for maior que a capacidade de um Byte, teremos um valor errado
 		PLASIM_nLong = *((int*)stream);	//obtendo a quantidade da dados de Longitude
 		cur_pos += sizeof(int);
@@ -84,14 +88,13 @@ namespace SimEco
 		PLASIMLats.assign((float *)(stream + cur_pos), ((float *)(stream + cur_pos) )+ PLASIM_nLat);
 		cur_pos += PLASIM_nLat * sizeof(float);
 
-
-
 		// Original PLASIM data starts at 5.000.000 ya (5 million years ago, 5Mya), and may have different temporal resolutions (1ky or 100y)
 		// For this class, user can either specify time as an integer (in that case, the time step), or actual time (in that case, kya)
 		PLASIMnTime = *((int *)(stream+cur_pos));
 		cur_pos += sizeof(int);
 
 		PLASIMnTimeOffset = (PLASIMnTime - 1) / 5000; // PLASIMNTimeOffset = 1 if PLASIMnTime = 5001, or PLASIMNTimeOffset = 10 if PLASIMnTime = 50001
+		
 		// Read PLASIM Minimum Temperature
 		PLASIMDataSATMin = vector<TSngMatrix>(PLASIM_nLong);  //SATmin -> Surface Air Temperature Min ( minima do ano -> inverno)
 		for(int i=0; i<PLASIM_nLong; i++){
@@ -276,12 +279,23 @@ namespace SimEco
 
 	}
 
+	void PaleoClimate::getLatLongCell(int c, float *Lat, float *Long){
+		*Lat =  normalizeLatitude( modelGridLat[c]);
+		*Long = normalizeLongitude( modelGridLong[c]);
+	}
+
 	void PaleoClimate::readGrid(FILE *arq){
+		double latitude,longitude;
 		for (int i = 0; i < modelGridnCells; i++) {
 			//le as duas primeira colunas (de longitude de latitude)
 
 			fscanf(arq,"%f", &modelGridLong[i]);		//copiando apenas a primeira coluna
 			fscanf(arq,"\t%f", &modelGridLat[i]);		//copiando apenas a segunda coluna
+			
+			checkLong(modelGridLong[i]);
+			checkLat(modelGridLat[i]);
+
+
 			//le o restante das colunas
 			for(int j=0; j < GRID_COLS-2; j++){
 				double aux;
@@ -292,6 +306,41 @@ namespace SimEco
 		}
 	}
 
+	void PaleoClimate::checkLong(double longitude){
+		if (MinMaxLongitude[1] < longitude)
+		{
+			MinMaxLongitude[1] = longitude;
+		}
+		else
+		{
+			if (MinMaxLongitude[0] > longitude)
+			{
+				MinMaxLongitude[0] = longitude;
+			}
+		}
+	}
+
+	void PaleoClimate::checkLat(double latitude){
+		if (MinMaxLatitude[1] < latitude)
+		{
+			MinMaxLatitude[1] = latitude;
+		}
+		else
+		{
+			if (MinMaxLatitude[0] > latitude)
+			{
+				MinMaxLatitude[0] = latitude;
+			}
+		}
+	}
+
+	float PaleoClimate::normalizeLatitude(float latitude){
+		return ((latitude - MinMaxLatitude[0]) / (MinMaxLatitude[1] - MinMaxLatitude[0]));
+	}
+
+	float PaleoClimate::normalizeLongitude(float longitude){
+		return ((longitude - MinMaxLongitude[0]) / (MinMaxLongitude[1] - MinMaxLongitude[0]));
+	}
 
 	void PaleoClimate::getClimCell(int c, double timeKya, float *SATMin, float *SATMax, float *PPTNMin, float *PPTNMax, float *NPP){
 
@@ -567,7 +616,7 @@ namespace SimEco
 		if(firstInterpolation || (! projAnomalies))
 			return;
 
-	// Convert anomalies from current climate
+		// Convert anomalies from current climate
 
 		// Temperature
 		// Additive anomalies for temperature
@@ -609,46 +658,6 @@ namespace SimEco
 		if(*PPTNMax < *PPTNMin){
 			*PPTNMin = *PPTNMax = (*PPTNMax + *PPTNMin) / 2;
 		}
-
-	/*
-	//Parte apenas copiada, já que estava comentada
-	// For testing purposes one may decide to plot the raw climatology or emulated data
-	{
-	SATMin:= ModelGridPLASIMClimate[c,0];
-	SATMax:= ModelGridPLASIMClimate[c,1];
-	PPTNMin:= ModelGridPLASIMClimate[c,2];
-	PPTNMax:= ModelGridPLASIMClimate[c,3];
-	}
-	{
-	SATMin:= ModelGridObsClimate[c,0];
-	SATMax:= ModelGridObsClimate[c,1];
-	PPTNMin:= ModelGridObsClimate[c,2];
-	PPTNMax:= ModelGridObsClimate[c,3];
-	}
-	{
-	SATMin:= ModelGridPLASIMClimate[c,0] - ModelGridObsClimate[c,0];
-	SATMax:= ModelGridPLASIMClimate[c,1] - ModelGridObsClimate[c,1];
-	If SATMax > +20 then
-		SATMax:= + 20;
-	If SATMax < -20 then
-		SATMax:= -20;
-	If SATMin > +20 then
-		SATMin:= + 20;
-	If SATMin < -20 then
-		SATMin:= -20;
-	
-	PPTNMin:= ModelGridPLASIMClimate[c,2] - ModelGridObsClimate[c,2];
-	PPTNMax:= ModelGridPLASIMClimate[c,3] - ModelGridObsClimate[c,3];
-	If PPTNMax > +2000 then
-		PPTNMax:= + 2000;
-	If PPTNMax < -2000 then
-		PPTNMax:= -2000;
-	If PPTNMin > +2000 then
-		PPTNMin:= + 2000;
-	If PPTNMin < -2000 then
-		PPTNMin:= -2000;
-	}
-	*/
 
 		// Capping PPTN at 2000mm / season
 		if (*PPTNMin > 2000)		*PPTNMin = 2000;
