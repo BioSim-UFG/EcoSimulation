@@ -8,7 +8,7 @@ Prog.exe
 
 *.vscode/settings.json
 .vscode/c_cpp_properties.json
-.vscode/launch.json
+.vscode/
 
 input/xPLASIM.All3DMats.Single.Zip.Stream
 input/DummyHex2566 - Connectances - Rivers.Single.Zip.Stream

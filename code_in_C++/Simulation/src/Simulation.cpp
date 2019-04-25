@@ -113,6 +113,9 @@ namespace SimEco{
 
 				//consideramos que a população incial deveria ser: a capacidade com a taxa de crescimento com a adequabilidade
 				float initialPopulation = Cell::current_K[idxMat[zipMatPos].j] * founder.growth * fitness[idxMat[zipMatPos].j ];
+				if (initialPopulation > Cell::current_K[idxMat[zipMatPos].j])		// a população nunca pode ser mais do que a capacidade (K)
+					initialPopulation = Cell::current_K[idxMat[zipMatPos].j];
+				
 
 				founder.eraseCellPop(idxMat[zipMatPos].j);
 				founder.insertCellPop((uint)idxMat[zipMatPos].j, initialPopulation);
@@ -182,7 +185,7 @@ namespace SimEco{
 				auto &especie = *it;
 				calcSpecieFitness(especie, timeStep, fitness);	//obtem os fitness's da espécie
 
-				processSpecieTimeStep(especie, fitness);
+				processSpecieTimeStep(especie, fitness);	//grow and spread
 
 				/*
 				//se a especie se especializar, então devemos criar uma nova espécie, 
@@ -228,6 +231,7 @@ namespace SimEco{
 		delete fitness;
 	}
 
+	//AQUI QUE VAI ENTRAR DINAMICA DE FLUIDOS (nada implementado ainda)
 	void Simulation::processSpecieTimeStep(Specie &specie, float *fitness){
 		//salva as celulas ocupadas do timeStep anterior
 		uint prevCelulas_IdxSize = specie.cellsPopulation.size();
@@ -253,10 +257,10 @@ namespace SimEco{
 				double popTotal_passada;
 				popTotal_passada = specie.totalPopulation;
 
-				//ocupa essa celula também, se o fitness for maior que 0
+				//ocupa essa celula também, se o fitness for suficiente
 				if(fitness[destCell_idx] >= Specie::fitnessThreshold){
 					
-					//se essa célula for alcançável para essa espécie
+					//se essa célula for alcançável para essa espécie		
 					if( specie.reachability(Grid::connectivityMatrix[zipMatPos]) >= Specie::dispThreshold ){
 						//aqui calculamos a nova população considerando (se possivel) a antiga população naquela celula
 
@@ -273,13 +277,13 @@ namespace SimEco{
 						//specie.insertCellPop((uint)destCell_idx, newPopulation);
 						Cell::speciesPresent[ (uint)destCell_idx ].insert(&specie);
 
-				if( /*isinf(specie.totalPopulation)*/ debug2 < 0 ){
-					printf("\nanterior: %f \t nova: %f\n", popTotal_passada, specie.totalPopulation);
-					printf("growthPopulation: %f \t carring_k: %f \n", growthPopulation, carring_k);
-					printf("                           \t  -specie.getCellPop(%u): %f\n",destCell_idx, debug);
-					printf("                           \t  -K: %f\n", K);
-					exit(-1);
-				}
+						if( /*isinf(specie.totalPopulation)*/ debug2 < 0 ){
+							printf("\nanterior: %f \t nova: %f\n", popTotal_passada, specie.totalPopulation);
+							printf("growthPopulation: %f \t carring_k: %f \n", growthPopulation, carring_k);
+							printf("                           \t  -specie.getCellPop(%u): %f\n",destCell_idx, debug);
+							printf("                           \t  -K: %f\n", K);
+							exit(-1);
+						}
 
 					}
 
