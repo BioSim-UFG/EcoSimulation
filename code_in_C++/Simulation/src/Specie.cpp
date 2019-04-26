@@ -1,5 +1,6 @@
 #include "Specie.h"
 #include "color.h"
+#include "Grid.h"
 
 namespace SimEco{
 
@@ -17,30 +18,25 @@ namespace SimEco{
 		dispCap = dispCapacity;
 		totalPopulation = 0.0;
 		growth = specieGrowth;
-		//celulas_Idx = (uint *) malloc(sizeof(uint) * 1);
-		//celulas_Idx[0] = cellIdx;
-		//celulas_IdxSize = 1;
-		cellsPopulation.reserve(1024+512);
-		cellsPopulation.insert({cellIdx, 0.0f});	// coloca população da celula cellIdx como 1
-		totalPopulation+=0.0;
+
+		cellsPopulation.resize(Grid::cellsSize, 0.0f);
+		cellsPopulation[cellIdx]= 1.0f;	// coloca população da celula cellIdx como 1
+		totalPopulation+=1.0;
 
 		copy(niche.begin(), niche.end(), this->niche.begin());
     }
 
-	Specie::Specie(const array<NicheValue, NUM_ENV_VARS> &niche, const Dispersion &dispCapacity, pair<uint, float> cellsPop[], uint cellPopSize, float specieGrowth){
+	Specie::Specie(const array<NicheValue, NUM_ENV_VARS> &niche, const Dispersion &dispCapacity, float cellsPop[], float specieGrowth){
 		_name = _nSpecies;
 		_nSpecies++;
 		dispCap = dispCapacity;
 		totalPopulation = 0.0;
 		growth = specieGrowth;
-		//celulas_Idx = (uint *)malloc(sizeof(uint) * cellIdxsSize);
-		//celulas_IdxSize = cellIdxsSize;
-		cellsPopulation.reserve(1024 + 512);
 
-		for(int i=0; i<cellPopSize; i++){
-			//substituir 1 pela população que seria aqui. (passar objeto da especie original como argumento da função?)
-			cellsPopulation.insert(cellsPop[i]);
-			totalPopulation += cellsPop[i].second;
+		cellsPopulation.reserve(Grid::cellsSize);
+		for(int i=0; i<Grid::cellsSize; i++){
+			cellsPopulation.push_back(cellsPop[i]);
+			totalPopulation += cellsPop[i];
 		}
 
 		copy(niche.begin(), niche.end(), this->niche.begin());

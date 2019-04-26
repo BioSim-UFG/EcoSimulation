@@ -78,10 +78,14 @@ namespace SimEco{
 		float *fitness = new float[_grid.cellsSize];
 		calcSpecieFitness(founder, 0, fitness);
 
+		uint startCell;
+		for(startCell=0; startCell<Grid::cellsSize; startCell++){
+			if(founder.getCellPop(startCell)>0.0f) break;
+		}
+
 		/*agora, usando os fitness e as conectividades, espalhar o founder pela grid*/
 		const MatIdx_2D *idxMat = Grid::indexMatrix;
-		//uint zipMatPos = Grid::indexMap[founder.celulas_Idx[0]];
-		uint zipMatPos = Grid::indexMap[founder.cellsPopulation.begin()->first];
+		uint zipMatPos = Grid::indexMap[startCell];
 		uint lineValue = idxMat[zipMatPos].i;
 
 
@@ -112,13 +116,13 @@ namespace SimEco{
 				//founder.totalPopulation+=1.0f;
 
 				//consideramos que a população incial deveria ser: a capacidade com a taxa de crescimento com a adequabilidade
-				float initialPopulation = Cell::current_K[idxMat[zipMatPos].j] * founder.growth * fitness[idxMat[zipMatPos].j ];
+				float initialPopulation = Cell::current_K[idxMat[zipMatPos].j] * (1+founder.growth) * fitness[idxMat[zipMatPos].j ];
 				if (initialPopulation > Cell::current_K[idxMat[zipMatPos].j])		// a população nunca pode ser mais do que a capacidade (K)
 					initialPopulation = Cell::current_K[idxMat[zipMatPos].j];
 				
 
 				founder.eraseCellPop(idxMat[zipMatPos].j);
-				founder.insertCellPop((uint)idxMat[zipMatPos].j, initialPopulation);
+				founder.setCellPop((uint)idxMat[zipMatPos].j, initialPopulation);
 				Cell::speciesPresent[(uint)idxMat[zipMatPos].j].insert(&founder);
 			}
 
@@ -182,7 +186,7 @@ namespace SimEco{
 			//	Specie &especie = _grid.species[spcIdx];
 			//se uma espécie se especializar, ela vai ser adicionada no final, mas ela nao pode ser processada ainda nesse loop
 			//auto it_oldEnd = _grid.species.cend();	
-			for(auto it=_grid.species.begin(); it != _grid.species.cend() ;){
+			for(auto it=_grid.species.begin(); it != _grid.species.end() ;){
 				auto &especie = *it;
 				calcSpecieFitness(especie, timeStep, fitness);	//obtem os fitness's da espécie
 
@@ -213,11 +217,16 @@ namespace SimEco{
 				// FUNCIONANDO OK!
 				//se a especie for extinta:
 				if(especie.totalPopulation < Specie::popThreshold){
-					it = _grid.species.erase(it);	//retorna o novo iterator da posição correspondente ao do elemento removido
+					/*it = _grid.species.erase(it);	//retorna o novo iterator da posição correspondente ao do elemento removido
 					for(auto cell: it->cellsPopulation){	//percorre por todas as células que ocupava e a remove de lá
 						Cell::speciesPresent[cell.first].erase(&especie);
+					}*/
+					printf("espécie %u extinta! - timestep %i", especie._name, timeStep);
+
+					it = _grid.species.erase(it); //retorna o novo iterator da posição correspondente ao do elemento removido
+					for(uint i=0; i<Grid::cellsSize;i++){
+						Cell::speciesPresent[i].erase(&especie);
 					}
-					//printf("espécie extinta!");
 				}
 				else
 					++it;	//só aumenta o iterator se não remover um elemento do vector
@@ -236,9 +245,9 @@ namespace SimEco{
 	void Simulation::processSpecieTimeStep(Specie &specie, float *fitness){
 		//salva as celulas ocupadas do timeStep anterior
 		uint prevCelulas_IdxSize = specie.cellsPopulation.size();
-		pair<uint, float> prevCelulas[prevCelulas_IdxSize];
-		copy(specie.cellsPopulation.begin(), specie.cellsPopulation.end(), prevCelulas);
-
+		//pair<uint, float> prevCelulas[prevCelulas_IdxSize];
+		//copy(specie.cellsPopulation.begin(), specie.cellsPopulation.end(), prevPopulation);
+		float prevPopulation[prevCelulas_IdxSize];
 
 		/*fazer um loop que percorre todas as celulas que a espécie já está ocupando, e pra cada iteração
 			espalhar a especie a partir daquela célula especifica.
@@ -247,11 +256,57 @@ namespace SimEco{
 
 		float diffusion_rate = 0.01;
 		int N = Grid::cellsSize;
-		float a = Simulation::_Dtime*diffusion_rate * N*N;
+		float a = Simulation::_Dtime*diffusion_rate * N;
 
+
+
+		//etapa de multiplicação: a população reproduz, logo, aumenta a densidade populacional
+
+		//para cada célula do mapa
+		for(int i=0; i<N;i++){
+
+			float &K = Cell::current_K[i];
+			float growthPopulation = specie.getCellPop(i) * specie.growth * fitness[i];
+			float carring_k;
+			if(K>0.0f)
+				carring_k = 1 - (specie.getCellPop(i) / K); //Velrhust logistic effect of carrying capacity
+			else
+				carring_k = -1;
+			specie.addCellPop(i, growthPopulation*carring_k);			//usar o limite do K deveria ser aplicado antes ou depois de rodar a dinamica de fluidos?
+		}
+
+		copy(specie.cellsPopulation.begin(), specie.cellsPopulation.end(), prevPopulation);
+
+
+
+		
+		//etapa de difusão (população é interpretada como um fluido pelo mapa). Obs: todas celulas vizinhas de uma célula X são tratadas como se tivessem a mesma distancia de X, e consequentemente, como se TODAS as celulas tivessem o mesmo tamanho e distancia entre sí
 		for(int k=0; k<20; k++){
 
+			//para cada célula do mapa
 			for(int i=0; i<N;i++){
+
+				float neighborPopDensity=0.0f;
+				uint first=Grid::neighborIndexMap[i];
+				uint last;
+				if(i+1==N) last = Grid::cellsNeighbors.size();
+				else last = Grid::neighborIndexMap[i+1];
+
+				auto fitness_distribuido = pow(fitness[i], 1.0f / 20.0f); //raiz 20 de fitness, pois (raiz 20 de fitness) ^20 = fitness. Já que vamos multiplicar o valor do fitness 20 vezes para cada vizinho indo para a celula atual 'i'.
+				//acabou que não usei pq estava matando demais as espécies. Mas creio que será util em breve.
+
+				//pega a soma da densidade populacional de todos os vizinhos da célula 'i'
+				for(uint j=first; j < last ; j++){
+					//neighborPopDensity += specie.getCellPop(Grid::cellsNeighbors[j]);	//forma original
+					//porém, como devemos levar em conta que cada espécie tem uma certa adequabilidade em cada local, então ocorrem mortes, isto é, perca de densidade populacional
+					//mas também devemos levar em conta que a espécie se reproduz, aumentando a densidade populacional. Sendo assim:
+
+					// densidade que vai dos vizinhos para a celula atual E sobrevive (por isso uso do fitness)
+					neighborPopDensity += specie.getCellPop(Grid::cellsNeighbors[j]);
+				}
+				neighborPopDensity = neighborPopDensity  * a;
+				specie.setCellPop(i, (prevPopulation[i] + neighborPopDensity) / (1 + a * (last - first)));
+
 				//aqui vai ser preciso acessar a população da espécie na celula[i], porém e se ainda não existir essa espécie na celula[i]?
 				//primeiro precisaria checar se existe, caso ainda não
 				//aí será necessário criar essa espécie lá, então marcar que a espécie ocupa a celula[i] (é biderecional) para então colocar a população
@@ -269,8 +324,16 @@ namespace SimEco{
 
 		}
 
+		//para toda celula que recebeu do "flúido"/densidade populacional, anota que a espécie está presente nela
+		for (int i = 0; i < N; i++){
+			Cell::speciesPresent[i].insert(&specie);
+		}
 
-/*
+
+
+
+
+		/*
 		
 		//for(uint cellIdx = 0; cellIdx < prevCelulas_IdxSize; cellIdx++){
 		for(auto &pastCell: prevCelulas){
@@ -483,8 +546,12 @@ namespace SimEco{
 		int i;
 		fscanf(src, "%*[^\n]\n"); //pula primeira linha
 		for (i = 0; i < Configuration::NUM_FOUNDERS; i++){
-			if (feof(src))
-				break;
+			if (feof(src)){
+				printf(LGTYEL(BOLD("\n\tATENÇÃO, numero de founders em %s insuficiente\n")), founders_input);
+				printf(LGTYEL(BOLD("\tReplicando founders para tamanho necessário.\n\t")));
+				rewind(src);
+			}
+				
 			//lê valores do nicho e de capacidade de dispersão
 			fscanf(src, "%f %f %f %f", &niche[0].minimum, &niche[0].maximum, &niche[1].minimum, &niche[1].maximum);
 			fscanf(src, "%f %f %f", &dispersionCapacity.Geo, &dispersionCapacity.Topo, &dispersionCapacity.River);
@@ -497,6 +564,8 @@ namespace SimEco{
 			//printf("geidisp: %f\n", dispersionCapacity.Geo);
 		}
 
+		/*
+
 		if (i < Configuration::NUM_FOUNDERS){
 			printf(LGTYEL(BOLD("\n\tATENÇÃO, numero de founders em %s insuficiente\n")), founders_input);
 			printf(LGTYEL(BOLD("\tReplicando founders para tamanho necessário.\n\t")));
@@ -505,10 +574,12 @@ namespace SimEco{
 				//founders[i] = *new Specie(founders[i % num_lidos]);
 				founders.emplace_back(founders[i % num_lidos].niche,
 										founders[i % num_lidos].dispCap,
-										founders[i % num_lidos].cellsPopulation.begin()->first,
+										founders[i % num_lidos].cellsPopulation[0],
 										founders[i % num_lidos].growth);
 			}
 		}
+
+		*/
 
 		fclose(src);
 	}

@@ -4,6 +4,8 @@
 #include "SimTypes.h"
 #include <array>
 #include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
 namespace SimEco{
     
@@ -16,9 +18,10 @@ namespace SimEco{
         array<NicheValue, NUM_ENV_VARS> niche;        //niche of the specie
 
         double totalPopulation;          //number of members/population;    Mas pra que float???  10.5 animais?
-        unordered_map<uint, float> cellsPopulation;
-        //uint *celulas_Idx;        //indice das celulas que esta presente
-        //uint celulas_IdxSize;
+        //unordered_map<uint, float> cellsPopulation;
+        vector<float> cellsPopulation;      //cellsPopulation[i] = população daquela espécie na célula de id 'i'
+        //unordered_set<uint> occupiedCells;  //lista de celulas ocupadas por essa espécie ( O(1))
+
         float growth;           //taxa de crescimento
 
         //Capacity of dispersion over geographic distance, river barriers and topographic heterogeneity
@@ -32,16 +35,15 @@ namespace SimEco{
 
         void addCellPop(uint cellIdx, float population); //soma 'population' à população da célula indicada por cellIdx, caso a celula ainda nao foi ocupada, ela passa a ser ocupada
         void setCellPop(uint cellIdx, float population); //sobrescreve a população da celula, ocupando-a se a mesma não o estiver.
-        pair<unordered_map<uint, float>::iterator, bool> insertCellPop(uint cellIdx, float population); //insere nova célula no mapa de células ocupadas, apenas se ela não existir no mapa
         float getCellPop(uint cellIdx);     //retorna a população da célula, retorna um valor <= 0.0f se ela não estiver ocupada
-        int eraseCellPop(uint);     //remove a célula do mapa de células ocupadas, se ela existir
+        float eraseCellPop(uint);     //remove a população dessa espécie naquela célula
 
         void getTotalPop();
 
         //criação de uma espécie numa única célula
         Specie(const array<NicheValue, NUM_ENV_VARS> &niche, const Dispersion &dispCapacity, uint CellIdx, float specieGrowth);
         //criação de uma especie já espalhada por várias células
-        Specie(const array<NicheValue, NUM_ENV_VARS> &niche, const Dispersion &dispCapacity, pair<uint, float> cellsPop[], uint cellPopSize, float specieGrowth);
+        Specie(const array<NicheValue, NUM_ENV_VARS> &niche, const Dispersion &dispCapacity, float cellsPop[], float specieGrowth);
 
         //construtor copy
         //Specie(const Specie &src);
@@ -60,28 +62,15 @@ namespace SimEco{
 		cellsPopulation[cellIdx] = population;
 		totalPopulation += population;
 	}
-	inline pair<unordered_map<uint, float>::iterator, bool> Specie::insertCellPop(uint cellIdx, float population){
-		auto sucess = cellsPopulation.insert({cellIdx, population}); //obs: insert() só adiciona o par {chave,valor}, se nao existir a chave ainda
-		if (sucess.second == true)
-            totalPopulation += population; //Só aumenta a população se conseguiu inserir um NOVO elemento no mapa, ou seja, acabou de ocupar a célula
-        return sucess;
-	}
+
 	inline float Specie::getCellPop(uint cellIdx){
-		if (cellsPopulation.find(cellIdx) != cellsPopulation.end())
-			return this->cellsPopulation[cellIdx];
-
-		return 0.0f;
-	}
-	inline int Specie::eraseCellPop(uint cellIdx){
-		auto cellIterator = cellsPopulation.find(cellIdx);
-		//remove se a celula, se tiver sindo encontrada/se ela existir
-		if (cellIterator != cellsPopulation.end()){
-			totalPopulation -= cellIterator->second; //diminui a população daquela espécie
-			cellsPopulation.erase(cellIterator);
-			return 1;
-		}
-
-		return 0;
+        return cellsPopulation[cellIdx];
+    }
+	inline float Specie::eraseCellPop(uint cellIdx){
+        auto removed = cellsPopulation[cellIdx];
+        totalPopulation-=removed;
+        cellsPopulation[cellIdx] = 0.0f;
+        return removed;
 	}
 
     inline float Specie::reachability(const Connectivity &cellsConn){

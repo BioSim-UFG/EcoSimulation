@@ -126,14 +126,19 @@ namespace SimEco{
             exit(intException(Exceptions::fileException));
         }
 
+        /*
         int cont = 0;
         for (auto &cellInfo : sp.cellsPopulation){
             fprintf(f, "%5u ", cellInfo.first); //escreve o numero de cada célula ocupada pela espécie (no timeStep indicado)
             fprintf(f, "%.4f\n",cellInfo.second); //escreve o numero de população em cada célula
-            /*if ((++cont) % 11 == 0)
-                fprintf(f, "\n");
-                */
         }
+        */
+       for(uint i=0; i<sp.cellsPopulation.size(); i++){
+           if(sp.cellsPopulation[i]>0.0f){
+                fprintf(f, "%5u ", i); //escreve o numero de cada célula ocupada pela espécie (no timeStep indicado)
+                fprintf(f, "%.4f\n", sp.cellsPopulation[i]); //escreve o numero de população em cada célula
+           }
+       }
 
         fclose(f);
     }
@@ -148,10 +153,18 @@ namespace SimEco{
             exit(intException(Exceptions::fileException));
         }
 
+        /*
         for (auto &cellInfo : sp.cellsPopulation){
             //grava no arquivo uma célula ocupada, primeiro o índice da célula e logo em seguida sua população
             fwrite(&cellInfo.first, sizeof(uint), 1, f);
             fwrite(&cellInfo.second, sizeof(float), 1, f);
+        }*/
+        for(uint i=0; i<sp.cellsPopulation.size(); i++){
+           if(sp.cellsPopulation[i]>0.0f){
+               //grava no arquivo uma célula ocupada, primeiro o índice da célula e logo em seguida sua população
+               fwrite(&i, sizeof(uint), 1, f);
+               fwrite(&sp.cellsPopulation[i], sizeof(float), 1, f);
+           }
         }
 
         fclose(f);
