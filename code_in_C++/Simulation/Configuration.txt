@@ -1,5 +1,5 @@
 Simulation_name= debug_FluidMigration
 Num_Cells= 2566
-Num_Founders= 4
+Num_Founders= 1
 Num_TimeSteps= 50
 Save_Path= local
