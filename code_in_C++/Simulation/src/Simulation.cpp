@@ -3,6 +3,8 @@
 #include "Grid.h"
 #include "Specie.h"
 
+#include <fenv.h>
+
 #include "Helper.h"
 #ifdef __NVCC__
 #include "cudaErrorCheck.h"
@@ -253,10 +255,7 @@ namespace SimEco{
 			espalhar a especie a partir daquela célula especifica.
 		*/
 		const MatIdx_2D *idxMat = Grid::indexMatrix;
-
-		float diffusion_rate = 0.01;
 		int N = Grid::cellsSize;
-		float a = Simulation::_Dtime*diffusion_rate * N;
 
 
 
@@ -270,11 +269,14 @@ namespace SimEco{
 
 		copy(specie.cellsPopulation.begin(), specie.cellsPopulation.end(), prevPopulation);
 
-
+		feenableexcept(FE_ALL_EXCEPT & ~FE_INEXACT);  // Enable all floating point exceptions but FE_INEXACT
 
 		
 		//etapa de difusão (população é interpretada como um fluido pelo mapa). Obs: todas celulas vizinhas de uma célula X são tratadas como se tivessem a mesma distancia de X, e consequentemente, como se TODAS as celulas tivessem o mesmo tamanho e distancia entre sí
-		for(int k=0; k<20; k++){
+		float diffusion_rate = 0.01;
+		float a = Simulation::_Dtime * diffusion_rate * N;
+
+		for(int k=0; k<100; k++){
 
 			//para cada célula do mapa
 			for(int i=0; i<N;i++){
@@ -293,31 +295,49 @@ namespace SimEco{
 				//normalizando a pressão para entre 0-1, para evitar estouro do float (se não fica instável o método)
 				float pressao[N];
 				float pressao_max, pressao_min;
+				pressao_max = pressao_min = prevPopulation[i]/Cell::current_K[i];
+				float pressao_sum = 0.0f;
 				for(uint j=first; j < last ; j++){
 					uint &neighbor = Grid::cellsNeighbors[j];
-					float cellPop = specie.getCellPop(neighbor);
+					float cellPop = prevPopulation[neighbor];
 					float &K = Cell::current_K[neighbor];
 
 					if (K <= 0.0f)
 						continue; //se a célula não tiver capacidade de vida, ignora ela
 
-					if(j==first){
-						pressao_min = pressao_max = cellPop / K;
-					}
+					pressao_sum += cellPop / K;
 
+					
 					pressao_min = min(pressao_min, cellPop / K);
 					pressao_max = max(pressao_max, cellPop / K);
+					
 				}
 
 				float range = pressao_max - pressao_min;
+				if(range == 0.0f){
+					range = 1.0f;
+					pressao_min = 0.0f;
+					pressao_max = 1.0f;
+				}
+
 				for(uint j=first; j < last ; j++){
 					uint &neighbor = Grid::cellsNeighbors[j];
-					float cellPop = specie.getCellPop(neighbor);
+					float cellPop = prevPopulation[neighbor];
 					float &K = Cell::current_K[neighbor];
 
-					pressao[neighbor] = (cellPop / K - pressao_min) / range;
+					if (K <= 0.0f) continue; //se a célula não tiver capacidade de vida, ignora ela
+
+					if(pressao_sum==0){
+						pressao[neighbor] = 1.0f;
+					}else{
+						pressao[neighbor] = ((cellPop/K) / pressao_sum) * (last-first);
+					}
+					//pressao[neighbor] = (cellPop / K - pressao_min) / range;
 				}
-				pressao[i] = (specie.getCellPop(i)/Cell::current_K[i] - pressao_min) / range;
+				if(pressao_sum==0)
+					pressao_sum = last-first;
+					
+				pressao[i] = (prevPopulation[i]/Cell::current_K[i] - pressao_min) / range;
 
 
 
@@ -333,18 +353,15 @@ namespace SimEco{
 					float cellPop = specie.getCellPop(neighbor);
 
 					//usa a "pressão" populacional na célula, para que assim células mais lotadas ( quase no limite) exportem mais densidade, enquanto as mais famintas mantenham
-					peso_da_media += pressao[neighbor] + a;
+					peso_da_media += pressao[neighbor];
 					neighborPopDensity += cellPop * pressao[neighbor]; //forma original
 
-					//porém, como devemos levar em conta que cada espécie tem uma certa adequabilidade em cada local, então ocorrem mortes, isto é, perca de densidade populacional
-					//mas também devemos levar em conta que a espécie se reproduz, aumentando a densidade populacional. Sendo assim:
-
-					// densidade que vai dos vizinhos para a celula atual E sobrevive (por isso uso do fitness)
-					//neighborPopDensity += specie.getCellPop(Grid::cellsNeighbors[j]) * fitness_distribuido;
 				}
-				neighborPopDensity = neighborPopDensity * a;
+				neighborPopDensity = neighborPopDensity*a;		
 
-				specie.setCellPop(i, (prevPopulation[i]*pressao[i] + neighborPopDensity) / (pressao[i] + peso_da_media ));
+				//ideia: fazer peso_media ser igual a (last-first) sempre
+				specie.setCellPop(i, (prevPopulation[i] + neighborPopDensity) / (1 + (last - first) * a));
+				//specie.setCellPop(i, (prevPopulation[i] + neighborPopDensity) / (1+ a * (last - first)));
 
 				//aqui vai ser preciso acessar a população da espécie na celula[i], porém e se ainda não existir essa espécie na celula[i]?
 				//primeiro precisaria checar se existe, caso ainda não
