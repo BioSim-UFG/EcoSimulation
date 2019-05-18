@@ -37,6 +37,7 @@ namespace SimEco{
 		constexpr static double pi = M_PI;
 
 		void processFounder_timeZero(Specie &founder);
+		void processFounder_timeZero_noConnectivity(Specie &founder);
 		void processSpecieTimeStep(Specie &specie, float *fitness);
 		//calcula o fitness, e retorna o ponteiro do vetor resultante
 		//void calcSpecieFitness(const Specie &specie, uint timeStep, float *fitness);

@@ -6,6 +6,7 @@
 #include "Helper.h"
 
 
+
 #include <iostream>
 
 
@@ -119,6 +120,8 @@ int main(int argc,char const *argv[]){
 			Grid::matrixSize = i;
 		}
 	}
+
+	//feenableexcept(FE_ALL_EXCEPT & ~FE_INEXACT); // Enable all floating point exceptions but FE_INEXACT
 
 	/**************************INICIANDO SIMULAÇÃO*******************************/
 	cell->setMaxCells(num_cells);

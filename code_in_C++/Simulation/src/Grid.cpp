@@ -3,6 +3,7 @@
 #include "Specie.h"
 #include "Helper.h"
 #include <string.h>
+#include <math.h>
 //#include <execinfo.h>
 
 #include "decompressData.h"
@@ -183,6 +184,12 @@ namespace SimEco{
 				fread(&(Cell::cell_climates[i][j].envValues[climVar::Pptn].minimum), sizeof(float), 1, minPptn_arq);
 				fread(&(Cell::cell_climates[i][j].envValues[climVar::Pptn].maximum), sizeof(float), 1, maxPptn_arq);
 				fread(&(Cell::NPPs[i][j]), sizeof(float), 1, NPP_arq);
+
+				if(isnan(Cell::cell_climates[i][j].envValues[climVar::Temp].minimum)) Cell::cell_climates[i][j].envValues[climVar::Temp].minimum = 0.0;
+				if(isnan(Cell::cell_climates[i][j].envValues[climVar::Temp].maximum)) Cell::cell_climates[i][j].envValues[climVar::Temp].maximum = 0.0;
+				if(isnan(Cell::cell_climates[i][j].envValues[climVar::Pptn].minimum)) Cell::cell_climates[i][j].envValues[climVar::Pptn].minimum = 0.0;
+				if(isnan(Cell::cell_climates[i][j].envValues[climVar::Pptn].maximum)) Cell::cell_climates[i][j].envValues[climVar::Pptn].maximum = 0.0;
+				if(isnan(Cell::NPPs[i][j]				)) Cell::NPPs[i][j] = 0.0;
 
 				//Cell::cell_climates[i][j].K = Cell::calcK(Cell::cell_climates[i][j].NPP);
 

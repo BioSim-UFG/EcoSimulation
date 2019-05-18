@@ -10,6 +10,8 @@
 #include <chrono>
 #include <unordered_map>
 
+#include <fenv.h>
+
 #define N_INPUT 2
 
 

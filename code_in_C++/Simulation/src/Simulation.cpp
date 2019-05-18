@@ -11,7 +11,7 @@
 #endif
 
 #include <iostream>
-#include <cmath>
+#include <math.h>
 
 namespace SimEco{
 	Simulation::Simulation(Grid &grid, const char* name): _grid(grid) , _name(name)/*, founders(founders), foundersSize(founders_size)*/{
@@ -36,7 +36,8 @@ namespace SimEco{
 		cout<<BLU("\tCalculando tempo ZERO... "); fflush(stdout);
 		//aqui faz o trabalho de preparação da simulação, usando a(s) especie(s) fundadora(s)
 		for(uint i=0; i<_grid.species.size(); i++){
-			processFounder_timeZero(_grid.species[i]);
+			//processFounder_timeZero(_grid.species[i]);
+			processFounder_timeZero_noConnectivity(_grid.species[i]);
 		}
 		cout<<BLU("OK\n"); fflush(stdout);
 
@@ -71,8 +72,6 @@ namespace SimEco{
 			Cell::current_K.at(cellIdx) =  (NPP*area) / 50000;
 		}
 
-
-		
 		
 		
 		/*aqui chama calcFitness e ela retorna um vetor (dinamicamente alocado lá dentro)
@@ -130,6 +129,38 @@ namespace SimEco{
 
 			zipMatPos++;
 		}
+		//founder.celulas_Idx = (uint *)realloc(founder.celulas_Idx, sizeof(uint) * founder.celulas_IdxSize);
+		delete fitness;
+	}
+
+	void Simulation::processFounder_timeZero_noConnectivity(Specie &founder){
+		
+
+		//calcula o K de cada célula para ESTE timeStep
+		for(int cellIdx=0; cellIdx<Configuration::MAX_CELLS; cellIdx++){
+			auto NPP = Cell::NPPs[0][cellIdx];
+			auto area = Cell::area[cellIdx];
+			Cell::current_K.at(cellIdx) =  (NPP*area) / 50000;
+		}
+
+		
+		
+		/*aqui chama calcFitness e ela retorna um vetor (dinamicamente alocado lá dentro)
+		  com os fitness da especie com todas as celulas (consquentemente, vetor de tamanho Grid::cellsSize)*/
+		float *fitness = new float[_grid.cellsSize];
+		calcSpecieFitness(founder, 0, fitness);
+
+
+		for(int i=0; i<Grid::cellsSize; i++){
+			float initialPopulation = Cell::current_K[i] * (1 + founder.growth) * fitness[i];
+			if (initialPopulation > Cell::current_K[i]) // a população nunca pode ser mais do que a capacidade (K)
+				initialPopulation = Cell::current_K[i];
+
+			founder.setCellPop((uint)i, initialPopulation);
+			Cell::speciesPresent[(uint)i].insert(&founder);
+		}
+
+
 		//founder.celulas_Idx = (uint *)realloc(founder.celulas_Idx, sizeof(uint) * founder.celulas_IdxSize);
 		delete fitness;
 	}
@@ -269,42 +300,49 @@ namespace SimEco{
 
 		copy(specie.cellsPopulation.begin(), specie.cellsPopulation.end(), prevPopulation);
 
-		feenableexcept(FE_ALL_EXCEPT & ~FE_INEXACT);  // Enable all floating point exceptions but FE_INEXACT
+		//feenableexcept(FE_ALL_EXCEPT & ~FE_INEXACT);  // Enable all floating point exceptions but FE_INEXACT
 
 		
 		//etapa de difusão (população é interpretada como um fluido pelo mapa). Obs: todas celulas vizinhas de uma célula X são tratadas como se tivessem a mesma distancia de X, e consequentemente, como se TODAS as celulas tivessem o mesmo tamanho e distancia entre sí
 		float diffusion_rate = 0.01;
 		float a = Simulation::_Dtime * diffusion_rate * N;
 
-		for(int k=0; k<100; k++){
+		for(int k=0; k<50; k++){
 
 			//para cada célula do mapa
 			for(int i=0; i<N;i++){
 
-				if(Cell::current_K[i] <= 0.0f)
-					continue;		//se a célula não tiver capacidade de vida, ignora ela
+				//if(Cell::current_K[i] <= 0.0f)	continue;		//se a célula não tiver capacidade de vida, ignora ela
 
 				uint first=Grid::neighborIndexMap[i];
 				uint last;
 				if(i+1==N) last = Grid::cellsNeighbors.size();
 				else last = Grid::neighborIndexMap[i+1];
 
-				//auto fitness_distribuido = pow(fitness[i], 1.0f / 20.0f); //raiz 20 de fitness, pois (raiz 20 de fitness) ^20 = fitness. Já que vamos multiplicar o valor do fitness 20 vezes para cada vizinho indo para a celula atual 'i'.
-				//acabou que não usei pq estava matando demais as espécies. Mas creio que será util em breve.
 
 				float neighborPopDensity = 0.0f;
+				int total_vizinhos=0;
 				//pega a soma da densidade populacional de todos os vizinhos da célula 'i'
 				for(uint j=first; j < last ; j++){
 					uint &neighbor = Grid::cellsNeighbors[j];
 					float &K = Cell::current_K[neighbor];
-					if(K <= 0.0f)
-						continue;		//se a célula não tiver capacidade de vida, ignora ela
+					//if(K <= 0.0f)	continue;		//se a célula não tiver capacidade de vida, ignora ela
 
 					neighborPopDensity += specie.getCellPop(neighbor); //forma original
+					total_vizinhos++;
 				}
 
-				specie.setCellPop(i, (prevPopulation[i] + a*neighborPopDensity) / (1+ a*(last-first)));
+				/* só necessário quando está ativado a detecção de exceções em operações aritméticas
+				if(neighborPopDensity <= 1e-37)	//evitar underflow do float, e também tal valor já é extremamente proximo de zero
+					neighborPopDensity = 0.0f;
+				if (prevPopulation[i] <= 1e-37) //evitar underflow do float, e também tal valor já é extremamente proximo de zero
+					prevPopulation[i] = 0.0f;
+				*/
+				specie.setCellPop(i, (prevPopulation[i] + a*neighborPopDensity) / (1+ a*(total_vizinhos)));
 				//specie.setCellPop(i, (prevPopulation[i] + neighborPopDensity) / (1+ a * (last - first)));
+
+
+
 
 				//aqui vai ser preciso acessar a população da espécie na celula[i], porém e se ainda não existir essa espécie na celula[i]?
 				//primeiro precisaria checar se existe, caso ainda não

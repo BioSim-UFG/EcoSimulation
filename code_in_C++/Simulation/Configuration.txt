@@ -1,4 +1,4 @@
-Simulation_name= debug_FluidMigration4
+Simulation_name= debug_FluidMigration4_2
 Num_Cells= 84579
 Num_Founders= 1
 Num_TimeSteps= 50

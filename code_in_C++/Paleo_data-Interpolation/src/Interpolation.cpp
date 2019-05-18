@@ -9,6 +9,8 @@
 #include <string.h>
 #include <time.h>
 
+#include <fenv.h>
+
 #ifdef _WIN32
 	#define SYSCLEAR_STR "CLS"
 #elif __linux__
@@ -120,13 +122,15 @@ int main(){
 		s = stod(input_str);
 	}
 
+	//feenableexcept(FE_ALL_EXCEPT & ~FE_INEXACT); // Enable all floating point exceptions but FE_INEXACT
 
 	//creates a new Object of class PaleoClimate
 	PaleoClimate paleoClimate((input_path + paleoClimFile).c_str(), (input_path + presentClimFile).c_str(), numero_de_linhas, true);
 	printf(GRN("\tObjeto " BOLD("<PaleoClimate>") " criado\n"));		// ~DebugLog
 
 	fstream arq_outLat,arq_outLong,arq_outMinTemp, arq_outMaxTemp, arq_outMinPPTN, arq_outMaxPPTN, arq_outNPP;
-	//fstream arq_teste;
+	FILE *arq_outNPP_txt;
+	
 
 	try{
 		arq_outLat.open(output_path + outSuffix + " - Latitude.stream", ios::trunc | ios::out | ios::binary);
@@ -136,6 +140,7 @@ int main(){
 		arq_outMinPPTN.open( output_path+outSuffix+ " - MinPPTN.stream", ios::trunc | ios::out | ios::binary);
 		arq_outMaxPPTN.open( output_path+outSuffix+ " - MaxPPTN.stream", ios::trunc | ios::out | ios::binary);
 		arq_outNPP.open( output_path + outSuffix + " - NPP.stream", ios::trunc | ios::out | ios::binary);
+		arq_outNPP_txt = fopen((output_path + outSuffix + " - NPP.txt").c_str(), "w");
 	}catch (const fstream::failure &e){
 		printf(RED("Erro ao abrir arquivo de saida %s\n"), e.what()); // ~DebugLog
 		exit(1);
@@ -170,6 +175,8 @@ int main(){
 			arq_outMinPPTN.write( (const char*)&numCells, sizeof(int) );
 			arq_outMaxPPTN.write( (const char*)&numCells, sizeof(int) );
 			arq_outNPP.write( (const char*)&numCells, sizeof(int) );
+
+			//fprintf(arq_outNPP_txt, "T%8.8d",i);
 			
 			float SATMin, SATMax, PPTNMin, PPTNMax, NPP;
 
@@ -183,7 +190,9 @@ int main(){
 				arq_outMinPPTN.write( (const char*)&PPTNMin, sizeof(float));
 				arq_outMaxPPTN.write( (const char*)&PPTNMax, sizeof(float));
 				arq_outNPP.write( (const char*)&NPP, sizeof(float));
+				//fprintf(arq_outNPP_txt,"%8.8g", NPP);
 			}
+			//fprintf(arq_outNPP_txt,"\n");
 		}
 
 		int numCells = paleoClimate.getCellsLen();
