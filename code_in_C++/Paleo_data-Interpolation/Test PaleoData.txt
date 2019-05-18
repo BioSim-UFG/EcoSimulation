@@ -15,6 +15,13 @@ Y
 10
 
 
+WHHexGrid600 - Coords and Clim.txt
+84579
+Y
+WHHexGrid600 - Output
+500
+Y
+10
 
 
 Is the grid + present climate file 'Coords and Clim.txt'?

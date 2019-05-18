@@ -281,7 +281,8 @@ namespace SimEco{
 			//para cada célula do mapa
 			for(int i=0; i<N;i++){
 
-				if(Cell::current_K[i] <= 0.0f) continue;		//se a célula não tiver capacidade de vida, ignora ela
+				if(Cell::current_K[i] <= 0.0f)
+					continue;		//se a célula não tiver capacidade de vida, ignora ela
 
 				uint first=Grid::neighborIndexMap[i];
 				uint last;
@@ -295,11 +296,11 @@ namespace SimEco{
 				//normalizando a pressão para entre 0-1, para evitar estouro do float (se não fica instável o método)
 				float pressao[N];
 				float pressao_max, pressao_min;
-				pressao_max = pressao_min = prevPopulation[i]/Cell::current_K[i];
+				pressao_max = pressao_min = specie.getCellPop(i)/Cell::current_K[i];
 				float pressao_sum = 0.0f;
 				for(uint j=first; j < last ; j++){
 					uint &neighbor = Grid::cellsNeighbors[j];
-					float cellPop = prevPopulation[neighbor];
+					float cellPop = specie.getCellPop(neighbor);
 					float &K = Cell::current_K[neighbor];
 
 					if (K <= 0.0f)
@@ -322,7 +323,7 @@ namespace SimEco{
 
 				for(uint j=first; j < last ; j++){
 					uint &neighbor = Grid::cellsNeighbors[j];
-					float cellPop = prevPopulation[neighbor];
+					float cellPop = specie.getCellPop(neighbor);
 					float &K = Cell::current_K[neighbor];
 
 					if (K <= 0.0f) continue; //se a célula não tiver capacidade de vida, ignora ela
@@ -357,10 +358,11 @@ namespace SimEco{
 					neighborPopDensity += cellPop * pressao[neighbor]; //forma original
 
 				}
-				neighborPopDensity = neighborPopDensity*a;		
+				neighborPopDensity = neighborPopDensity * a*(last-first);
+				peso_da_media*=a;
 
 				//ideia: fazer peso_media ser igual a (last-first) sempre
-				specie.setCellPop(i, (prevPopulation[i] + neighborPopDensity) / (1 + (last - first) * a));
+				specie.setCellPop(i, (prevPopulation[i] + neighborPopDensity) / (1 + peso_da_media));
 				//specie.setCellPop(i, (prevPopulation[i] + neighborPopDensity) / (1+ a * (last - first)));
 
 				//aqui vai ser preciso acessar a população da espécie na celula[i], porém e se ainda não existir essa espécie na celula[i]?

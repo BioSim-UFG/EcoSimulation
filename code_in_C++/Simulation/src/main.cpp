@@ -87,18 +87,20 @@ int main(int argc,char const *argv[]){
 
 
 	/***** lendo matriz de adjacencia de Conectividade das Celulas *****/
+	/*
 	printf(GRN("Lendo conectividade das celulas... "));	fflush(stdout);		//CONSOME muita memória temporariamente (200mb)
 	int celulas_lidasConnec = Grid::setCellsConnectivity("../../input/DummyHex2566 - Connectances - Geo.Single.Zip.Stream", 
 													"../../input/DummyHex2566 - Connectances - Topo.Single.Zip.Stream", 
 													"../../input/DummyHex2566 - Connectances - Rivers.Single.Zip.Stream");
 	printf(BOLD(LGTGRN("\tOK!\n")));	fflush(stdout);
+	*/
 
 
 
 	//verificando se o numero de celulas é igual/batem, se não, pega o menor numero e exclui as celulas extras
-	u_int num_cells = min( min(celulas_lidasClima, celulas_lidasConnec), celulas_lidasArea );
-	if(num_cells!=celulas_lidasClima || num_cells != celulas_lidasConnec || num_cells!=celulas_lidasArea){
-		printf(BOLD(LGTYEL("AVISO! numero de celulas lidas em Serie Climatica, conectividade diferem e Areas. Utilizando o menor.")));
+	u_int num_cells = min(min(celulas_lidasClima, celulas_lidasCoord), celulas_lidasArea);
+	if(num_cells!=celulas_lidasClima || num_cells != celulas_lidasCoord || num_cells!=celulas_lidasArea){
+		printf(BOLD(LGTYEL("AVISO! numero de celulas lidas em Serie Climatica, coordenadas  e Areas diferem. Utilizando o menor.")));
 
 		printf(" novo numero de celulas = %u\n", num_cells);
 		//remove as celulas extras
