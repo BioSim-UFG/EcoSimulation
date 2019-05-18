@@ -1,5 +1,5 @@
-Simulation_name= debug_FluidMigration3
-Num_Cells= 2566
+Simulation_name= debug_FluidMigration4
+Num_Cells= 84579
 Num_Founders= 1
 Num_TimeSteps= 50
 Save_Path= local

@@ -4,20 +4,19 @@ code_in_C++/Simulation/Results/*
 code_in_delphi/paleo_data/Decompressed.Stream
 
 DummyHex2566 - Output*
+WHHexGrid600 - Output*
 Prog.exe
 
-<<<<<<< HEAD
-*.vscode/settings.json
-.vscode/c_cpp_properties.json
-.vscode/
-=======
 *.vscode/
->>>>>>> 0ef96026b4699ca2aa5e2f8041f37b4fa9e0ad0b
 
 input/xPLASIM.All3DMats.Single.Zip.Stream
 input/DummyHex2566 - Connectances - Rivers.Single.Zip.Stream
 input/DummyHex2566 - Connectances - Geo.Single.Zip.Stream
 input/DummyHex2566 - Connectances - Topo.Single.Zip.Stream
+
+input/WHHexGrid600 - Connectances - Rivers.Single.Zip.Stream
+input/WHHexGrid600 - Connectances - Geo.Single.Zip.Stream
+input/WHHexGrid600 - Connectances - Topo.Single.Zip.Stream
 
 code_in_C++/Simulation/Configuration.txt
 code_in_C++/Simulation/gmon.out
