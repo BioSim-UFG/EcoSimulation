@@ -341,22 +341,6 @@ namespace SimEco{
 				specie.setCellPop(i, (prevPopulation[i] + a*neighborPopDensity) / (1+ a*(total_vizinhos)));
 				//specie.setCellPop(i, (prevPopulation[i] + neighborPopDensity) / (1+ a * (last - first)));
 
-
-
-
-				//aqui vai ser preciso acessar a população da espécie na celula[i], porém e se ainda não existir essa espécie na celula[i]?
-				//primeiro precisaria checar se existe, caso ainda não
-				//aí será necessário criar essa espécie lá, então marcar que a espécie ocupa a celula[i] (é biderecional) para então colocar a população
-				//o que no final gasta muitas ações
-
-				//Não precisaria colocar a espécie em celula[i] apenas se ela realmente for migrar para la? porque pelo que eu vi ele não faz nenhuma 
-				//checagem de movimento.
-
-				//minha proposta, deixa pra lá toda essa economia de memória e criar uma matriz de adjacencia mesmo. pode ser grande,
-				//mas até agora não usamos nada além de 100mb de RAM, então não iremos passar de 1 gb de RAM numa simulação completa
-				
-				//cara, que nem a gente discutiu, para depois expandir vai ser ruim, mas sinceramente acho que não deve acabar tanto problema mesmo não
-				//acho ate uma boa ideia.
 			}
 
 		}
