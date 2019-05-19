@@ -47,7 +47,7 @@ namespace SimEco
 
 		MinMaxLongitude[0] = +180;
 		MinMaxLongitude[1] = -180;
-		MinMaxLatitude[0] = +90;
+		MinMaxLatitude[0] = +180;
 		MinMaxLatitude[1] = -180;
 
 		projAnomalies = projectAnnomalies;	//~NOTA: por que copia o valor, sendo que ele só é lido uma vez no contrutor todo?
@@ -311,27 +311,22 @@ namespace SimEco
 		{
 			MinMaxLongitude[1] = longitude;
 		}
-		else
-		{
-			if (MinMaxLongitude[0] > longitude)
-			{
-				MinMaxLongitude[0] = longitude;
-			}
+		
+		if (MinMaxLongitude[0] > longitude){
+			MinMaxLongitude[0] = longitude;
 		}
+		
 	}
 
 	void PaleoClimate::checkLat(double latitude){
-		if (MinMaxLatitude[1] < latitude)
-		{
+		if (MinMaxLatitude[1] < latitude){
 			MinMaxLatitude[1] = latitude;
 		}
-		else
-		{
-			if (MinMaxLatitude[0] > latitude)
-			{
-				MinMaxLatitude[0] = latitude;
-			}
+		
+		if (MinMaxLatitude[0] > latitude){
+			MinMaxLatitude[0] = latitude;
 		}
+		
 	}
 
 	float PaleoClimate::normalizeLatitude(float latitude){
