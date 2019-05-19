@@ -10,7 +10,7 @@
 #include "Tools.h"
 
 #define SCREEN_WIDTH 1280/2
-#define SCREEN_HEIGHT 960/2
+#define SCREEN_HEIGHT 1280 / 2
 
 using namespace std;
 
@@ -22,9 +22,12 @@ void nextColor(){
 	corPos = (corPos + 1) % (sizeof(cores) / sizeof(RGBAiColor_t));
 }
 
+GLint current_width = SCREEN_WIDTH, current_height = SCREEN_HEIGHT;
 
 
 
+Point_t total_scale = {1.0f, 1.0f};
+Point_t total_translade = {0.0f, 0.0f};
 
 typedef struct{
 	float lat;
@@ -80,15 +83,7 @@ void init(){
 	glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 	glMatrixMode(GL_PROJECTION);
 
-	//levando em conta que os dados de latitude estão entre 0-1
-
-	if(SCREEN_WIDTH > SCREEN_HEIGHT){
-		double d = (double)SCREEN_HEIGHT/(double)SCREEN_WIDTH;
-		gluOrtho2D(0, 1.0, 0, 1.0*d);
-	}else{
-		double d = (double)SCREEN_WIDTH / (double)SCREEN_HEIGHT;
-		gluOrtho2D(0, 1.0*d, 0, 1.0);
-	}
+	gluOrtho2D(0, 1.0, 0, 1.0);
 }
 
 void display(){
@@ -110,10 +105,19 @@ void display(){
 			(float)(cell.Center().y - cell.altura)
 	});
 
-	//dada essas relações, qualquer outra posição é espelhamento, e também pode-se apenas usar a latitude como centro
+	//dada essas relações, qualquer outra posição é espelhamento, e também pode-se apenas usar as coordenadas (lat e lon) como centro
 	
 	glPushMatrix();
 
+	//escala pelo centro
+	glTranslatef(0.5, 0.5, 0);
+	glScalef(total_scale.x, total_scale.y, 1.0f);
+	glTranslatef(-0.5f, -0.5f, 0);
+
+	glTranslatef(total_translade.x, total_translade.y, 0.0f);
+	
+
+	corPos=0;
 	glColor3ub(cores[corPos].r, cores[corPos].g, cores[corPos].b);
 	cell.draw();
 
@@ -128,6 +132,16 @@ void display(){
 
 	glPopMatrix();
 
+	glColor3f(1.0f,0,0);
+	glBegin(GL_LINES);
+	glVertex2f(0.45f,0.5f);
+	glVertex2f(0.55f, 0.5f);
+	glVertex2f(0.5f, 0.45f);
+	glVertex2f(0.5f, 0.55f);
+
+	glEnd();
+
+
 	//ponto central e raio da cincunferencia
 	glFlush();
 }
@@ -136,17 +150,14 @@ void reshapeWindow(int width, int height){
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 
-	glViewport(0, 0, width, height);
 
 	//levando em conta que os dados de latitude estão entre 0-1
 
-	if(width > height){
-		double d = (double)height/(double)width;
-		gluOrtho2D(0, 1.0, 0, 1.0*d);
-	}else{
-		double d = (double)width / (double)height;
-		gluOrtho2D(0, 1.0*d, 0, 1.0);
-	}
+	glViewport(0, 0, width, height);
+	gluOrtho2D(0, 1.0, 0, 1.0);
+
+	current_width = glutGet(GLUT_SCREEN_WIDTH);
+	current_height = glutGet(GLUT_SCREEN_HEIGHT);
 
 	display();
 }
@@ -157,8 +168,9 @@ void reshapeWindow(int width, int height){
 /**********************Trecho de codigo responsável pelo input*************************/
 
 //velocidade em unidade por milisegundo
-#define velocity 0.5f
+#define velocity 0.05f
 #define scaVel 0.001f
+#define transVel 0.001f
 Point_t vetor_l={-velocity,0}, vetor_r={velocity,0}, vetor_d={0,-velocity}, vetor_u={0,velocity};
 Point_t vetor = {0.0f, 0.0f};
 
@@ -168,6 +180,7 @@ void MyKeyboardFunc(unsigned char Key, int x, int y){
 	keystates[Key] = true;
 	if(Key == ' ')
 		corPos = (corPos + 1) % (sizeof(cores) / sizeof(RGBAiColor_t));	
+
 }
 
 void MyKeyboardUpFunc(unsigned char Key, int x, int y){
@@ -178,14 +191,35 @@ void MyKeyboardUpFunc(unsigned char Key, int x, int y){
 	if(!keystates['w'])   vetor.y = 0;
 }
 
-void ApplyInput(){
-	if(keystates['q']){
-		
-	}
-}
+
 
 
 int oldTime;
+void ApplyInput(){
+	int newTime = glutGet(GLUT_ELAPSED_TIME);
+	int delta = newTime - oldTime;
+	oldTime = newTime;
+
+	if(keystates['+']){
+		total_scale.x+=scaVel*delta;
+		total_scale.y+=scaVel*delta;
+		display();
+	}
+	if(keystates['-']){
+		total_scale.x-=scaVel*delta;
+		total_scale.y-=scaVel*delta;
+		display();
+	}
+
+	if(keystates['d']){   total_translade.x += transVel*delta; display();}
+	if(keystates['a']){   total_translade.x -= transVel*delta; display();}
+	if(keystates['s']){   total_translade.y -= transVel*delta; display();}
+	if(keystates['w']){   total_translade.y += transVel*delta; display();}
+
+	
+}
+
+
 
 int main(int argc, char **argv){
 	glutInit(&argc, argv);

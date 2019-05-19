@@ -8,7 +8,7 @@ typedef struct RGBAiCOLOR{
 }RGBAiColor_t;
 
 typedef struct{
-    float x, y;    
+    GLfloat x, y;    
 }Point_t;
 
 Point_t translate(Point_t u, Point_t vetor);
