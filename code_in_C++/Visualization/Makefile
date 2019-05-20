@@ -1,4 +1,4 @@
-GPP_FLAGS = -lGL -lGLU -lglut -lboost_system -lboost_filesystem
+GPP_FLAGS = -lGL -lGLU -lglut -lboost_system -lboost_filesystem -lpthread -std=c++14
 
 default:
 	@g++ SimVisualization.cpp Tools.c Cell_HexaPoly.cpp -o Prog.exe $(GPP_FLAGS)

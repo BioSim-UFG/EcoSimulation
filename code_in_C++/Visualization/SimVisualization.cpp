@@ -12,6 +12,7 @@
 #include <fstream>
 #include <iostream>
 #include <boost/filesystem.hpp>
+#include <thread>
 
 #include "Tools.h"
 #include "Cell_HexaPoly.hpp"
@@ -25,16 +26,6 @@
 using namespace std;
 using namespace boost::filesystem;
 
-//lista de cores quaisquer
-const RGBAiColor_t cores[5] = {{42, 170, 172,0}, {211, 196, 167,0}, {165, 104, 191,0}, {19, 40, 15,0}, {210, 222, 217,0}};
-int corPos=0;
-
-void nextColor(){
-	int rangemin = 0;
-	int rangemax = 5;
-	corPos = rangemin + ((corPos-rangemin + 1) % ( min<int>(sizeof(cores) / sizeof(RGBAiColor_t),rangemax) - rangemin) );
-}
-
 GLint current_width = SCREEN_WIDTH, current_height = SCREEN_HEIGHT;
 
 Point_t total_scale = {1.0f, 1.0f};
@@ -42,13 +33,53 @@ Point_t total_translade = {0.0f, 0.0f};
 
 
 
+
+//lista de cores quaisquer
+const RGBAColord_t cores[5] = {{42, 170, 172,0}, {211, 196, 167,0}, {165, 104, 191,0}, {19, 40, 15,0}, {210, 222, 217,0}};
+int corPos=0;
+
+void nextColor(){
+	int rangemin = 0;
+	int rangemax = 5;
+	corPos = rangemin + ((corPos-rangemin + 1) % ( min<int>(sizeof(cores) / sizeof(RGBAColord_t),rangemax) - rangemin) );
+}
+
+//duração de cada timeStep num frame, em milissegundos
+int FRAME_DURATION = 250;
+
+
 int total_timeSteps;
 int total_celulas=0;
 //vetor de objetos que representam as células na interface gráfica
 vector<Cell_HexaPoly> Cells;
+vector<RGBAColorf_t> Cells_color_buffer[2];
+int active_buffer=0, free_buffer=1;
+int curr_timeStep=0;
+
 //registro de populações nas células de cada espécie
 //keys: speciePopulations_byTime [time_step] [celula] [specie] = população dessa espécie nesta célula neste determinado timeStep
 vector<vector<unordered_map<uint, float>>> Populations_byTime;
+float maxPopFound=0.0f;
+
+
+void swapColorBuffer(){
+	int rangemin = 0;
+	int rangemax = 2;
+	active_buffer = rangemin + ((active_buffer-rangemin + 1) % ( min<int>(sizeof(Cells_color_buffer) / sizeof(RGBAColorf_t),rangemax) - rangemin) );
+	free_buffer = rangemin + ((free_buffer - rangemin + 1) % (min<int>(sizeof(Cells_color_buffer) / sizeof(RGBAColorf_t), rangemax) - rangemin));
+}
+
+void fillColorBuffer(vector<RGBAColorf_t> &buffer, int timeStep, int specie){
+	for (int i = 0; i < buffer.size(); i++){
+		float density = Populations_byTime[timeStep][i][specie] / maxPopFound;
+		//buffer[i] = RGBAColorf_t(density, 0, 0, 0);	//para fundo preto
+		buffer[i] = RGBAColorf_t(1, 1.0f-density, 1.0f-density, 0); //para fundo branco
+	}
+}
+
+
+void ApplyInput(int deltaTime);
+void display();
 
 
 
@@ -64,7 +95,24 @@ void init(){
 	gluOrtho2D(0, 1.0 * SCREEN_WIDTH/LOWEST_RATIO, 0, 1.0 * SCREEN_HEIGHT/LOWEST_RATIO);
 }
 
+void reshapeWindow(int width, int height){
+	glViewport(0, 0, width, height);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+
+	//levando em conta que os dados de latitude estão entre 0-1
+	gluOrtho2D(0, (double)width / LOWEST_RATIO, 0, (double)height / LOWEST_RATIO);
+	current_width = width;
+	current_height = height;
+
+	display();
+}
+
+
+
 void display(){
+	
+	glEnable(GL_MULTISAMPLE_ARB);
 
 	glClearColor(0.115, 0.328, 0.85, 0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -105,8 +153,9 @@ void display(){
 
 	//printf("altura = %f\n", Cell_HexaPoly::Altura());
 	for(int i=0; i<Cells.size();i++){
-		glColor3ub(cores[corPos].r, cores[corPos].g, cores[corPos].b);
+		//glColor3ub(cores[corPos].r, cores[corPos].g, cores[corPos].b);
 		//nextColor();
+		glColor3fv(&Cells_color_buffer[active_buffer][i].r);
 		Cells.at(i).draw();
 		//printf("|  drawing at point %.4f-%.4f  ", Cells[i].Center().x, Cells[i].Center().y);
 	}
@@ -130,23 +179,50 @@ void display(){
 
 	glPopMatrix();
 
+	glDisable(GL_MULTISAMPLE_ARB);
 
 	//troca o buffer para evitar 'flickering' (tremedeira)
 	glutSwapBuffers();
 }
 
-void reshapeWindow(int width, int height){
-	glViewport(0, 0, width, height);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
+int oldTime=0;
+int countToNextFrame=0;
+void idleFunc(){
+	static bool haveToLoadNextCellColors = true;
+	static thread *fillCell_colorBuffer_thrd;
 
-	//levando em conta que os dados de latitude estão entre 0-1
-	gluOrtho2D(0, (double)width / LOWEST_RATIO, 0, (double)height / LOWEST_RATIO);
-	current_width = width;
-	current_height = height;
+	int newTime = glutGet(GLUT_ELAPSED_TIME);
+	int delta = newTime - oldTime;
+	oldTime = newTime;
+	ApplyInput(delta);
 
-	display();
+	countToNextFrame+=delta;
+
+
+	//seta as proxima novas cores;
+	if(haveToLoadNextCellColors){
+		fillCell_colorBuffer_thrd = new std::thread(fillColorBuffer, std::ref(Cells_color_buffer[free_buffer]), curr_timeStep, 0);
+		haveToLoadNextCellColors=false;
+	}
+
+	//se for hora, pinta as celulas com nova cor
+	if(countToNextFrame >= FRAME_DURATION && curr_timeStep<total_timeSteps){
+		countToNextFrame=0;
+
+		fillCell_colorBuffer_thrd->join();
+		fillCell_colorBuffer_thrd->~thread();
+		haveToLoadNextCellColors=true;
+		swapColorBuffer();
+		printf("new Frame of timeStep %d!\n", curr_timeStep);
+
+		display();
+		curr_timeStep++;
+	}
 }
+
+
+
+
 
 
 
@@ -167,9 +243,7 @@ void MyKeyboardFunc(unsigned char Key, int x, int y){
 	if(Key == ' '){
 		nextColor();
 		display();
-	}
-
-	
+	}	
 }
 
 void MyKeyboardUpFunc(unsigned char Key, int x, int y){
@@ -178,36 +252,30 @@ void MyKeyboardUpFunc(unsigned char Key, int x, int y){
 
 
 
-
-int oldTime;
-void ApplyInput(){
+void ApplyInput(int deltaTime){
 	bool callDisplay = false;
 
-	int newTime = glutGet(GLUT_ELAPSED_TIME);
-	int delta = newTime - oldTime;
-	oldTime = newTime;
-
 	if(keystates['+']){
-		total_scale.x+= total_scale.x*scaVel*delta;
-		total_scale.y+= total_scale.y*scaVel*delta;
+		total_scale.x+= total_scale.x*scaVel*deltaTime;
+		total_scale.y+= total_scale.y*scaVel*deltaTime;
 		if(total_scale.x > 450)	//treshold de zoomIn
 			total_scale.x = total_scale.y = 450;
 
 		callDisplay = true;
 	}
 	if(keystates['-']){
-		total_scale.x-= total_scale.x*scaVel*delta;
-		total_scale.y-= total_scale.y*scaVel*delta;
+		total_scale.x-= total_scale.x*scaVel*deltaTime;
+		total_scale.y-= total_scale.y*scaVel*deltaTime;
 		if(total_scale.x <=1e-3)	//treshold de zoomOut
 			total_scale.x = total_scale.y = 1e-3;
 		
 		callDisplay=true;
 	}
 
-	if(keystates['d']){   total_translade.x -= transVel*delta/total_scale.x; callDisplay=true;}
-	if(keystates['a']){   total_translade.x += transVel*delta/total_scale.x; callDisplay=true;}
-	if(keystates['s']){   total_translade.y += transVel*delta/total_scale.y; callDisplay=true;}
-	if(keystates['w']){   total_translade.y -= transVel*delta/total_scale.y; callDisplay=true;}
+	if(keystates['d']){   total_translade.x -= transVel*deltaTime/total_scale.x; callDisplay=true;}
+	if(keystates['a']){   total_translade.x += transVel*deltaTime/total_scale.x; callDisplay=true;}
+	if(keystates['s']){   total_translade.y += transVel*deltaTime/total_scale.y; callDisplay=true;}
+	if(keystates['w']){   total_translade.y -= transVel*deltaTime/total_scale.y; callDisplay=true;}
 
 
 	if(callDisplay)
@@ -300,8 +368,10 @@ int main(int argc, char **argv){
 		Cells.emplace_back((Point_t){c.lon,c.lat});
 	}
 	total_celulas=Cells.size();
+	Cells_color_buffer[0].resize(total_celulas, {.0f,.0f,.0f,.0f});
+	Cells_color_buffer[1].resize(total_celulas, {.0f,.0f,.0f,.0f});
 	//deixe nessa ordem, pois readSimulation_timeSteps() precisa saber quantas celulas existem
-	Populations_byTime.resize(total_timeSteps, vector<unordered_map<uint, float>>(total_celulas));
+	Populations_byTime.resize(total_timeSteps+1, vector<unordered_map<uint, float>>(total_celulas));
 	readSimulation_timeSteps(simPath);
 
 	cout << manual_comandos;
@@ -314,7 +384,8 @@ int main(int argc, char **argv){
 	glutInit(&argc, argv);
 	glutInitWindowSize(SCREEN_WIDTH, SCREEN_HEIGHT);
 	glutInitWindowPosition(10, 50);
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_MULTISAMPLE);
+	glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
 
 	glutCreateWindow("Mapa simulation");
 	init();
@@ -326,9 +397,11 @@ int main(int argc, char **argv){
 	glutKeyboardFunc(MyKeyboardFunc);
 	glutKeyboardUpFunc(MyKeyboardUpFunc);
 
-	glutIdleFunc(ApplyInput);
+	glutIdleFunc(idleFunc);
 
 	oldTime=glutGet(GLUT_ELAPSED_TIME);
+	glDisable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
 	glutMainLoop();
 }
 
@@ -428,6 +501,7 @@ void readTimeStep(path dir_path){
 						speciePopFile.read((char*)&cell, sizeof(uint));
 						speciePopFile.read((char *)&pop, sizeof(float));
 						Populations_byTime[timeStep][cell][specie] = pop;
+						maxPopFound = max(maxPopFound, pop);
 					}
 				}
 				cout<<"\n";

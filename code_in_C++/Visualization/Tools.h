@@ -3,9 +3,27 @@
 
 #include <GL/glut.h> //inclua a biblioteca glut
 
-typedef struct RGBAiCOLOR{
+typedef struct RGBACOLORd{
     GLubyte r, g, b, a;
-}RGBAiColor_t;
+    RGBACOLORd(){}
+    RGBACOLORd(GLubyte r, GLubyte g, GLubyte b, GLubyte a){
+        this->r = r;
+        this->g = g;
+        this->b = b;
+        this->a = a;
+    }
+}RGBAColord_t;
+
+typedef struct RGBACOLORf{
+    GLfloat r, g, b, a;
+    RGBACOLORf(){}
+    RGBACOLORf(float r, float g, float b, float a){
+        this->r = r;
+        this->g = g;
+        this->b = b;
+        this->a = a;
+    }
+}RGBAColorf_t;
 
 typedef struct{
     GLfloat x, y;    
