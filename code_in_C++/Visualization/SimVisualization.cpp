@@ -16,8 +16,11 @@
 #include "Tools.h"
 #include "Cell_HexaPoly.hpp"
 
+//pode alterar o SCREEN_HEIGHT e SCREEN_WIDTH, já o resto não garanto...
 #define SCREEN_HEIGHT 940
-#define SCREEN_WIDTH 940
+#define SCREEN_WIDTH (940*2)
+#define LOWEST_RATIO min<double>(SCREEN_HEIGHT, SCREEN_WIDTH)
+#define BIGGEST_RATIO max<double>(SCREEN_HEIGHT, SCREEN_WIDTH)
 
 using namespace std;
 using namespace boost::filesystem;
@@ -27,7 +30,7 @@ const RGBAiColor_t cores[5] = {{42, 170, 172,0}, {211, 196, 167,0}, {165, 104, 1
 int corPos=0;
 
 void nextColor(){
-	corPos = (corPos + 1) % (sizeof(cores) / sizeof(RGBAiColor_t));
+	corPos = 4+(corPos-4 + 1) % (-4+sizeof(cores) / sizeof(RGBAiColor_t));
 }
 
 GLint current_width = SCREEN_WIDTH, current_height = SCREEN_HEIGHT;
@@ -37,28 +40,31 @@ Point_t total_translade = {0.0f, 0.0f};
 
 
 
+int total_timeSteps;
+int total_celulas=0;
 //vetor de objetos que representam as células na interface gráfica
 vector<Cell_HexaPoly> Cells;
-
 //registro de populações nas células de cada espécie
-//keys: speciePopulations_byTime [time_step] [celula] ["specieName"] = população dessa espécie nesta célula neste determinado timeStep
-vector<vector<unordered_map<string, float>>> speciePopulations_byTime;
+//keys: speciePopulations_byTime [time_step] [celula] [specie] = população dessa espécie nesta célula neste determinado timeStep
+vector<vector<unordered_map<uint, float>>> Populations_byTime;
 
 
 
 void init(){
 	glClear(GL_COLOR_BUFFER_BIT);
-	glClearColor(0.215, 0.528, 1.0, 0);
+	glClearColor(0.015, 0.228, 0.85, 0);
 	glutSwapBuffers();
-	glViewport(0, 0, SCREEN_WIDTH / SCREEN_WIDTH, SCREEN_HEIGHT / SCREEN_HEIGHT);
+
+
+	glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 	glMatrixMode(GL_PROJECTION);
 
-	gluOrtho2D(0, 1.0, 0, 1.0);
+	gluOrtho2D(0, 1.0 * SCREEN_WIDTH/LOWEST_RATIO, 0, 1.0 * SCREEN_HEIGHT/LOWEST_RATIO);
 }
 
 void display(){
 
-	glClearColor(0.215, 0.528, 1.0, 0);
+	glClearColor(0.115, 0.328, 0.85, 0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 	//celula superior esquerda, cor roxa/lilás
@@ -76,16 +82,22 @@ void display(){
 	//dada essas relações, qualquer outra posição é espelhamento, e também pode-se apenas usar as coordenadas (lat e lon) como centro
 
 
-
-	double width_ratio = current_width / (double)SCREEN_WIDTH - 1;
-	double height_ratio = current_height / (double)SCREEN_HEIGHT - 1;
+	//ratio of screen reshape
+	double width_ratio = current_width / (double)SCREEN_WIDTH;
+	double height_ratio = current_height / (double)	SCREEN_HEIGHT;
 
 	glPushMatrix();
 
 	//escala pelo centro da tela
-	glTranslatef(0.5 + 0.5*width_ratio, 0.5 + 0.5*height_ratio, 0);
+	Point_t ortho_center = {
+		(SCREEN_WIDTH / LOWEST_RATIO) / 2,
+		(SCREEN_HEIGHT / LOWEST_RATIO) / 2
+	};
+
+
+	glTranslatef( ortho_center.x*width_ratio,  ortho_center.y*height_ratio, 0);
 	glScalef(total_scale.x, total_scale.y, 1.0f);
-	glTranslatef(-0.5 - 0.5f*width_ratio, -0.5 -0.5f*height_ratio, 0);
+	glTranslatef(-ortho_center.x*width_ratio, -ortho_center.y*height_ratio, 0);
 
 	glTranslatef(total_translade.x, total_translade.y, 0.0f);
 
@@ -106,13 +118,13 @@ void display(){
 	glPushMatrix();
 
 	glColor3f(1.0f,0,0);
-	glTranslated(width_ratio * 0.5f, height_ratio*0.5f, 0);
+	glTranslated((width_ratio-1) * ortho_center.x, (height_ratio-1)*ortho_center.y, 0);
 
 	glBegin(GL_LINES);
-	glVertex2f(0.475f , 0.5f);
-	glVertex2f(0.525f, 0.5f);
-	glVertex2f(0.5f, 0.475f);
-	glVertex2f(0.5f, 0.525f);
+	glVertex2f(ortho_center.x-0.025f , ortho_center.y);
+	glVertex2f(ortho_center.x+0.025f , ortho_center.y);
+	glVertex2f(ortho_center.x , ortho_center.y-0.025f);
+	glVertex2f(ortho_center.x , ortho_center.y+0.025f);
 	glEnd();
 
 	glPopMatrix();
@@ -126,9 +138,9 @@ void reshapeWindow(int width, int height){
 	glViewport(0, 0, width, height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	//levando em conta que os dados de latitude estão entre 0-1
-	gluOrtho2D(0, width / (double)SCREEN_WIDTH, 0, height / (double)SCREEN_HEIGHT);
 
+	//levando em conta que os dados de latitude estão entre 0-1
+	gluOrtho2D(0, (double)width / LOWEST_RATIO, 0, (double)height / LOWEST_RATIO);
 	current_width = width;
 	current_height = height;
 
@@ -204,18 +216,20 @@ void ApplyInput(){
 
 void readCoordinates(vector<Coord_t> *coord_v, string latPath, string lonPath);
 void readSimulation_timeSteps(string dir_path);
+void readTimeStep(path dir_path);
 
 
 
 int main(int argc, char **argv){
-	if(argc < 3){
+	if(argc < 4){
 		printf("Visualizador gráfico para saída da EcoSim\n");
 		printf("Autor: João Gabriel S. Fernandes\n");
 		printf("Versão 0.1\n");
 		printf("Uso: %s [OPÇÃO...] Sim_dataPrefix Sim_resultName\n\n", argv[0]);
-		printf("-dla, --lat-data-path\t caminho personalizado do arquivo binário de latitude das células\n");
-		printf("-dlo, --lon-data-path\t caminho personalizado do arquivo binário de longitude das células\n");
-		printf("-ds, --sim-data-path\t caminho personalizado do arquivo binário do output da simulação\n");
+		printf("-t, --total-time-steps : obrigatório\t quantidade de timeSteps\n");
+		printf("-dla, --lat-data-path : opcional\t caminho personalizado do arquivo binário de latitude das células\n");
+		printf("-dlo, --lon-data-path : opcional\t caminho personalizado do arquivo binário de longitude das células\n");
+		printf("-ds, --sim-data-path : opcional\t caminho personalizado do arquivo binário do output da simulação\n");
 
 		printf("as opções devem vir antes dos argumentos padrões\n");
 
@@ -232,6 +246,31 @@ int main(int argc, char **argv){
 	for(int i=1; i<argc;i++){
 		string arg(argv[i]);
 		if(arg[0]=='-'){
+			if(arg.substr(1).find("t")==0){
+				if(arg.size()>2)	//se o valor do argumento '-t' está logo em seguida (sem espaço)
+					total_timeSteps = stoi(arg.substr(2));
+				else{
+					if(++i > argc){
+						printf("Faltando valor de -t ou --total-time-steps");
+						exit(1);
+					}
+					arg = string(argv[i]);	//se tiver espaço depois de '-t', pega o proximo argumento
+					total_timeSteps = stoi(arg);
+				}
+			}
+			else if(arg.substr(1).find("-total-time-steps")==0){
+				if(arg.size()>18)	//se o valor do argumento '--total-time-steps' está logo em seguida (sem espaço)
+					total_timeSteps = stoi(arg.substr(18));
+				else{
+					//se tiver espaço depois de '-t', pega o proximo argumento
+					if(++i > argc){
+						printf("Faltando valor de -t ou --total-time-steps");
+						exit(1);
+					}
+					arg = string(argv[i]);
+					total_timeSteps = stoi(arg);
+				}
+			}
 
 		}
 		else{
@@ -255,7 +294,9 @@ int main(int argc, char **argv){
 	for(auto &c: *coords){
 		Cells.emplace_back((Point_t){c.lon,c.lat});
 	}
-
+	total_celulas=Cells.size();
+	//deixe nessa ordem, pois readSimulation_timeSteps() precisa saber quantas celulas existem
+	Populations_byTime.resize(total_timeSteps, vector<unordered_map<uint, float>>(total_celulas));
 	readSimulation_timeSteps(simPath);
 
 	
@@ -309,21 +350,19 @@ void readSimulation_timeSteps(string dir_path){
 
 	try{
 		if (exists(p)){ // does p actually exist?
-			if (is_regular_file(p)) // is p a regular file?
+			if (is_regular_file(p)){ // is p a regular file?
 				printf("%s is a file\n", p.string().c_str());
-
+			}
 			else if (is_directory(p)){ // is p a directory?
-				printf("found %s dir, containing\n", p.string().c_str());
-
+				printf("found %s DIR, containing\n", p.string().c_str());
+     
 				auto dir_it = directory_iterator(p);
 				while(dir_it != directory_iterator{}){
-					cout<< *dir_it++<<'\n';
+					cout << *dir_it << "\tOpening it...\n";
+					readTimeStep(dir_it->path());
+					cout<<"\t\tOk!\n";
+					dir_it++;
 				}
-				/*copy(directory_iterator(p), directory_iterator(),	// directory_iterator::value_type
-					 ostream_iterator<directory_entry>(cout, "\n")); // is directory_entry, which is
-																	 // converted to a path by the
-																	 // path stream inserter
-																	 */
 			}
 			else
 				printf("%s exists, but is neither a regular file nor a directory\n",p.string().c_str());
@@ -336,6 +375,47 @@ void readSimulation_timeSteps(string dir_path){
 	}
 }
 
-void readSpeciePopulation_byTime(string dir_path, string specieName){
+void readTimeStep(path dir_path){
+	int timeStep;
 	
+	if (is_regular_file(dir_path)){ // is p a regular file?
+		printf("%s is a file\n", dir_path.string().c_str());
+	}else{
+		int pos = dir_path.string().find("timeStep");
+		int len = string("timeStep").size();
+		timeStep = stoi(dir_path.string().substr(pos+len));
+
+		if(total_timeSteps < timeStep+1){
+			Populations_byTime.resize(timeStep+1);
+		}
+
+		auto dir_it = directory_iterator(dir_path);
+		while(dir_it != directory_iterator{}){
+			if(is_regular_file(*dir_it)){
+				cout <<"\t\t" <<dir_it->path().filename();
+
+				auto file_name = dir_it->path().filename();
+				if(file_name.extension().string().compare(".txt") != 0){
+					cout << " -->reading it";
+					ifstream speciePopFile(dir_it->path().string(), std::ios::binary);
+
+					int s = file_name.string().rfind("Esp");
+					int f = file_name.string().rfind("_Time");
+					uint specie = stoi(file_name.string().substr(s+3,f));
+
+					uint cell;
+					float pop;
+					while(!speciePopFile.eof()){	
+						speciePopFile.read((char*)&cell, sizeof(uint));
+						speciePopFile.read((char *)&pop, sizeof(float));
+						Populations_byTime[timeStep][cell][specie] = pop;
+					}
+				}
+				cout<<"\n";
+			}
+
+			dir_it++;
+		}
+	}
+
 }

@@ -136,7 +136,7 @@ namespace SimEco{
        for(uint i=0; i<sp.cellsPopulation.size(); i++){
            if(sp.cellsPopulation[i]>0.0f){
                 fprintf(f, "%5u ", i); //escreve o numero de cada célula ocupada pela espécie (no timeStep indicado)
-                fprintf(f, "%.4f\n", sp.cellsPopulation[i]); //escreve o numero de população em cada célula
+                fprintf(f, "%f\n", sp.cellsPopulation[i]); //escreve o numero de população em cada célula
            }
        }
 
