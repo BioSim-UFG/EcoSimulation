@@ -23,7 +23,7 @@ namespace SimEco{
 	void testArgs(int argc,char const *argv[]);
 
 	void create_SimulationDirectory(const char *simName);
-    void create_SubDir(const char *_name,int nSteps);
+	void create_timeStepsDirs(const char *_name, int nSteps);
 
 	void recordTimeStepFiles(const char *path, int timeStep, Grid g, const char *simName);
 

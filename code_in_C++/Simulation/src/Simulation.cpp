@@ -169,24 +169,8 @@ namespace SimEco{
 		this->_timeSteps = nSteps;
 
 		//cria um subdiretorio para cada timestep
-		//function create_SubDir(const char *_name, int nSteps)
-		char dir[50], comand[61];
-		#ifdef __linux__
-		sprintf(dir, "Results/%s/timeStep", _name);
-		#elif __WIN32
-		sprintf(dir, "Results\\%s\\timeStep", _name);
-		#endif
-		
-		int len = strlen(dir);
-		for(int i=0; i< nSteps; i++){
-			sprintf(dir+len,"%d",i);
-		#ifdef __linux__
-			sprintf(comand, "mkdir -p %s &", dir);
-		#elif __WIN32
-			sprintf(comand, "mkdir %s &", dir);
-		#endif
-			system(comand);
-		}
+		create_timeStepsDirs(_name, nSteps);
+
 
 
 		//aloca memória para o calculo dos fitness's
