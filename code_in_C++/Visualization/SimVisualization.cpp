@@ -30,7 +30,9 @@ const RGBAiColor_t cores[5] = {{42, 170, 172,0}, {211, 196, 167,0}, {165, 104, 1
 int corPos=0;
 
 void nextColor(){
-	corPos = 4+(corPos-4 + 1) % (-4+sizeof(cores) / sizeof(RGBAiColor_t));
+	int rangemin = 0;
+	int rangemax = 5;
+	corPos = rangemin + ((corPos-rangemin + 1) % ( min<int>(sizeof(cores) / sizeof(RGBAiColor_t),rangemax) - rangemin) );
 }
 
 GLint current_width = SCREEN_WIDTH, current_height = SCREEN_HEIGHT;
@@ -101,11 +103,10 @@ void display(){
 
 	glTranslatef(total_translade.x, total_translade.y, 0.0f);
 
-	corPos = 0;
 	//printf("altura = %f\n", Cell_HexaPoly::Altura());
 	for(int i=0; i<Cells.size();i++){
 		glColor3ub(cores[corPos].r, cores[corPos].g, cores[corPos].b);
-		nextColor();
+		//nextColor();
 		Cells.at(i).draw();
 		//printf("|  drawing at point %.4f-%.4f  ", Cells[i].Center().x, Cells[i].Center().y);
 	}
@@ -163,16 +164,16 @@ bool keystates[256] = {0};	//lista de estados das teclas, true para apertada, e 
 
 void MyKeyboardFunc(unsigned char Key, int x, int y){
 	keystates[Key] = true;
-	if(Key == ' ')
-		corPos = (corPos + 1) % (sizeof(cores) / sizeof(RGBAiColor_t));
+	if(Key == ' '){
+		nextColor();
+		display();
+	}
+
+	
 }
 
 void MyKeyboardUpFunc(unsigned char Key, int x, int y){
 	keystates[Key] = false;
-	if(!keystates['d'])   vetor.x = 0;
-	if(!keystates['a'])   vetor.x = 0;
-	if(!keystates['s'])   vetor.y = 0;
-	if(!keystates['w'])   vetor.y = 0;
 }
 
 
@@ -218,7 +219,10 @@ void readCoordinates(vector<Coord_t> *coord_v, string latPath, string lonPath);
 void readSimulation_timeSteps(string dir_path);
 void readTimeStep(path dir_path);
 
-
+static string manual_comandos = " W,A,S,D para se mover pelo mapa, \n"
+								"'+' e '-' para dar zoom in e zoom out\n"
+								"Barra de espaço para mudar cor do mapa\n"
+								"(em breve: Barra de espaço para mudar modo de vizualização)\n";
 
 int main(int argc, char **argv){
 	if(argc < 4){
@@ -231,7 +235,8 @@ int main(int argc, char **argv){
 		printf("-dlo, --lon-data-path : opcional\t caminho personalizado do arquivo binário de longitude das células\n");
 		printf("-ds, --sim-data-path : opcional\t caminho personalizado do arquivo binário do output da simulação\n");
 
-		printf("as opções devem vir antes dos argumentos padrões\n");
+		//printf("as opções devem vir antes dos argumentos padrões\n");
+		cout<<manual_comandos;
 
 		exit(1);
 	}
@@ -299,7 +304,11 @@ int main(int argc, char **argv){
 	Populations_byTime.resize(total_timeSteps, vector<unordered_map<uint, float>>(total_celulas));
 	readSimulation_timeSteps(simPath);
 
-	
+	cout << manual_comandos;
+
+
+
+	/*****************************CONFIGURAÇÕES OPENGL*******************************/
 
 	argc=1;
 	glutInit(&argc, argv);
@@ -323,6 +332,15 @@ int main(int argc, char **argv){
 	glutMainLoop();
 }
 
+
+
+
+
+
+
+
+
+
 void readCoordinates(vector<Coord_t> *coord_v, string latPath, string lonPath){
 	int i, n_cells1, n_cells2;
 	std::ifstream latFile(latPath, std::ios::binary);
@@ -344,6 +362,7 @@ void readCoordinates(vector<Coord_t> *coord_v, string latPath, string lonPath){
 	}
 
 }
+
 
 void readSimulation_timeSteps(string dir_path){
 	path p(dir_path); // p reads clearer than argv[1] in the following code
