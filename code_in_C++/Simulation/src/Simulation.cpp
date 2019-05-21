@@ -312,7 +312,7 @@ namespace SimEco{
 			//para cada célula do mapa
 			for(int i=0; i<N;i++){
 
-				//if(Cell::current_K[i] <= 0.0f)	continue;		//se a célula não tiver capacidade de vida, ignora ela
+				if(Cell::current_K[i] <= 0.0f)	continue;		//se a célula não tiver capacidade de vida, ignora ela (serve como barreira)
 
 				uint first=Grid::neighborIndexMap[i];
 				uint last;
@@ -326,7 +326,8 @@ namespace SimEco{
 				for(uint j=first; j < last ; j++){
 					uint &neighbor = Grid::cellsNeighbors[j];
 					float &K = Cell::current_K[neighbor];
-					//if(K <= 0.0f)	continue;		//se a célula não tiver capacidade de vida, ignora ela
+					if(K <= 0.0f)
+						continue; //se a célula não tiver capacidade de vida, ignora ela (serve como barreira)
 
 					neighborPopDensity += specie.getCellPop(neighbor); //forma original
 					total_vizinhos++;

@@ -4,6 +4,7 @@ code_in_C++/Simulation/Results/*
 code_in_delphi/paleo_data/Decompressed.Stream
 
 DummyHex2566 - Output*
+WHHexGrid600 - Output*
 output/WHHexGrid600 - Output*
 Prog.exe
 
@@ -22,4 +23,3 @@ code_in_C++/Simulation/Configuration.txt
 code_in_C++/Simulation/gmon.out
 code_in_C++/Simulation/progProfile
 code_in_C++/Simulation/progProfile100
-

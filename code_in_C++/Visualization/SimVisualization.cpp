@@ -26,12 +26,14 @@
 using namespace std;
 using namespace boost::filesystem;
 
+//duração de cada timeStep num frame, em milissegundos
+int FRAME_DURATION = 500;
+
+
 GLint current_width = SCREEN_WIDTH, current_height = SCREEN_HEIGHT;
 
 Point_t total_scale = {1.0f, 1.0f};
 Point_t total_translade = {0.0f, 0.0f};
-
-
 
 
 //lista de cores quaisquer
@@ -44,8 +46,6 @@ void nextColor(){
 	corPos = rangemin + ((corPos-rangemin + 1) % ( min<int>(sizeof(cores) / sizeof(RGBAColord_t),rangemax) - rangemin) );
 }
 
-//duração de cada timeStep num frame, em milissegundos
-int FRAME_DURATION = 250;
 
 
 int total_timeSteps;
@@ -70,8 +70,15 @@ void swapColorBuffer(){
 }
 
 void fillColorBuffer(vector<RGBAColorf_t> &buffer, int timeStep, int specie){
+		float density;
 	for (int i = 0; i < buffer.size(); i++){
-		float density = Populations_byTime[timeStep][i][specie] / maxPopFound;
+		auto &cell = Populations_byTime[timeStep][i];
+		//se existir essa espécie na célula
+		if (cell.count(specie)!=0){
+			density = Populations_byTime[timeStep][i][specie] / maxPopFound;
+		}else{
+			density = 0.0f;
+		}
 		//buffer[i] = RGBAColorf_t(density, 0, 0, 0);	//para fundo preto
 		buffer[i] = RGBAColorf_t(1, 1.0f-density, 1.0f-density, 0); //para fundo branco
 	}
@@ -88,6 +95,11 @@ void init(){
 	glClearColor(0.015, 0.228, 0.85, 0);
 	glutSwapBuffers();
 
+	//glEnable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
+	glEnable(GL_POLYGON_SMOOTH);
+	glHint(GL_POLYGON_SMOOTH_HINT, GL_LINEAR);
+	glEnable(GL_MULTISAMPLE_ARB);
 
 	glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 	glMatrixMode(GL_PROJECTION);
@@ -111,8 +123,6 @@ void reshapeWindow(int width, int height){
 
 
 void display(){
-	
-	glEnable(GL_MULTISAMPLE_ARB);
 
 	glClearColor(0.115, 0.328, 0.85, 0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -178,8 +188,6 @@ void display(){
 	glEnd();
 
 	glPopMatrix();
-
-	glDisable(GL_MULTISAMPLE_ARB);
 
 	//troca o buffer para evitar 'flickering' (tremedeira)
 	glutSwapBuffers();
@@ -302,6 +310,7 @@ int main(int argc, char **argv){
 		printf("-dla, --lat-data-path : opcional\t caminho personalizado do arquivo binário de latitude das células\n");
 		printf("-dlo, --lon-data-path : opcional\t caminho personalizado do arquivo binário de longitude das células\n");
 		printf("-ds, --sim-data-path : opcional\t caminho personalizado do arquivo binário do output da simulação\n");
+		printf("-S, --frame-duration : opcional\t duração de cada frame em milissegundos\n");
 
 		//printf("as opções devem vir antes dos argumentos padrões\n");
 		cout<<manual_comandos;
@@ -345,6 +354,19 @@ int main(int argc, char **argv){
 				}
 			}
 
+			if(arg.substr(1).find("S")==0){
+				if(arg.size()>2)	//se o valor do argumento '-t' está logo em seguida (sem espaço)
+					FRAME_DURATION = stoi(arg.substr(2));
+				else{
+					if(++i > argc){
+						printf("Faltando valor de -S");
+						exit(1);
+					}
+					arg = string(argv[i]);	//se tiver espaço depois de '-t', pega o proximo argumento
+					FRAME_DURATION = stoi(arg);
+				}
+			}
+
 		}
 		else{
 			if(!leu_prefix){
@@ -377,6 +399,8 @@ int main(int argc, char **argv){
 	cout << manual_comandos;
 
 
+	printf("Files loaded!\n\nPress Enter to start\ns");
+	getc(stdin);
 
 	/*****************************CONFIGURAÇÕES OPENGL*******************************/
 
@@ -384,8 +408,7 @@ int main(int argc, char **argv){
 	glutInit(&argc, argv);
 	glutInitWindowSize(SCREEN_WIDTH, SCREEN_HEIGHT);
 	glutInitWindowPosition(10, 50);
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_MULTISAMPLE);
-	glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_MULTISAMPLE | GLUT_DEPTH);
 
 	glutCreateWindow("Mapa simulation");
 	init();
@@ -400,8 +423,6 @@ int main(int argc, char **argv){
 	glutIdleFunc(idleFunc);
 
 	oldTime=glutGet(GLUT_ELAPSED_TIME);
-	glDisable(GL_DEPTH_TEST);
-	glEnable(GL_BLEND);
 	glutMainLoop();
 }
 
@@ -478,7 +499,8 @@ void readTimeStep(path dir_path){
 		timeStep = stoi(dir_path.string().substr(pos+len));
 
 		if(total_timeSteps < timeStep+1){
-			Populations_byTime.resize(timeStep+1);
+			printf("Skipping this folder\n");
+			return;
 		}
 
 		auto dir_it = directory_iterator(dir_path);

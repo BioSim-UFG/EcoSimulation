@@ -108,8 +108,8 @@ namespace SimEco{
             //sprintf(fname, "%s/timeStep%u", path, i);
            
            
-            sprintf(fnameTxt, "%s/%s_Esp%d_Time%d.txt", path, simName, g.species[i]._name, timeStep);
-            recordSpecieTxtFile(fnameTxt, timeStep, g.species[i]);
+            //sprintf(fnameTxt, "%s/%s_Esp%d_Time%d.txt", path, simName, g.species[i]._name, timeStep);
+            //recordSpecieTxtFile(fnameTxt, timeStep, g.species[i]);
 
             sprintf(fnameBin, "%s/%s_Esp%d_Time%d", path, simName, g.species[i]._name, timeStep);
             recordSpecieFile(fnameBin, timeStep, g.species[i]);

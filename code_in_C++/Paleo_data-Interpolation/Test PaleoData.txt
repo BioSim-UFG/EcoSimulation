@@ -7,12 +7,15 @@ DummyHex2566 - Output
 Y
 10
 
-DummyHex2566 - Coords and Clim.txt
+
+//versão FULL da simulação
+WHHexGrid600 - Coords and Clim.txt
+84579
 Y
-DummyHex2566 - Output
-500
+WHHexGrid600 - Output
 Y
-10
+Y
+Y
 
 
 WHHexGrid600 - Coords and Clim.txt
