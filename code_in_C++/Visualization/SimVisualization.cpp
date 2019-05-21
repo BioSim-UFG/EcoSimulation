@@ -1,4 +1,11 @@
-//#include <GLFW/glfw3.h>
+/**
+ * SimVisualization.cpp
+ * Purpose: Visualization of a already exeuted EcoSim simulation
+ * 
+ * @author João Gabriel Silva Fernandes
+ * @version 0.3 20/05/2016
+ */
+
 
 #include <stdio.h>
 #include <math.h>
@@ -15,7 +22,11 @@
 #include <thread>
 
 #include "Tools.h"
+#include "Helper.h"
 #include "Cell_HexaPoly.hpp"
+
+//defina para considerar o angulo do globo terrestre (eixo latitude)
+//#define NORMALIZE_LATITUDE
 
 //pode alterar o SCREEN_HEIGHT e SCREEN_WIDTH, já o resto não garanto...
 #define SCREEN_HEIGHT 940
@@ -29,22 +40,10 @@ using namespace boost::filesystem;
 //duração de cada timeStep num frame, em milissegundos
 int FRAME_DURATION = 500;
 
-
 GLint current_width = SCREEN_WIDTH, current_height = SCREEN_HEIGHT;
 
 Point_t total_scale = {1.0f, 1.0f};
 Point_t total_translade = {0.0f, 0.0f};
-
-
-//lista de cores quaisquer
-const RGBAColord_t cores[5] = {{42, 170, 172,0}, {211, 196, 167,0}, {165, 104, 191,0}, {19, 40, 15,0}, {210, 222, 217,0}};
-int corPos=0;
-
-void nextColor(){
-	int rangemin = 0;
-	int rangemax = 5;
-	corPos = rangemin + ((corPos-rangemin + 1) % ( min<int>(sizeof(cores) / sizeof(RGBAColord_t),rangemax) - rangemin) );
-}
 
 
 
@@ -58,7 +57,7 @@ int curr_timeStep=0;
 
 //registro de populações nas células de cada espécie
 //keys: speciePopulations_byTime [time_step] [celula] [specie] = população dessa espécie nesta célula neste determinado timeStep
-vector<vector<vector<float>>> Populations_byTime;
+vector<vector<vector<float> > > Populations_byTime;
 float maxPopFound=0.0f;
 
 
@@ -124,20 +123,6 @@ void display(){
 
 	glClearColor(0.115, 0.328, 0.85, 0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-	//celula superior esquerda, cor roxa/lilás
-	Cell_HexaPoly cell({0.5f, 0.5f});
-	//celula inferior esquerda, cor verde musgo
-	Cell_HexaPoly cell2({
-			cell.Center().x, 
-	(float)(cell.Center().y- 2*cell.altura)});
-	//celula meio direita, cor branca (escura?)
-	Cell_HexaPoly cell3({
-			(float)(cell.Center().x+ (1.5*cell.raio)),
-			(float)(cell.Center().y - cell.altura)
-	});
-
-	//dada essas relações, qualquer outra posição é espelhamento, e também pode-se apenas usar as coordenadas (lat e lon) como centro
 
 
 	//ratio of screen reshape
@@ -247,8 +232,8 @@ bool keystates[256] = {0};	//lista de estados das teclas, true para apertada, e 
 void MyKeyboardFunc(unsigned char Key, int x, int y){
 	keystates[Key] = true;
 	if(Key == ' '){
-		nextColor();
-		display();
+		//MUDA O MODO de visualização, AGORA do Q N SEI ( qual especie ver, ou densidade de todas espécies juntas, ou variabilidade genetica, etc)
+		
 	}	
 }
 
@@ -288,7 +273,8 @@ void ApplyInput(int deltaTime){
 		display();
 }
 
-void processArgs(int argc, char **argv, string *simPath, string *latPath, string *lonPath);
+SimInfo_t processArgs(int argc, char **argv, string *simPath, string *latPath, string *lonPath);
+void read_simInfo(string info_file_path, SimInfo_t *info);
 void readCoordinates(vector<Coord_t> *coord_v, string latPath, string lonPath);
 void readSimulation_timeSteps(string dir_path);
 void readTimeStep(path dir_path);
@@ -299,16 +285,16 @@ static string manual_comandos = " W,A,S,D para se mover pelo mapa, \n"
 								"(em breve: Barra de espaço para mudar modo de vizualização)\n";
 
 int main(int argc, char **argv){
-	if(argc < 4){
+	if(argc < 2){
 		printf("Visualizador gráfico para saída da EcoSim\n");
 		printf("Autor: João Gabriel S. Fernandes\n");
 		printf("Versão 0.3\n");
-		printf("Uso: %s [OPÇÃO...] Sim_dataPrefix Sim_resultName\n\n", argv[0]);
-		printf("-t, --total-time-steps : obrigatório\t quantidade de timeSteps\n");
-		printf("-dla, --lat-data-path : opcional\t caminho personalizado do arquivo binário de latitude das células\n");
-		printf("-dlo, --lon-data-path : opcional\t caminho personalizado do arquivo binário de longitude das células\n");
+		printf("Uso: %s [OPÇÃO...] sim_info_file\n\n", argv[0]);
+		printf("-t, --total-time-steps : opcional\t quantidade de timeSteps\n");
 		printf("-ds, --sim-data-path : opcional\t caminho personalizado do arquivo binário do output da simulação\n");
 		printf("-S, --frame-duration : opcional\t duração de cada frame em milissegundos\n");
+		
+		printf("\nsim_info_file: arquivo texto de informações, gerado pela simulação\n");
 
 		//printf("as opções devem vir antes dos argumentos padrões\n");
 		cout<<manual_comandos;
@@ -320,21 +306,24 @@ int main(int argc, char **argv){
 	string latPath = "../../output/";
 	string lonPath = "../../output/";
 
-	processArgs(argc, argv, &simPath, &latPath, &lonPath);	
+	auto simInfo = processArgs(argc, argv, &simPath, &latPath, &lonPath);	
 
 
-	
 
+
+	total_celulas=simInfo.NUM_CELLS;
+	total_timeSteps=simInfo.TIMESTEPS;
+
+	Cells.reserve(total_celulas);
 	vector<Coord_t> *coords = new vector<Coord_t>();
-	Cells.reserve(coords->size());
-	readCoordinates(coords, latPath, lonPath);
+	coords->reserve(total_celulas);
+	readCoordinates(coords, simInfo.Lat_dataSource, simInfo.Lon_dataSource);
 	for(auto &c: *coords){
 		Cells.emplace_back((Point_t){c.lon,c.lat});
 	}
-	total_celulas=Cells.size();
-	Cells_color_buffer[0].resize(total_celulas, {.0f,.0f,.0f,.0f});
-	Cells_color_buffer[1].resize(total_celulas, {.0f,.0f,.0f,.0f});
-	//deixe nessa ordem, pois readSimulation_timeSteps() precisa saber quantas celulas existem
+	Cells_color_buffer[0].resize(total_celulas, {1.0f,1.0f,1.0f,.0f});
+	Cells_color_buffer[1].resize(total_celulas, {1.0f,1.0f,1.0f,.0f});
+
 	Populations_byTime.resize(total_timeSteps+1, vector<vector<float>>(total_celulas,vector<float>()));
 	readSimulation_timeSteps(simPath);
 
@@ -369,15 +358,16 @@ int main(int argc, char **argv){
 }
 
 
-void processArgs(int argc, char **argv, string *simPath, string *latPath, string *lonPath){
+SimInfo_t processArgs(int argc, char **argv, string *simPath, string *latPath, string *lonPath){
 
-	bool customLat = false, customLon = false, customSimPath = false;
-	bool leu_prefix = false, leu_SimName = false;
+	bool customTimeSteps = false, customSimPath = false;
+	SimInfo_t info;
 
 	for(int i=1; i<argc;i++){
 		string arg(argv[i]);
 		if(arg[0]=='-'){
 			if(arg.substr(1).find("t")==0){
+				customTimeSteps=true;
 				if(arg.size()>2)	//se o valor do argumento '-t' está logo em seguida (sem espaço)
 					total_timeSteps = stoi(arg.substr(2));
 				else{
@@ -390,6 +380,7 @@ void processArgs(int argc, char **argv, string *simPath, string *latPath, string
 				}
 			}
 			else if(arg.substr(1).find("-total-time-steps")==0){
+				customTimeSteps=true;
 				if(arg.size()>18)	//se o valor do argumento '--total-time-steps' está logo em seguida (sem espaço)
 					total_timeSteps = stoi(arg.substr(18));
 				else{
@@ -418,20 +409,78 @@ void processArgs(int argc, char **argv, string *simPath, string *latPath, string
 
 		}
 		else{
-			if(!leu_prefix){
-				if(!customLat)
-					*latPath = *latPath+arg+" - Output - Latitude.stream";
-				if (!customLon)
-					*lonPath = *lonPath + arg + " - Output - Longitude.stream";
-				leu_prefix=true;
-			}
-			else if(leu_prefix && !leu_SimName){
-				*simPath = *simPath+arg;
-				leu_SimName = true;
-			}	
+			read_simInfo((*simPath) +arg.substr(0,arg.rfind("_info.txt"))+"/"+ arg, &info);
+			*latPath = info.Lat_dataSource;
+			*lonPath = info.Lon_dataSource;
+			*simPath = *simPath +info.Name;
 		}
 	}
+
+	if(!customTimeSteps)
+		total_timeSteps = info.TIMESTEPS;
+	return info;
 }
+
+
+void read_simInfo(string info_file_path, SimInfo_t *info){
+	FILE *info_file = fopen(info_file_path.c_str(),"r");
+
+	char atribute_cstr[100];
+	char value_cstr[100];
+
+	if(info_file == NULL){
+		printf("Não foi possivel abrir o arquivo %s\n", info_file_path.c_str());
+		exit(1);
+	}
+
+	while(!feof(info_file)){
+		fscanf(info_file, "%[^=]s", atribute_cstr); //lê até encontrar '='
+		fscanf(info_file,"=");	//descarta o '='
+		fscanf(info_file, "%[^\n]s", value_cstr);   //lê até final da linha
+		fscanf(info_file,"\n");	//descarta o '\n'
+
+		string atribute = string(atribute_cstr);
+		while(atribute.back()==' '){ atribute.pop_back();}	//remove os espaços sobrando
+
+		string value = string(value_cstr);
+		while(value.front()==' '){ value.erase(0,1);}	//remove os espaços sobrando
+			
+
+		if (atribute.compare("Name")==0){
+			info->Name = value;
+		}else if(atribute.compare("TimeSteps")==0){
+			info->TIMESTEPS = stoi(value);
+		}else if(atribute.compare("Num Cells")==0){
+			info->NUM_CELLS = stoi(value);
+		}else if(atribute.compare("Num Specie Founders")==0){
+			info->NUM_FOUNDERS = stoi(value);
+		}else if(atribute.compare("Max local specie population")==0){
+			maxPopFound = stof(value);
+		}else if(atribute.compare("MinTemp Source")==0){
+			info->MinTemp_dataSource = value;
+		}else if(atribute.compare("MaxTemp Source")==0){
+			info->MaxTemp_dataSource = value;
+		}else if(atribute.compare("MinPPTN Source")==0){
+			info->MinPPTN_dataSource = value;
+		}else if(atribute.compare("MaxPPTN Source")==0){
+			info->MaxPPTN_dataSource = value;
+		}else if(atribute.compare("NPP Source")==0){
+			info->NPP_dataSource = value;
+		}else if(atribute.compare("Latitude Source")==0){
+			info->Lat_dataSource = value;
+		}else if(atribute.compare("Longitude Source")==0){
+			info->Lon_dataSource = value;
+		}else if(atribute.compare("Areas Source")==0){
+			info->Areas_dataSource = value;
+		}else if(atribute.compare("Neighbors Source")==0){
+			info->Neighbors_dataSource = value;
+		}
+		
+	}
+
+}
+
+
 
 
 
@@ -442,8 +491,8 @@ void processArgs(int argc, char **argv, string *simPath, string *latPath, string
 
 void readCoordinates(vector<Coord_t> *coord_v, string latPath, string lonPath){
 	int i, n_cells1, n_cells2;
-	std::ifstream latFile(latPath, std::ios::binary);
-	std::ifstream lonFile(lonPath, std::ios::binary);
+	ifstream latFile(latPath, std::ios::binary);
+	ifstream lonFile(lonPath, std::ios::binary);
 
 	Coord_t coord;
 
@@ -457,6 +506,14 @@ void readCoordinates(vector<Coord_t> *coord_v, string latPath, string lonPath){
 	for(int i=0; i< n_cells1;i++){
 		latFile.read((char *)&(coord.lat), sizeof(Coord_t::lat));
 		lonFile.read((char *)&(coord.lon), sizeof(Coord_t::lon));
+		
+		#ifdef NORMALIZE_LATITUDE
+		//normalizando o angulo da latitude
+		coord.lat = sin(((coord.lat-0.5)*90.0)*3.14159265/180);
+		coord.lat = (coord.lat+1)/2;
+		#endif
+
+
 		coord_v->push_back(coord);
 	}
 

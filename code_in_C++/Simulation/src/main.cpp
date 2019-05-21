@@ -164,6 +164,9 @@ int main(int argc,char const *argv[]){
 	//cout << "\nTempo total: " << LGTYEL(<< timeCounter->elapsedTime() << " s\n");
 	cout << "\nTempo total: " << LGTYEL(<< timeCounter->End() << " s\n");
 
+	cout << "\nGravando info da simulação\n";
+	recordSimulationInfo(*simulacao);
+
 	//grava log num arquivo
 
 

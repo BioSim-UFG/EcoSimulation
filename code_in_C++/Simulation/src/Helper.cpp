@@ -114,11 +114,11 @@ namespace SimEco{
 
     void recordSimulationInfo(Simulation &simulation_src){
         string fullPath(Configuration::SAVEPATH);
-        fullPath = fullPath + string(Configuration::NAME)+"info.txt";
+        fullPath = fullPath +"/"+ string(Configuration::NAME)+"/"+ string(Configuration::NAME)+"_info.txt";
 
         FILE *arq = fopen(fullPath.c_str(),"w");
         if(arq==NULL){
-            cout<<"não foi possivel gravar o arquivo "<< string(Configuration::NAME) + "info.txt\n";
+            cout<<"não foi possivel gravar o arquivo "<< string(Configuration::NAME) + "_info.txt\n";
             return;
         }
 
@@ -138,6 +138,8 @@ namespace SimEco{
         fprintf(arq, "Longitude Source = %s\n", Configuration::Lon_dataSource.c_str());
         fprintf(arq, "Areas Source = %s\n", Configuration::Areas_dataSource.c_str());
         fprintf(arq, "Neighbors Source = %s\n", Configuration::Neighbors_dataSource.c_str());
+
+        fclose(arq);
     }
 
     void recordTimeStepFiles(const char *path, int timeStep, Grid g, const char *simName){
@@ -147,8 +149,8 @@ namespace SimEco{
             //sprintf(fname, "%s/timeStep%u", path, i);
            
            
-            //sprintf(fnameTxt, "%s/%s_Esp%d_Time%d.txt", path, simName, g.species[i]._name, timeStep);
-            //recordSpecieTxtFile(fnameTxt, timeStep, g.species[i]);
+            sprintf(fnameTxt, "%s/%s_Esp%d_Time%d.txt", path, simName, g.species[i]._name, timeStep);
+            recordSpecieTxtFile(fnameTxt, timeStep, g.species[i]);
 
             sprintf(fnameBin, "%s/%s_Esp%d_Time%d", path, simName, g.species[i]._name, timeStep);
             recordSpecieFile(fnameBin, timeStep, g.species[i]);

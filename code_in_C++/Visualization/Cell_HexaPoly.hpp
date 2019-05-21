@@ -6,7 +6,7 @@
 typedef struct{
     float lon;
     float lat;
-} Coord_t;
+}Coord_t;
 
 class Cell_HexaPoly
 {

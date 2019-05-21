@@ -1,5 +1,5 @@
-Simulation_name= fullRun2_dt2
+Simulation_name= simInfo_test2
 Num_Cells= 84579
 Num_Founders= 1
-Num_TimeSteps= 2500
+Num_TimeSteps= 50
 Save_Path= local
