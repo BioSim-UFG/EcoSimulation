@@ -58,7 +58,7 @@ int curr_timeStep=0;
 
 //registro de populações nas células de cada espécie
 //keys: speciePopulations_byTime [time_step] [celula] [specie] = população dessa espécie nesta célula neste determinado timeStep
-vector<vector<unordered_map<uint, float>>> Populations_byTime;
+vector<vector<vector<float>>> Populations_byTime;
 float maxPopFound=0.0f;
 
 
@@ -73,12 +73,10 @@ void fillColorBuffer(vector<RGBAColorf_t> &buffer, int timeStep, int specie){
 		float density;
 	for (int i = 0; i < buffer.size(); i++){
 		auto &cell = Populations_byTime[timeStep][i];
-		//se existir essa espécie na célula
-		if (cell.count(specie)!=0){
-			density = Populations_byTime[timeStep][i][specie] / maxPopFound;
-		}else{
+		if (cell.size() > specie)
+			density = cell.at(specie) / maxPopFound;
+		else
 			density = 0.0f;
-		}
 		//buffer[i] = RGBAColorf_t(density, 0, 0, 0);	//para fundo preto
 		buffer[i] = RGBAColorf_t(1, 1.0f-density, 1.0f-density, 0); //para fundo branco
 	}
@@ -337,7 +335,7 @@ int main(int argc, char **argv){
 	Cells_color_buffer[0].resize(total_celulas, {.0f,.0f,.0f,.0f});
 	Cells_color_buffer[1].resize(total_celulas, {.0f,.0f,.0f,.0f});
 	//deixe nessa ordem, pois readSimulation_timeSteps() precisa saber quantas celulas existem
-	Populations_byTime.resize(total_timeSteps+1, vector<unordered_map<uint, float>>(total_celulas));
+	Populations_byTime.resize(total_timeSteps+1, vector<vector<float>>(total_celulas,vector<float>()));
 	readSimulation_timeSteps(simPath);
 
 	cout << manual_comandos;
@@ -532,7 +530,9 @@ void readTimeStep(path dir_path){
 					while(!speciePopFile.eof()){	
 						speciePopFile.read((char*)&cell, sizeof(uint));
 						speciePopFile.read((char *)&pop, sizeof(float));
-						Populations_byTime[timeStep][cell][specie] = pop;
+						if(Populations_byTime[timeStep][cell].size() < specie-1)
+							Populations_byTime[timeStep][cell].resize(specie+1);
+						Populations_byTime[timeStep][cell].at(specie) = pop;
 						maxPopFound = max(maxPopFound, pop);
 					}
 
