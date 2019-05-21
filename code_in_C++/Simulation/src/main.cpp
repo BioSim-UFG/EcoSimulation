@@ -18,14 +18,28 @@ using namespace SimEco;
 int main(int argc,char const *argv[]){
 	
 	//testArgs(argc,argv);
-	Configuration* simConf;
-	simConf->Configure();
+	Configuration SimConf;
+	SimConf.Configure();
 
-	printf(UNDL("Simulation name") ": %-16.16s  ", simConf->NAME);
-	printf(UNDL("TimeSteps") ": %u\n", simConf->TIMESTEPS);
-	printf(UNDL("Num Cells") ": %-20u    ", simConf->MAX_CELLS);
-	printf(UNDL("Num Founders") ": %u\n", simConf->NUM_FOUNDERS);
-	printf(UNDL("Save Path") ": %s\n", simConf->SAVEPATH);
+	printf(UNDL("Simulation name") ": %-16.16s  ", SimConf.NAME);
+	printf(UNDL("TimeSteps") ": %u\n", SimConf.TIMESTEPS);
+	printf(UNDL("Num Cells") ": %-20u    ", SimConf.MAX_CELLS);
+	printf(UNDL("Num Founders") ": %u\n", SimConf.NUM_FOUNDERS);
+	printf(UNDL("Save Path") ": %s\n", SimConf.SAVEPATH);
+
+	SimConf.MinTemp_dataSource = string("../../output/WHHexGrid600 - Output - MinTemp.stream");
+	SimConf.MaxTemp_dataSource = string("../../output/WHHexGrid600 - Output - MaxTemp.stream");
+	SimConf.MinPPTN_dataSource = string("../../output/WHHexGrid600 - Output - MinPPTN.stream");
+	SimConf.MaxPPTN_dataSource = string("../../output/WHHexGrid600 - Output - MaxPPTN.stream");
+	SimConf.NPP_dataSource = string("../../output/WHHexGrid600 - Output - NPP.stream");
+
+	SimConf.Lon_dataSource = "../../output/WHHexGrid600 - Output - Longitude.stream";
+	SimConf.Lat_dataSource = "../../output/WHHexGrid600 - Output - Latitude.stream";
+
+	SimConf.Areas_dataSource = "../../input/WHHexGrid600 - Area.txt";
+	SimConf.Neighbors_dataSource = "../../input/WHHexGrid600 - GraphNeighbors.txt";
+
+	
 
 	Simulation *simulacao;
 	Grid *grid;
@@ -60,30 +74,27 @@ int main(int argc,char const *argv[]){
 												   "../../output/WHHexGrid600 - Output - MinPPTN.txt", "../../output/WHHexGrid600 - Output - MaxPPTN.txt",
 												   "../../output/WHHexGrid600 - Output - NPP.txt", numero_de_timeSteps);
 	*/
-	int celulas_lidasClima = Grid::setCellsClimate("../../output/WHHexGrid600 - Output - MinTemp.stream", //climas de todas as celulas em todos os tempos
-												   "../../output/WHHexGrid600 - Output - MaxTemp.stream",
-												   "../../output/WHHexGrid600 - Output - MinPPTN.stream",
-												   "../../output/WHHexGrid600 - Output - MaxPPTN.stream",
-												   "../../output/WHHexGrid600 - Output - NPP.stream", numero_de_timeSteps);
+	int celulas_lidasClima = Grid::setCellsClimate(SimConf.MinTemp_dataSource.c_str(), SimConf.MaxTemp_dataSource.c_str(),
+												   SimConf.MinPPTN_dataSource.c_str(), SimConf.MaxPPTN_dataSource.c_str(),
+												   SimConf.NPP_dataSource.c_str(), numero_de_timeSteps); //climas de todas as celulas em todos os tempos
 	printf(BOLD(LGTGRN("OK!\n"))); fflush(stdout);
 
 
 	/***** lendo arquivos de coordenadas das celulas**********/
 	printf(GRN("Lendo Coordenadas das celulas... "));	fflush(stdout);
-	int celulas_lidasCoord = Grid::setCellsCoordinates("../../output/WHHexGrid600 - Output - Longitude.stream",
-													  "../../output/WHHexGrid600 - Output - Latitude.stream");
+	int celulas_lidasCoord = Grid::setCellsCoordinates( SimConf.Lon_dataSource.c_str(), SimConf.Lat_dataSource.c_str() );
 	printf(BOLD(LGTGRN("\tOK!\n")));	fflush(stdout);
 
 
 	/***** lendo arquivo da area das celulas**********/
 	printf(GRN("Lendo Area das celulas... "));	fflush(stdout);
-	int celulas_lidasArea = Grid::setCellsArea("../../input/WHHexGrid600 - Area.txt");
+	int celulas_lidasArea = Grid::setCellsArea(SimConf.Areas_dataSource.c_str());
 	printf(BOLD(LGTGRN("\tOK!\n")));	fflush(stdout);
 
 
 	/***** lendo arquivo de vizinhança entre as celulas**********/
 	printf(GRN("Lendo vizinhas diretas entre celulas... ")); fflush(stdout);
-	Grid::setCellsNeighbors("../../input/WHHexGrid600 - GraphNeighbors.txt");
+	Grid::setCellsNeighbors(SimConf.Neighbors_dataSource.c_str());
 	printf(BOLD(LGTGRN("\tOK!\n")));	fflush(stdout);
 
 
@@ -141,6 +152,7 @@ int main(int argc,char const *argv[]){
 	/** agora que toda a pré configuração está pronta, vamos rodar mesmo a simulação **/
 
 	simulacao->run(numero_de_timeSteps);	//roda a simulação para N timeSteps -1(tempo zero)
+	
 
 
 

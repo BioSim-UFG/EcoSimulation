@@ -356,6 +356,10 @@ namespace SimEco{
 
 			if (specie.getCellPop(i) > K)
 				specie.setCellPop(i, K); //usar o limite do K deveria ser aplicado antes ou depois de rodar a dinamica de fluidos?
+			
+			//apenas para manter a info de qual o maior valor de densidade populacional em uma célula
+			if(specie.getCellPop(i) > this->maxLocalSpeciePopFound)
+				this->maxLocalSpeciePopFound = specie.getCellPop(i);
 
 			//para toda celula que recebeu do "flúido"/densidade populacional, anota que a espécie está presente nela
 			Cell::speciesPresent[i].insert(&specie);

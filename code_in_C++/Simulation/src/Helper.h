@@ -25,6 +25,8 @@ namespace SimEco{
 	void create_SimulationDirectory(const char *simName);
 	void create_timeStepsDirs(const char *_name, int nSteps, vector<bool> &createdDir);
 
+	void recordSimulationInfo(Simulation &simulation_src);
+
 	void recordTimeStepFiles(const char *path, int timeStep, Grid g, const char *simName);
 
 	void recordSpecieTxtFile(const char *path, int timeStep, Specie &sp);
@@ -67,6 +69,20 @@ namespace SimEco{
 		static unsigned int NUM_FOUNDERS;
 		static unsigned int TIMESTEPS;
 
+		static string MinTemp_dataSource;
+		static string MaxTemp_dataSource;
+		static string MinPPTN_dataSource;
+		static string MaxPPTN_dataSource;
+		static string NPP_dataSource;
+
+		static string Lat_dataSource;
+		static string Lon_dataSource;
+
+		static string Areas_dataSource;
+
+		static string Neighbors_dataSource;
+
+		
 		void Configure();
 	};
 

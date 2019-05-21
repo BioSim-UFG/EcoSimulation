@@ -20,6 +20,18 @@ namespace SimEco{
 
 	class Simulation{
 
+	   public:
+
+		
+		Simulation(Grid & grid, const char *name);
+		void carrega_founders(const char *founders_input, vector<Specie> &founders);
+		void run(int nSteps);
+		uint timeSteps(){return _timeSteps;}
+		const Grid& grid(){return _grid;}
+		string name(){return string(_name);}
+
+		float maxLocalSpeciePopFound=0.0f;
+
 	  private:
 	  	const char *_name;
 		uint _timeSteps = 0;
@@ -47,11 +59,6 @@ namespace SimEco{
 		
 	
 
-	   public:
-		
-		Simulation(Grid & grid, const char *name);
-		void carrega_founders(const char *founders_input, vector<Specie> &founders);
-		void run(int nSteps);
 
 	};
 

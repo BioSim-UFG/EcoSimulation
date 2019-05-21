@@ -1,7 +1,9 @@
 #include "Helper.h"
+#include "Simulation.h"
 
 #include <chrono>
 #include <string.h>
+#include <string>
 
 
 
@@ -27,6 +29,15 @@ namespace SimEco{
     unsigned int  Configuration::MAX_CELLS;
     unsigned int  Configuration::NUM_FOUNDERS;
     unsigned int  Configuration::TIMESTEPS;
+    std::string Configuration::MinTemp_dataSource;
+    std::string Configuration::MaxTemp_dataSource;
+    std::string Configuration::MinPPTN_dataSource;
+    std::string Configuration::MaxPPTN_dataSource;
+    std::string Configuration::NPP_dataSource;
+    std::string Configuration::Lat_dataSource;
+    std::string Configuration::Lon_dataSource;
+    std::string Configuration::Areas_dataSource;
+    std::string Configuration::Neighbors_dataSource;
 
     void Configuration::Configure(){
         FILE* f;
@@ -100,6 +111,34 @@ namespace SimEco{
         return elapsed.count();
     }
     */
+
+    void recordSimulationInfo(Simulation &simulation_src){
+        string fullPath(Configuration::SAVEPATH);
+        fullPath = fullPath + string(Configuration::NAME)+"info.txt";
+
+        FILE *arq = fopen(fullPath.c_str(),"w");
+        if(arq==NULL){
+            cout<<"não foi possivel gravar o arquivo "<< string(Configuration::NAME) + "info.txt\n";
+            return;
+        }
+
+
+        fprintf(arq, "Name = %s\n", simulation_src.name().c_str());
+        fprintf(arq, "TimeSteps = %u\n", simulation_src.timeSteps());
+        fprintf(arq, "Num Cells = %d\n", simulation_src.grid().cellsSize);
+        fprintf(arq, "Num Specie Founders = %u\n", Configuration::NUM_FOUNDERS);
+        fprintf(arq, "Max local specie population = %f\n", simulation_src.maxLocalSpeciePopFound);
+
+        fprintf(arq, "MinTemp Source = %s\n", Configuration::MinTemp_dataSource.c_str());
+        fprintf(arq, "MaxTemp Source = %s\n", Configuration::MaxTemp_dataSource.c_str());
+        fprintf(arq, "MinPPTN Source = %s\n", Configuration::MinPPTN_dataSource.c_str());
+        fprintf(arq, "MaxPPTN Source = %s\n", Configuration::MaxPPTN_dataSource.c_str());
+        fprintf(arq, "NPP Source = %s\n", Configuration::NPP_dataSource.c_str());
+        fprintf(arq, "Latitude Source = %s\n", Configuration::Lat_dataSource.c_str());
+        fprintf(arq, "Longitude Source = %s\n", Configuration::Lon_dataSource.c_str());
+        fprintf(arq, "Areas Source = %s\n", Configuration::Areas_dataSource.c_str());
+        fprintf(arq, "Neighbors Source = %s\n", Configuration::Neighbors_dataSource.c_str());
+    }
 
     void recordTimeStepFiles(const char *path, int timeStep, Grid g, const char *simName){
         char fnameTxt[83];
