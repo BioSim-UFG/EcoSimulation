@@ -11,6 +11,7 @@
 #endif
 
 #include <iostream>
+#include <future>
 #include <math.h>
 
 namespace SimEco{
@@ -169,8 +170,16 @@ namespace SimEco{
 		this->_timeSteps = nSteps;
 
 		//cria um subdiretorio para cada timestep
-		create_timeStepsDirs(_name, nSteps);
+		vector<bool> createdDir(nSteps, false);
+		auto createDir_handle = std::async(std::launch::async, create_timeStepsDirs, _name, nSteps, ref(createdDir));
 
+		char dir[50];
+		#ifdef __linux__
+		sprintf(dir, "Results/%s/timeStep", _name);
+		#elif __WIN32
+		sprintf(dir, "Results\\%s\\timeStep", _name);
+		#endif
+		int len = strlen(dir);
 
 
 		//aloca memória para o calculo dos fitness's
@@ -251,7 +260,10 @@ namespace SimEco{
 				//++it;
 				
 			}
+
+			
 			sprintf(dir+len, "%d", timeStep);
+			while(createdDir[timeStep]==false){}	//só grava se já tiver criado o diretório
 			recordTimeStepFiles(dir, timeStep, _grid, _name);
 		}
 

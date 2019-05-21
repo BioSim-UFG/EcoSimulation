@@ -1,7 +1,7 @@
 SHELL = /bin/sh
 CC=gcc				#C compiler
 CPPC=g++			#C++ compiler
-CFLAGS=-lz -lm -std=c++14 #-lcuda -lcudart  -L/usr/local/cuda/lib64 -I/usr/local/cuda/include	#standard g++ flags
+CFLAGS=-lz -lpthread -lm -std=c++14 #-lcuda -lcudart  -L/usr/local/cuda/lib64 -I/usr/local/cuda/include	#standard g++ flags
 NVC=nvcc			#CUDA compiler
 NVFLAGS=-use_fast_math --std=c++14	#CUDA compiler flags
 PSC=fpc				#pascal compiler

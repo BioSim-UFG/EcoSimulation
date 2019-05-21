@@ -28,7 +28,7 @@ namespace SimEco{
         Dispersion dispCap;
         constexpr static float dispThreshold = 0.1500f;     //minimum viable dispersion capacity
         constexpr static float fitnessThreshold = 0.02f;    //minimum viable specie fitness in a cell
-        constexpr static float popThreshold = 380.0f;    //minimum specie population necessary for non extinction
+        constexpr static float popThreshold = 850.0f;    //minimum specie population necessary for non extinction
 
         
         float reachability(const Connectivity &destCellConn );

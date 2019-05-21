@@ -157,8 +157,11 @@ namespace SimEco{
 			exit(intException(Exceptions::configurationException));
 		}
 
-		//pega o numero de timeSteps minimo, entre o obtido no arquivo stream e o passado como argumento da função (respectivamente).
-		nTimeSteps = min((size_t)nTimeSteps, timeSteps);
+		if (nTimeSteps!=timeSteps){
+			//pega o numero de timeSteps minimo, entre o obtido no arquivo stream e o passado como argumento da função (respectivamente).
+			nTimeSteps = min((size_t)nTimeSteps, timeSteps);
+			printf(YEL("quantidade de timeSteps dos arquivos de clime e simulação diferem, usando menor valor: %d"), nTimeSteps);
+		}
 
 		Cell::NPPs.resize(nTimeSteps);
 		for (i = 0; i < nTimeSteps; i++){

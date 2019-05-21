@@ -174,7 +174,7 @@ namespace SimEco{
     void create_SimulationDirectory(const char *simName){
         char pasta[80];
         #ifdef __linux__
-        sprintf(pasta, "mkdir -p Results/%s", simName);
+        sprintf(pasta, "mkdir -p Results/%s &", simName);
         #elif _WIN32
         sprintf(pasta, "mkdir Results\%s", simName);
         #endif
@@ -182,7 +182,7 @@ namespace SimEco{
         system(pasta);
     }
 
-    void create_timeStepsDirs(const char *_name,int nSteps){
+    void create_timeStepsDirs(const char *_name,int nSteps, vector<bool> &createdDir){
 
 		//cria um subdiretorio para cada timestep
 		char dir[50], comand[61];
@@ -201,7 +201,9 @@ namespace SimEco{
 			sprintf(comand, "mkdir %s &", dir);
 		#endif
 			system(comand);
-		}
+
+            createdDir[i]=true;
+        }
 
     }
 }

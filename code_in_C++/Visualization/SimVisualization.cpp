@@ -290,7 +290,7 @@ void ApplyInput(int deltaTime){
 		display();
 }
 
-
+void processArgs(int argc, char **argv, string *simPath, string *latPath, string *lonPath);
 void readCoordinates(vector<Coord_t> *coord_v, string latPath, string lonPath);
 void readSimulation_timeSteps(string dir_path);
 void readTimeStep(path dir_path);
@@ -304,7 +304,7 @@ int main(int argc, char **argv){
 	if(argc < 4){
 		printf("Visualizador gráfico para saída da EcoSim\n");
 		printf("Autor: João Gabriel S. Fernandes\n");
-		printf("Versão 0.1\n");
+		printf("Versão 0.3\n");
 		printf("Uso: %s [OPÇÃO...] Sim_dataPrefix Sim_resultName\n\n", argv[0]);
 		printf("-t, --total-time-steps : obrigatório\t quantidade de timeSteps\n");
 		printf("-dla, --lat-data-path : opcional\t caminho personalizado do arquivo binário de latitude das células\n");
@@ -321,9 +321,60 @@ int main(int argc, char **argv){
 	string simPath = "../Simulation/Results/";
 	string latPath = "../../output/";
 	string lonPath = "../../output/";
-	bool customLat  = false, customLon = false, customSimPath=false;
-	bool leu_prefix =false, leu_SimName=false;
 
+	processArgs(argc, argv, &simPath, &latPath, &lonPath);	
+
+
+	
+
+	vector<Coord_t> *coords = new vector<Coord_t>();
+	Cells.reserve(coords->size());
+	readCoordinates(coords, latPath, lonPath);
+	for(auto &c: *coords){
+		Cells.emplace_back((Point_t){c.lon,c.lat});
+	}
+	total_celulas=Cells.size();
+	Cells_color_buffer[0].resize(total_celulas, {.0f,.0f,.0f,.0f});
+	Cells_color_buffer[1].resize(total_celulas, {.0f,.0f,.0f,.0f});
+	//deixe nessa ordem, pois readSimulation_timeSteps() precisa saber quantas celulas existem
+	Populations_byTime.resize(total_timeSteps+1, vector<unordered_map<uint, float>>(total_celulas));
+	readSimulation_timeSteps(simPath);
+
+	cout << manual_comandos;
+
+
+	printf("Files loaded!\n\nPress Enter to start\ns");
+	getc(stdin);
+
+	/*****************************CONFIGURAÇÕES OPENGL*******************************/
+
+	argc=1;
+	glutInit(&argc, argv);
+	glutInitWindowSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+	glutInitWindowPosition(10, 50);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_MULTISAMPLE | GLUT_DEPTH);
+
+	glutCreateWindow("Mapa simulation");
+	init();
+	
+	glutDisplayFunc(display);
+	glutReshapeFunc(reshapeWindow);
+
+	glutIgnoreKeyRepeat(true);
+	glutKeyboardFunc(MyKeyboardFunc);
+	glutKeyboardUpFunc(MyKeyboardUpFunc);
+
+	glutIdleFunc(idleFunc);
+
+	oldTime=glutGet(GLUT_ELAPSED_TIME);
+	glutMainLoop();
+}
+
+
+void processArgs(int argc, char **argv, string *simPath, string *latPath, string *lonPath){
+
+	bool customLat = false, customLon = false, customSimPath = false;
+	bool leu_prefix = false, leu_SimName = false;
 
 	for(int i=1; i<argc;i++){
 		string arg(argv[i]);
@@ -371,62 +422,18 @@ int main(int argc, char **argv){
 		else{
 			if(!leu_prefix){
 				if(!customLat)
-					latPath = latPath+arg+" - Output - Latitude.stream";
+					*latPath = *latPath+arg+" - Output - Latitude.stream";
 				if (!customLon)
-					lonPath = lonPath + arg + " - Output - Longitude.stream";
+					*lonPath = *lonPath + arg + " - Output - Longitude.stream";
 				leu_prefix=true;
 			}
 			else if(leu_prefix && !leu_SimName){
-				simPath = simPath+arg;
+				*simPath = *simPath+arg;
 				leu_SimName = true;
 			}	
 		}
 	}
-
-	vector<Coord_t> *coords = new vector<Coord_t>();
-	Cells.reserve(coords->size());
-	readCoordinates(coords, latPath, lonPath);
-	for(auto &c: *coords){
-		Cells.emplace_back((Point_t){c.lon,c.lat});
-	}
-	total_celulas=Cells.size();
-	Cells_color_buffer[0].resize(total_celulas, {.0f,.0f,.0f,.0f});
-	Cells_color_buffer[1].resize(total_celulas, {.0f,.0f,.0f,.0f});
-	//deixe nessa ordem, pois readSimulation_timeSteps() precisa saber quantas celulas existem
-	Populations_byTime.resize(total_timeSteps+1, vector<unordered_map<uint, float>>(total_celulas));
-	readSimulation_timeSteps(simPath);
-
-	cout << manual_comandos;
-
-
-	printf("Files loaded!\n\nPress Enter to start\ns");
-	getc(stdin);
-
-	/*****************************CONFIGURAÇÕES OPENGL*******************************/
-
-	argc=1;
-	glutInit(&argc, argv);
-	glutInitWindowSize(SCREEN_WIDTH, SCREEN_HEIGHT);
-	glutInitWindowPosition(10, 50);
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_MULTISAMPLE | GLUT_DEPTH);
-
-	glutCreateWindow("Mapa simulation");
-	init();
-	
-	glutDisplayFunc(display);
-	glutReshapeFunc(reshapeWindow);
-
-	glutIgnoreKeyRepeat(true);
-	glutKeyboardFunc(MyKeyboardFunc);
-	glutKeyboardUpFunc(MyKeyboardUpFunc);
-
-	glutIdleFunc(idleFunc);
-
-	oldTime=glutGet(GLUT_ELAPSED_TIME);
-	glutMainLoop();
 }
-
-
 
 
 
@@ -454,6 +461,9 @@ void readCoordinates(vector<Coord_t> *coord_v, string latPath, string lonPath){
 		lonFile.read((char *)&(coord.lon), sizeof(Coord_t::lon));
 		coord_v->push_back(coord);
 	}
+
+	latFile.close();
+	lonFile.close();
 
 }
 
@@ -525,12 +535,15 @@ void readTimeStep(path dir_path){
 						Populations_byTime[timeStep][cell][specie] = pop;
 						maxPopFound = max(maxPopFound, pop);
 					}
+
+					speciePopFile.close();
 				}
 				cout<<"\n";
 			}
 
 			dir_it++;
 		}
+		
 	}
 
 }
