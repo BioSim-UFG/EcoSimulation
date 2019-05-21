@@ -182,7 +182,7 @@ namespace SimEco{
         system(pasta);
     }
 
-    void create_SubDir(const char *_name,int nSteps){
+    void create_timeStepsDirs(const char *_name,int nSteps){
 
 		//cria um subdiretorio para cada timestep
 		char dir[50], comand[61];
