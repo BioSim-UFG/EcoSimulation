@@ -34,6 +34,8 @@
 #define LOWEST_RATIO min<double>(SCREEN_HEIGHT, SCREEN_WIDTH)
 #define BIGGEST_RATIO max<double>(SCREEN_HEIGHT, SCREEN_WIDTH)
 
+#define FONT GLUT_BITMAP_HELVETICA_18
+
 using namespace std;
 using namespace boost::filesystem;
 
@@ -84,6 +86,28 @@ void fillColorBuffer(vector<RGBAColorf_t> &buffer, int timeStep, int specie){
 
 void ApplyInput(int deltaTime);
 void display();
+
+
+void displayTimeStep( Point_t ortho_center){
+	char text[200];
+	sprintf(text, "%d", curr_timeStep);
+	//para evitar o cast, usa-se unsigned char direto
+	int w = glutBitmapLength( FONT, (unsigned char *)text );
+
+	//glRasterPos2f( SCREEN_WIDTH/LOWEST_RATIO - 0.0001f , 0 + 0.0001f );
+	glRasterPos2f(ortho_center.x +0.32, ortho_center.y + 0.24);
+
+	
+	//glColor3f(0, 0, 0);
+
+	int len = strlen( (const char*) text);
+	for(int i =0 ; i< len ; i++){
+		//amarelo
+		glutBitmapCharacter(FONT, text[i]);
+	}
+}
+
+
 
 
 
@@ -171,6 +195,9 @@ void display(){
 	glEnd();
 
 	glPopMatrix();
+
+	glColor3f(1.0f, 1.0f, 0);
+	displayTimeStep(ortho_center);
 
 	//troca o buffer para evitar 'flickering' (tremedeira)
 	glutSwapBuffers();
