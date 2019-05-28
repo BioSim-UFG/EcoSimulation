@@ -31,8 +31,8 @@
 //pode alterar o SCREEN_HEIGHT e SCREEN_WIDTH, já o resto não garanto...
 #define SCREEN_HEIGHT 940
 #define SCREEN_WIDTH (940*2)
-#define LOWEST_RATIO min<double>(SCREEN_HEIGHT, SCREEN_WIDTH)
-#define BIGGEST_RATIO max<double>(SCREEN_HEIGHT, SCREEN_WIDTH)
+#define LOWEST_RATIO (min<double>(SCREEN_HEIGHT, SCREEN_WIDTH))
+#define BIGGEST_RATIO (max<double>(SCREEN_HEIGHT, SCREEN_WIDTH))
 
 #define FONT GLUT_BITMAP_HELVETICA_18
 
@@ -41,6 +41,7 @@ using namespace boost::filesystem;
 
 //duração de cada timeStep num frame, em milissegundos
 int FRAME_DURATION = 500;
+bool isPaused = false;
 
 GLint current_width = SCREEN_WIDTH, current_height = SCREEN_HEIGHT;
 
@@ -64,20 +65,18 @@ float maxPopFound=0.0f;
 
 
 void swapColorBuffer(){
-	int rangemin = 0;
-	int rangemax = 2;
-	active_buffer = rangemin + ((active_buffer-rangemin + 1) % ( min<int>(sizeof(Cells_color_buffer) / sizeof(RGBAColorf_t),rangemax) - rangemin) );
-	free_buffer = rangemin + ((free_buffer - rangemin + 1) % (min<int>(sizeof(Cells_color_buffer) / sizeof(RGBAColorf_t), rangemax) - rangemin));
+	int rangemax = 2;	//buffer size = 2 ( double buffer)
+	active_buffer = (active_buffer + 1) % ( min<int>(sizeof(Cells_color_buffer) / sizeof(RGBAColorf_t),rangemax) ) ;
+	free_buffer = (free_buffer + 1) % ( min<int>(sizeof(Cells_color_buffer) / sizeof(RGBAColorf_t), rangemax) );
 }
 
 void fillColorBuffer(vector<RGBAColorf_t> &buffer, int timeStep, int specie){
-		float density;
+	float density;
 	for (int i = 0; i < buffer.size(); i++){
 		auto &cell = Populations_byTime[timeStep][i];
-		if (cell.size() > specie)
-			density = cell.at(specie) / maxPopFound;
-		else
-			density = 0.0f;
+		if (cell.size() > specie) density = cell.at(specie) / maxPopFound;
+		else density = 0.0f;
+
 		//buffer[i] = RGBAColorf_t(density, 0, 0, 0);	//para fundo preto
 		buffer[i] = RGBAColorf_t(1, 1.0f-density, 1.0f-density, 0); //para fundo branco
 	}
@@ -88,22 +87,64 @@ void ApplyInput(int deltaTime);
 void display();
 
 
-void displayTimeStep( Point_t ortho_center){
+void displayTimeStep(Point_t ortho_center,int timeStep){
 	char text[200];
-	sprintf(text, "%d", curr_timeStep);
+	sprintf(text, "%d", min(timeStep, total_timeSteps-1));
 	//para evitar o cast, usa-se unsigned char direto
-	int w = glutBitmapLength( FONT, (unsigned char *)text );
+	double w = glutBitmapLength( FONT, (unsigned char *)text ) / (double)SCREEN_WIDTH;
 
-	//glRasterPos2f( SCREEN_WIDTH/LOWEST_RATIO - 0.0001f , 0 + 0.0001f );
-	glRasterPos2f(ortho_center.x +0.32, ortho_center.y + 0.24);
+	glColor3f(1.0f, 1.0f, 0); //amarelo
 
-	
-	//glColor3f(0, 0, 0);
+	glRasterPos2f(ortho_center.x*2 -0.08-w, ortho_center.y*2 - 0.05);
 
-	int len = strlen( (const char*) text);
+	int len = strlen((const char *)text);
 	for(int i =0 ; i< len ; i++){
-		//amarelo
 		glutBitmapCharacter(FONT, text[i]);
+	}
+}
+
+void displayLateralBar(Point_t ortho_center){
+	int largura_px = 50, altura_px = 300;
+
+	float largura = largura_px/(double)SCREEN_WIDTH;
+	float altura = altura_px / (double)SCREEN_HEIGHT;
+
+	glBegin(GL_QUADS);
+	
+	glColor3f(1.0, 0, 0);
+	glVertex2f(ortho_center.x*2 -0.08 - largura/2, ortho_center.y + altura/2);
+	glVertex2f(ortho_center.x*2 -0.08 + largura/2, ortho_center.y + altura/2);
+
+	glColor3f(1.0, 1.0, 1.0);
+	glVertex2f(ortho_center.x * 2 - 0.08 + largura / 2, ortho_center.y - altura / 2);
+	glVertex2f(ortho_center.x * 2 - 0.08 - largura / 2, ortho_center.y - altura / 2);
+
+	glEnd();
+
+
+
+	unsigned char top_text[] = "Full";
+	int len = strlen((char *)top_text);
+
+	double w = glutBitmapLength(GLUT_BITMAP_HELVETICA_12, (unsigned char *)top_text)/(double)SCREEN_WIDTH;
+	double h = glutBitmapWidth(GLUT_BITMAP_HELVETICA_12, top_text[0]) / (double)SCREEN_HEIGHT;
+
+	glColor3f(1.0f, 1.0f, 1.0f); //branco
+	glRasterPos2f(ortho_center.x * 2 - 0.08-w, ortho_center.y + altura / 2 + 4/(double)SCREEN_HEIGHT);
+	for (int i = 0; i < len; i++){
+		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, top_text[i]);
+	}
+
+
+	unsigned char bottom_text[] = "Empty";
+	len = strlen((char *)bottom_text);
+
+	w = glutBitmapLength(GLUT_BITMAP_HELVETICA_12, (unsigned char *)bottom_text) / (double)SCREEN_WIDTH;
+
+	glColor3f(1.0f, 1.0f, 1.0f); //branco
+	glRasterPos2f(ortho_center.x * 2 - 0.08-w, ortho_center.y - altura / 2 - 12/(double)SCREEN_HEIGHT);
+	for (int i = 0; i < len; i++){
+		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, bottom_text[i]);
 	}
 }
 
@@ -196,8 +237,22 @@ void display(){
 
 	glPopMatrix();
 
-	glColor3f(1.0f, 1.0f, 0);
-	displayTimeStep(ortho_center);
+	//para desenhar o timeStep no canto superior direito
+	glPushMatrix();
+
+	glTranslated((width_ratio - 1) * ortho_center.x*2, (height_ratio - 1) * ortho_center.y*2, 0);
+	if(!isPaused) displayTimeStep(ortho_center, curr_timeStep);
+	else displayTimeStep(ortho_center, curr_timeStep-1);
+
+	glPopMatrix();
+
+	//para desenhar a barra legenda de densidade, no canto centro direito
+	glPushMatrix();
+
+	glTranslated((width_ratio - 1) * ortho_center.x*2, (height_ratio - 1) * ortho_center.y * 2, 0);
+	displayLateralBar(ortho_center);
+
+	glPopMatrix();
 
 	//troca o buffer para evitar 'flickering' (tremedeira)
 	glutSwapBuffers();
@@ -224,7 +279,7 @@ void idleFunc(){
 	}
 
 	//se for hora, pinta as celulas com nova cor
-	if(countToNextFrame >= FRAME_DURATION && curr_timeStep<total_timeSteps){
+	if(countToNextFrame >= FRAME_DURATION && curr_timeStep<total_timeSteps && !isPaused){
 		countToNextFrame=0;
 
 		fillCell_colorBuffer_thrd->join();
@@ -259,9 +314,16 @@ bool keystates[256] = {0};	//lista de estados das teclas, true para apertada, e 
 void MyKeyboardFunc(unsigned char Key, int x, int y){
 	keystates[Key] = true;
 	if(Key == ' '){
-		//MUDA O MODO de visualização, AGORA do Q N SEI ( qual especie ver, ou densidade de todas espécies juntas, ou variabilidade genetica, etc)
-		
-	}	
+		//pausa a animação
+		printf("Pausing animation\n");
+		isPaused=!isPaused;
+	}
+	if(Key == '\n' || Key == '\r'){
+		printf("restart animation\n");
+		curr_timeStep=0;
+		isPaused=true;
+		display();
+	}
 }
 
 void MyKeyboardUpFunc(unsigned char Key, int x, int y){
@@ -308,11 +370,11 @@ void readTimeStep(path dir_path);
 
 static string manual_comandos = " W,A,S,D para se mover pelo mapa, \n"
 								"'+' e '-' para dar zoom in e zoom out\n"
-								"Barra de espaço para mudar cor do mapa\n"
-								"(em breve: Barra de espaço para mudar modo de vizualização)\n";
+								" Barra de espaço para Play/Pause\n"
+								" Enter para reiniciar animação (pausada)\n\n";
 
 int main(int argc, char **argv){
-	if(argc < 2){
+	if(argc < 2 || string(argv[1]).compare("--help")==0 ){
 		printf("Visualizador gráfico para saída da EcoSim\n");
 		printf("Autor: João Gabriel S. Fernandes\n");
 		printf("Versão 0.3\n");
