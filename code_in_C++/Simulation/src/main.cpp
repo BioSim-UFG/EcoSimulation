@@ -144,10 +144,8 @@ int main(int argc,char const *argv[]){
 
 	//printf("\n * * * * * * * * * * * * * * * * * * * * * * *\n\n"); fflush(stdout);
 	printf(LGTGRN(BOLD("Iniciando Simulacao \n"))); fflush(stdout);
-	
-	simulacao = new Simulation(*grid, Configuration::NAME);		//calcula o tempo -1 (tempo ZERO)
 
-
+	simulacao = new Simulation(*grid, SimConf); //calcula o tempo -1 (tempo ZERO)
 
 	/** agora que toda a pré configuração está pronta, vamos rodar mesmo a simulação **/
 

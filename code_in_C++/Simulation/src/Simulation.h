@@ -4,6 +4,7 @@
 // como varios objetos do tipo simulation
 
 #include "SimTypes.h"
+#include "Helper.h"
 #if defined(_WIN32) || defined(_WIN64)
 #define _USE_MATH_DEFINES
 #endif
@@ -23,7 +24,7 @@ namespace SimEco{
 	   public:
 
 		
-		Simulation(Grid & grid, const char *name);
+		Simulation(Grid & grid, const Configuration sim_conf);
 		void carrega_founders(const char *founders_input, vector<Specie> &founders);
 		void run(int nSteps);
 		uint timeSteps(){return _timeSteps;}
@@ -35,7 +36,7 @@ namespace SimEco{
 	  private:
 	  	const char *_name;
 		uint _timeSteps = 0;
-		float _Dtime = 0.005f;	//cada time step == 100  anos -> 1=1000 anos
+		float _Dtime;	//cada time step == 100  anos -> 1=1000 anos
 		Grid &_grid;		//referencia para a grid
 		//Specie *founders;	//referencia para array de especies ( fundadoras nesse caso)
 		//uint foundersSize;
