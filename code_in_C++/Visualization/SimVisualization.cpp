@@ -8,6 +8,7 @@
 
 
 #include <stdio.h>
+#include <fcntl.h>
 #include <math.h>
 #include <stdbool.h>
 #include <GL/glut.h> //inclua a biblioteca glut
@@ -59,9 +60,14 @@ int active_buffer=0, free_buffer=1;
 int curr_timeStep=0;
 
 //registro de populações nas células de cada espécie
-//keys: speciePopulations_byTime [time_step] [celula] [specie] = população dessa espécie nesta célula neste determinado timeStep
+//keys: Populations_byTime [time_step] [celula] [specie] = população dessa espécie nesta célula neste determinado timeStep
 vector<vector<vector<float> > > Populations_byTime;
 float maxPopFound=0.0f;
+
+//keys: Populations[celula][specie] = população dessa espécie nesta célula neste determinado timeStep
+vector<vector<float>> Populations;
+//lista de arquivos dentro de cada arquivo, timeStep_fileDescriptors[time_step][pair<specie, file_name>]
+vector<vector<pair<uint,string>>> timeStep_fileNames;
 
 
 void swapColorBuffer(){
@@ -71,15 +77,46 @@ void swapColorBuffer(){
 }
 
 void fillColorBuffer(vector<RGBAColorf_t> &buffer, int timeStep, int specie){
+
+	for(auto &specie_fd: timeStep_fileNames[timeStep]){
+		if(specie_fd.first != specie)
+			continue;
+
+		FILE *specie_arq = fopen(specie_fd.second.c_str(), "rb");
+
+		if(specie_arq==NULL){
+			perror("Could not open file");
+			exit(1);
+		}
+
+		uint cellId;
+		float pop;
+		while (!feof(specie_arq)){
+			fread(&cellId, sizeof(uint), 1, specie_arq);
+			fread(&pop, sizeof(float), 1, specie_arq);
+
+			if (Populations[cellId].size() < specie + 1)
+				Populations[cellId].resize(specie + 1);
+			Populations[cellId].at(specie) = pop;
+			maxPopFound = max(maxPopFound, pop);
+		}
+
+		fclose(specie_arq);
+	}
+
+
+	
 	float density;
 	for (int i = 0; i < buffer.size(); i++){
-		auto &cell = Populations_byTime[timeStep][i];
-		if (cell.size() > specie) density = cell.at(specie) / maxPopFound;
-		else density = 0.0f;
-
+		auto &cell = Populations[i];
+		if (cell.size() > specie)
+			density = cell.at(specie) / maxPopFound;
+		else
+			density = 0.0f;
 		//buffer[i] = RGBAColorf_t(density, 0, 0, 0);	//para fundo preto
-		buffer[i] = RGBAColorf_t(1, 1.0f-density, 1.0f-density, 0); //para fundo branco
+		buffer[i] = RGBAColorf_t(1, 1.0f-density, 1.0f-density, 0.0f); //para fundo branco
 	}
+	
 }
 
 
@@ -103,7 +140,7 @@ void displayTimeStep(Point_t ortho_center,int timeStep){
 	}
 }
 
-void displayLateralBar(Point_t ortho_center){
+void displayDensitylBar(Point_t ortho_center){
 	int largura_px = 50, altura_px = 300;
 
 	float largura = largura_px/(double)SCREEN_WIDTH;
@@ -279,8 +316,8 @@ void display(){
 
 	//para desenhar o timeStep no canto superior direito
 	glPushMatrix();
-
 	glTranslated((width_ratio - 1) * ortho_center.x*2, (height_ratio - 1) * ortho_center.y*2, 0);
+
 	if(!isPaused) displayTimeStep(ortho_center, curr_timeStep);
 	else displayTimeStep(ortho_center, curr_timeStep-1);
 
@@ -289,7 +326,7 @@ void display(){
 	//para desenhar a barra legenda de densidade, no canto centro direito
 	glPushMatrix();
 	glTranslated((width_ratio - 1) * ortho_center.x*2, (height_ratio - 1) * ortho_center.y * 2, 0);
-	displayLateralBar(ortho_center);
+	displayDensitylBar(ortho_center);
 	glPopMatrix();
 
 	glPushMatrix();
@@ -334,6 +371,8 @@ void idleFunc(){
 
 		display();
 		curr_timeStep++;
+		if(curr_timeStep == total_timeSteps)
+			haveToLoadNextCellColors = false;
 	}
 }
 
@@ -359,13 +398,15 @@ void MyKeyboardFunc(unsigned char Key, int x, int y){
 	keystates[Key] = true;
 	if(Key == ' '){
 		//pausa a animação
-		printf("Pausing animation\n");
+		printf("Pausing/Playing animation\n");
 		isPaused=!isPaused;
 	}
 	if(Key == '\n' || Key == '\r'){
 		printf("restart animation\n");
 		curr_timeStep=0;
 		isPaused=true;
+		Cells_color_buffer[active_buffer].assign(total_celulas, {1.0, 1.0, 1.0, 0});
+		fillColorBuffer(Cells_color_buffer[free_buffer], curr_timeStep, 0);
 		display();
 	}
 }
@@ -457,7 +498,10 @@ int main(int argc, char **argv){
 	Cells_color_buffer[0].resize(total_celulas, {1.0f,1.0f,1.0f,.0f});
 	Cells_color_buffer[1].resize(total_celulas, {1.0f,1.0f,1.0f,.0f});
 
-	Populations_byTime.resize(total_timeSteps+1, vector<vector<float>>(total_celulas,vector<float>()));
+	//Populations_byTime.resize(total_timeSteps+1, vector<vector<float>>(total_celulas,vector<float>()));
+
+	Populations.resize(total_celulas);
+	timeStep_fileNames.resize(total_timeSteps);
 	readSimulation_timeSteps(simPath);
 
 	cout << manual_comandos;
@@ -474,7 +518,7 @@ int main(int argc, char **argv){
 	glutInitWindowPosition(10, 50);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_MULTISAMPLE | GLUT_DEPTH);
 
-	glutCreateWindow("Mapa simulation");
+	int windowId = glutCreateWindow("Mapa simulation");
 	init();
 	
 	glutDisplayFunc(display);
@@ -488,6 +532,7 @@ int main(int argc, char **argv){
 
 	oldTime=glutGet(GLUT_ELAPSED_TIME);
 	glutMainLoop();
+
 }
 
 
@@ -709,6 +754,14 @@ void readTimeStep(path dir_path){
 				auto file_name = dir_it->path().filename();
 				if(file_name.extension().string().compare(".txt") != 0){
 					cout << " -->reading it";
+
+					int s = file_name.string().rfind("Esp");
+					int f = file_name.string().rfind("_Time");
+					uint specie = stoi(file_name.string().substr(s + 3, f));
+					//timeStep_fileDescriptors[timeStep].push_back( {specie, open(dir_it->path().c_str(), O_RDONLY)});	//abre arquivo e armazena o descritor dele
+					timeStep_fileNames[timeStep].push_back( {specie, dir_it->path().c_str()} ); //abre arquivo e armazena o descritor dele
+
+					/*
 					ifstream speciePopFile(dir_it->path().string(), std::ios::binary);
 
 					int s = file_name.string().rfind("Esp");
@@ -727,6 +780,7 @@ void readTimeStep(path dir_path){
 					}
 
 					speciePopFile.close();
+					*/
 				}
 				cout<<"\n";
 			}

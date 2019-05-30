@@ -1,4 +1,4 @@
-Simulation_name= simInfo_test2
+Simulation_name= arqBufferTest
 Num_Cells= 84579
 Num_Founders= 1
 Num_TimeSteps= 50
