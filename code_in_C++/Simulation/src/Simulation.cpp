@@ -301,9 +301,9 @@ namespace SimEco{
 		
 		//etapa de difusão (população é interpretada como um fluido pelo mapa). Obs: todas celulas vizinhas de uma célula X são tratadas como se tivessem a mesma distancia de X, e consequentemente, como se TODAS as celulas tivessem o mesmo tamanho e distancia entre sí
 		float diffusion_rate = 0.01;
-		float a = Simulation::_Dtime * diffusion_rate * N;
+		float a = this->_Dtime * diffusion_rate * N;
 
-		for(int k=0; k<50; k++){
+		for(int k=0; k<30; k++){
 
 			//para cada célula do mapa
 			for(int i=0; i<N;i++){
@@ -329,7 +329,7 @@ namespace SimEco{
 					total_vizinhos++;
 				}
 
-				/* só necessário quando está ativado a detecção de exceções em operações aritméticas
+				/* só necessário quando está ativado a detecção de exceções em operações aritméticas ( feenableexcept() )
 				if(neighborPopDensity <= 1e-37)	//evitar underflow do float, e também tal valor já é extremamente proximo de zero
 					neighborPopDensity = 0.0f;
 				if (prevPopulation[i] <= 1e-37) //evitar underflow do float, e também tal valor já é extremamente proximo de zero
@@ -366,55 +366,6 @@ namespace SimEco{
 		}
 
 
-
-
-
-		/*
-		
-		//for(uint cellIdx = 0; cellIdx < prevCelulas_IdxSize; cellIdx++){
-		for(auto &pastCell: prevCelulas){
-			//uint zipMatPos = Grid::indexMap[specie.celulas_Idx[cellIdx]];
-			uint zipMatPos = Grid::indexMap[pastCell.first];	//indexMap[k] retorna o índice de onde começa a info da celula de ID 'k'
-			uint lineValue = idxMat[zipMatPos].i;
-
-			//enquanto estiver com mesmo valor de linha (da matriz compactada), correspondente a linha da matriz original), 
-			//então estará percorrendo as celulas na qual essa possui conectividade
-			while(idxMat[zipMatPos].i == lineValue && zipMatPos < Grid::matrixSize){
-				auto &destCell_idx = idxMat[zipMatPos].j;
-				//ocupa essa celula também, se o fitness for maior que 0
-				if(fitness[destCell_idx] >= Specie::fitnessThreshold){
-					
-					//se essa célula for alcançável para essa espécie		
-					if( specie.reachability(Grid::connectivityMatrix[zipMatPos]) >= Specie::dispThreshold ){
-						//aqui calculamos a nova população considerando (se possivel) a antiga população naquela celula
-
-						float &K = Cell::current_K[destCell_idx];
-
-						float growthPopulation = pastCell.second * specie.growth * fitness[destCell_idx];
-						float carring_k = 1-(specie.getCellPop(destCell_idx) / K);	//Velrhust logistic effect of carrying capacity
-
-						auto debug = specie.getCellPop(destCell_idx);
-						specie.addCellPop(destCell_idx, growthPopulation * carring_k);
-						auto debug2 = specie.getCellPop(destCell_idx);
-
-						//float newPopulation = specie.getCellPop(destCell_idx) + (growthPopulation*carring_k);
-						//specie.insertCellPop((uint)destCell_idx, newPopulation);
-						Cell::speciesPresent[ (uint)destCell_idx ].insert(&specie);
-					}
-					//GLITCH: devido a baixa precisão do float, acontece de a população ser levemente maior que K
-				}
-				else if( fitness[destCell_idx] < Specie::fitnessThreshold){
-					specie.eraseCellPop( destCell_idx );
-					Cell::speciesPresent[ (uint)destCell_idx ].erase(&specie);
-				}
-
-
-				zipMatPos++;
-			}
-
-		}
-				*/
-		//specie.celulas_Idx = (uint *)realloc(specie.celulas_Idx, sizeof(uint) * specie.celulas_IdxSize);
 	}
 
 
