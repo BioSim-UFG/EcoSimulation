@@ -126,7 +126,7 @@ void display();
 
 void displayTimeStep(Point_t ortho_center,int timeStep){
 	char text[200];
-	sprintf(text, "%d", min(timeStep, total_timeSteps-1));
+	sprintf(text, "Step :%d", min(timeStep, total_timeSteps-1));
 	//para evitar o cast, usa-se unsigned char direto
 	double w = glutBitmapLength( FONT, (unsigned char *)text ) / (double)SCREEN_WIDTH;
 
@@ -182,6 +182,30 @@ void displayDensitylBar(Point_t ortho_center){
 	glRasterPos2f(ortho_center.x * 2 - 0.08-w, ortho_center.y - altura / 2 - 12/(double)SCREEN_HEIGHT);
 	for (int i = 0; i < len; i++){
 		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, bottom_text[i]);
+	}
+}
+
+void displayCellData(Point_t ortho_center, uint focusedCell){
+	
+	char text[200];
+	sprintf(text, "CellData :\n");
+	//para evitar o cast, usa-se unsigned char direto
+	double w = glutBitmapLength(FONT, (unsigned char *)text) / (double)SCREEN_WIDTH;
+	double h = glutBitmapWidth(FONT, text[0]) / (double)SCREEN_HEIGHT;
+
+	glColor3f(1.0f, 1.0f, 0); //amarelo
+
+	glRasterPos2f(+ 0.08 - w, ortho_center.y * 2 - 0.05);
+	int len = strlen((const char *)text);
+	for (int i = 0; i < len; i++){
+		glutBitmapCharacter(FONT, text[i]);
+	}
+
+	sprintf(text, "Cell ID : %u", focusedCell );
+	glRasterPos2f(+ 0.08 - w, ortho_center.y * 2 - 0.05 - (h + 2/(double)SCREEN_HEIGHT));
+	len = strlen((const char *)text);
+	for (int i = 0; i < len; i++){
+		glutBitmapCharacter(FONT, text[i]);
 	}
 }
 
@@ -246,14 +270,30 @@ void display(){
 
 	glTranslatef(total_translade.x, total_translade.y, 0.0f);
 
+	uint focused_cell=0;
+	float focused_cell_distance = INFINITY;
+	float my_y = -total_translade.y+ortho_center.y;	//screen center em relação ao plano ortogonal
+	float my_x = -total_translade.x + ortho_center.x;
+	printf("new screen center: x=%.4f    y=%.4f\t", my_x, my_y);
+
 	//printf("altura = %f\n", Cell_HexaPoly::Altura());
 	for(int i=0; i<Cells.size();i++){
+		Cell_HexaPoly &cell = Cells.at(i);
 		//glColor3ub(cores[corPos].r, cores[corPos].g, cores[corPos].b);
 		//nextColor();
 		glColor3fv(&Cells_color_buffer[active_buffer][i].r);
-		Cells.at(i).draw();
+		cell.draw();
+
+		float current_cell_distance = sqrt(pow((cell.Center().x - my_x), 2) + pow((cell.Center().y - my_y), 2));
+		if (current_cell_distance < focused_cell_distance){
+			focused_cell_distance = current_cell_distance;
+			focused_cell=i;
+		}
+
 		//printf("|  drawing at point %.4f-%.4f  ", Cells[i].Center().x, Cells[i].Center().y);
 	}
+
+	printf("focusedCell=%d  coord: %.4f %.4f\n", focused_cell, Cells[focused_cell].Center().x, Cells[focused_cell].Center().y);
 	//printf("\n");
 	glPopMatrix();
 
@@ -285,11 +325,15 @@ void display(){
 
 	//para desenhar a barra legenda de densidade, no canto centro direito
 	glPushMatrix();
-	glTranslated((width_ratio - 1) * ortho_center.x*2, (height_ratio - 1) * ortho_center.y, 0);
-	
+	glTranslated((width_ratio - 1) * ortho_center.x*2, (height_ratio - 1) * ortho_center.y * 2, 0);
 	displayDensitylBar(ortho_center);
-
 	glPopMatrix();
+
+	glPushMatrix();
+	glTranslated(0, (height_ratio - 1) * ortho_center.y * 2, 0);
+	displayCellData(ortho_center, focused_cell);
+	glPopMatrix();
+	
 
 	//troca o buffer para evitar 'flickering' (tremedeira)
 	glutSwapBuffers();
@@ -310,7 +354,7 @@ void idleFunc(){
 
 
 	//seta as proxima novas cores;
-	if(haveToLoadNextCellColors){
+	if(haveToLoadNextCellColors && curr_timeStep<total_timeSteps){
 		fillCell_colorBuffer_thrd = new std::thread(fillColorBuffer, std::ref(Cells_color_buffer[free_buffer]), curr_timeStep, 0);
 		haveToLoadNextCellColors=false;
 	}
@@ -327,8 +371,6 @@ void idleFunc(){
 
 		display();
 		curr_timeStep++;
-		if(curr_timeStep == total_timeSteps)
-			haveToLoadNextCellColors = false;
 	}
 }
 
@@ -729,7 +771,7 @@ void readTimeStep(path dir_path){
 					while(!speciePopFile.eof()){	
 						speciePopFile.read((char*)&cell, sizeof(uint));
 						speciePopFile.read((char *)&pop, sizeof(float));
-						if(Populations_byTime[timeStep][cell].size() < specie-1)
+						if(Populations_byTime[timeStep][cell].size() < specie+1)
 							Populations_byTime[timeStep][cell].resize(specie+1);
 						Populations_byTime[timeStep][cell].at(specie) = pop;
 						maxPopFound = max(maxPopFound, pop);

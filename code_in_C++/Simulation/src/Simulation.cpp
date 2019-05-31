@@ -15,9 +15,10 @@
 #include <math.h>
 
 namespace SimEco{
-	Simulation::Simulation(Grid &grid, const char* name): _grid(grid) , _name(name)/*, founders(founders), foundersSize(founders_size)*/{
+	Simulation::Simulation(Grid &grid, const Configuration conf): _grid(grid), _name(conf.NAME)/*, founders(founders), foundersSize(founders_size)*/{
 
-		create_SimulationDirectory(_name); //cria diretorio de saida/resultados da simulação
+		create_SimulationDirectory(conf.NAME); //cria diretorio de saida/resultados da simulação
+		_Dtime = conf.YEARS_PER_TIMESTEP/ 2e6;
 
 		//Specie *founders = new Specie[Configuration::NUM_FOUNDERS]; /*vetor de classes */
 

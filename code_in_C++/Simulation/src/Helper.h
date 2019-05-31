@@ -68,6 +68,7 @@ namespace SimEco{
 		static unsigned int MAX_CELLS;
 		static unsigned int NUM_FOUNDERS;
 		static unsigned int TIMESTEPS;
+		static unsigned int YEARS_PER_TIMESTEP;
 
 		static string MinTemp_dataSource;
 		static string MaxTemp_dataSource;

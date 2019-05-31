@@ -29,6 +29,7 @@ namespace SimEco{
     unsigned int  Configuration::MAX_CELLS;
     unsigned int  Configuration::NUM_FOUNDERS;
     unsigned int  Configuration::TIMESTEPS;
+    unsigned int Configuration::YEARS_PER_TIMESTEP;
     std::string Configuration::MinTemp_dataSource;
     std::string Configuration::MaxTemp_dataSource;
     std::string Configuration::MinPPTN_dataSource;
@@ -52,6 +53,7 @@ namespace SimEco{
         fscanf(f,"Num_Cells= %u\n",&MAX_CELLS);
         fscanf(f,"Num_Founders= %u\n",&NUM_FOUNDERS);
         fscanf(f, "Num_TimeSteps= %u\n",&TIMESTEPS);
+        fscanf(f, "Years_per_TimeStep= %u\n", &YEARS_PER_TIMESTEP);
         fscanf(f, "Save_Path= %s\n", SAVEPATH);
 
         char aux[sizeof(SAVEPATH)];
