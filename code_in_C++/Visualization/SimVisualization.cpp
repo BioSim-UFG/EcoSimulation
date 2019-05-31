@@ -232,9 +232,8 @@ void displayCellData(Point_t ortho_center, int focusedCell){
 		int len = strlen((const char *)text[t]);
 		for (int i = 0; i < len; i++){
 			glutBitmapCharacter(FONT, text[t][i]);
-		}		
+		}
 	}
-
 }
 
 
@@ -317,7 +316,7 @@ void display(){
 		}
 	}
 	if(focused_cell_distance <= Cell_HexaPoly::Raio()){	//se está em cima da célula mais próxima do centro da tela
-		glColor3ub(135, 0, 255);
+		glColor3ub(135, 0, 255);	//cor roxa
 		Cells[focused_cell].draw();
 	}else{
 		focused_cell = -1;
@@ -384,7 +383,7 @@ void idleFunc(){
 
 	//seta as proxima novas cores;
 	if(haveToLoadNextCellColors && curr_timeStep<total_timeSteps){
-		fillCell_colorBuffer_thrd = new std::thread(fillColorBuffer, std::ref(Cells_color_buffer[free_buffer]), curr_timeStep, 0);
+		fillCell_colorBuffer_thrd = new std::thread(fillColorBuffer, std::ref(Cells_color_buffer[free_buffer]), curr_timeStep, 1);
 		haveToLoadNextCellColors=false;
 	}
 
