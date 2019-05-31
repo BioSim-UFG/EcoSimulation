@@ -119,6 +119,13 @@ void fillColorBuffer(vector<RGBAColorf_t> &buffer, int timeStep, int specie){
 	
 }
 
+double pixelWidth_toOrtho(int pixels){
+	return pixels/(double)SCREEN_WIDTH;
+}
+double pixelHeight_toOrtho(int pixels){
+	return pixels/(double)SCREEN_HEIGHT;
+}
+
 
 void ApplyInput(int deltaTime);
 void display();
@@ -129,11 +136,21 @@ void displayTimeStep(Point_t ortho_center,int timeStep){
 	sprintf(text, "Step :%d", min(timeStep, total_timeSteps-1));
 	//para evitar o cast, usa-se unsigned char direto
 	double w = glutBitmapLength( FONT, (unsigned char *)text ) / (double)SCREEN_WIDTH;
+	double h = glutBitmapWidth(GLUT_BITMAP_HELVETICA_12, text[0]) / (double)SCREEN_HEIGHT;
+
+	double textCenter_x = ortho_center.x*2-0.08;
+	double textCenter_y = ortho_center.y*2-0.05;
+
+	glColor3f(0, 0, 0);
+	glBegin(GL_QUADS);
+	glVertex2f(textCenter_x -w -pixelWidth_toOrtho(2), textCenter_y + pixelHeight_toOrtho(2)+h);
+	glVertex2f(textCenter_x +w + pixelWidth_toOrtho(2), textCenter_y + pixelHeight_toOrtho(2)+h);
+	glVertex2f(textCenter_x +w + pixelWidth_toOrtho(2), textCenter_y - pixelHeight_toOrtho(2)-h);
+	glVertex2f(textCenter_x -w - pixelWidth_toOrtho(2), textCenter_y - pixelHeight_toOrtho(2)-h);
+	glEnd();
 
 	glColor3f(1.0f, 1.0f, 0); //amarelo
-
-	glRasterPos2f(ortho_center.x*2 -0.08-w, ortho_center.y*2 - 0.05);
-
+	glRasterPos2f(textCenter_x-w, textCenter_y-h);
 	int len = strlen((const char *)text);
 	for(int i =0 ; i< len ; i++){
 		glutBitmapCharacter(FONT, text[i]);
@@ -185,28 +202,39 @@ void displayDensitylBar(Point_t ortho_center){
 	}
 }
 
-void displayCellData(Point_t ortho_center, uint focusedCell){
-	
-	char text[200];
-	sprintf(text, "CellData :\n");
-	//para evitar o cast, usa-se unsigned char direto
-	double w = glutBitmapLength(FONT, (unsigned char *)text) / (double)SCREEN_WIDTH;
-	double h = glutBitmapWidth(FONT, text[0]) / (double)SCREEN_HEIGHT;
+void displayCellData(Point_t ortho_center, int focusedCell){
 
-	glColor3f(1.0f, 1.0f, 0); //amarelo
+	vector<char[100]> text(2);
+	sprintf(text[0], "CellData :");
+	sprintf(text[1], "Cell ID : %d", focusedCell);
 
-	glRasterPos2f(+ 0.08 - w, ortho_center.y * 2 - 0.05);
-	int len = strlen((const char *)text);
-	for (int i = 0; i < len; i++){
-		glutBitmapCharacter(FONT, text[i]);
+	double textCenter_x = + 0.08;
+	double textCenter_y = ortho_center.y * 2 - 0.05;
+
+	double h = 0;
+	double w;
+	double padding = pixelHeight_toOrtho(4);
+	for(int t=0; t<text.size();t++){
+		w = glutBitmapLength(FONT, (unsigned char *)text[t]) / (double)SCREEN_WIDTH;
+		h = padding + glutBitmapWidth(FONT, text[t][0]) / (double)SCREEN_HEIGHT;
+		textCenter_y -= h;
+
+		glColor3f(0, 0, 0);
+		glBegin(GL_POLYGON);
+		glVertex2f(textCenter_x - pixelWidth_toOrtho(2), textCenter_y);
+		glVertex2f(textCenter_x + 2*w+pixelWidth_toOrtho(2), textCenter_y);
+		glVertex2f(textCenter_x + 2*w+pixelWidth_toOrtho(2), textCenter_y - pixelHeight_toOrtho(2) - h);
+		glVertex2f(textCenter_x - pixelWidth_toOrtho(2), textCenter_y - pixelHeight_toOrtho(2) - h);
+		glEnd();
+
+		glColor3f(1.0f, 1.0f, 0); //amarelo
+		glRasterPos2f(textCenter_x, textCenter_y - (h));
+		int len = strlen((const char *)text[t]);
+		for (int i = 0; i < len; i++){
+			glutBitmapCharacter(FONT, text[t][i]);
+		}		
 	}
 
-	sprintf(text, "Cell ID : %u", focusedCell );
-	glRasterPos2f(+ 0.08 - w, ortho_center.y * 2 - 0.05 - (h + 2/(double)SCREEN_HEIGHT));
-	len = strlen((const char *)text);
-	for (int i = 0; i < len; i++){
-		glutBitmapCharacter(FONT, text[i]);
-	}
 }
 
 
@@ -270,13 +298,11 @@ void display(){
 
 	glTranslatef(total_translade.x, total_translade.y, 0.0f);
 
-	uint focused_cell=0;
+	int focused_cell;
 	float focused_cell_distance = INFINITY;
-	float my_y = -total_translade.y+ortho_center.y;	//screen center em relação ao plano ortogonal
-	float my_x = -total_translade.x + ortho_center.x;
-	printf("new screen center: x=%.4f    y=%.4f\t", my_x, my_y);
+	float my_y = ortho_center.y - total_translade.y; //screen center em relação ao plano ortogonal
+	float my_x = ortho_center.x - total_translade.x;
 
-	//printf("altura = %f\n", Cell_HexaPoly::Altura());
 	for(int i=0; i<Cells.size();i++){
 		Cell_HexaPoly &cell = Cells.at(i);
 		//glColor3ub(cores[corPos].r, cores[corPos].g, cores[corPos].b);
@@ -289,12 +315,14 @@ void display(){
 			focused_cell_distance = current_cell_distance;
 			focused_cell=i;
 		}
-
-		//printf("|  drawing at point %.4f-%.4f  ", Cells[i].Center().x, Cells[i].Center().y);
+	}
+	if(focused_cell_distance <= Cell_HexaPoly::Raio()){	//se está em cima da célula mais próxima do centro da tela
+		glColor3ub(135, 0, 255);
+		Cells[focused_cell].draw();
+	}else{
+		focused_cell = -1;
 	}
 
-	printf("focusedCell=%d  coord: %.4f %.4f\n", focused_cell, Cells[focused_cell].Center().x, Cells[focused_cell].Center().y);
-	//printf("\n");
 	glPopMatrix();
 
 
@@ -325,10 +353,11 @@ void display(){
 
 	//para desenhar a barra legenda de densidade, no canto centro direito
 	glPushMatrix();
-	glTranslated((width_ratio - 1) * ortho_center.x*2, (height_ratio - 1) * ortho_center.y * 2, 0);
+	glTranslated((width_ratio - 1) * ortho_center.x*2, (height_ratio - 1) * ortho_center.y, 0);
 	displayDensitylBar(ortho_center);
 	glPopMatrix();
 
+	//para escrever as infomações da célula focada no canto superior esquerdo
 	glPushMatrix();
 	glTranslated(0, (height_ratio - 1) * ortho_center.y * 2, 0);
 	displayCellData(ortho_center, focused_cell);
@@ -435,10 +464,10 @@ void ApplyInput(int deltaTime){
 		callDisplay=true;
 	}
 
-	if(keystates['d']){   total_translade.x -= transVel*deltaTime/total_scale.x; callDisplay=true;}
-	if(keystates['a']){   total_translade.x += transVel*deltaTime/total_scale.x; callDisplay=true;}
-	if(keystates['s']){   total_translade.y += transVel*deltaTime/total_scale.y; callDisplay=true;}
-	if(keystates['w']){   total_translade.y -= transVel*deltaTime/total_scale.y; callDisplay=true;}
+	if(keystates['d'] || keystates['D']){   total_translade.x -= transVel*deltaTime/total_scale.x; callDisplay=true;}
+	if(keystates['a'] || keystates['A']){   total_translade.x += transVel*deltaTime/total_scale.x; callDisplay=true;}
+	if(keystates['s'] || keystates['S']){   total_translade.y += transVel*deltaTime/total_scale.y; callDisplay=true;}
+	if(keystates['w'] || keystates['W']){   total_translade.y -= transVel*deltaTime/total_scale.y; callDisplay=true;}
 
 
 	if(callDisplay)

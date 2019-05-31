@@ -21,9 +21,9 @@ public:
     static double Raio() { return raio; }
     void draw();
 
+protected:
     static constexpr double raio = 1.0 / 1080.0;
     static constexpr double altura = raio * 1.732050808 / 2.0; // raio * sqrt(3)/2
-protected:
     Point_t center;
     Point_t vertexes[6];
 private:
