@@ -202,11 +202,13 @@ void displayDensitylBar(Point_t ortho_center){
 	}
 }
 
-void displayCellData(Point_t ortho_center, int focusedCell){
+void displayCellData(Point_t ortho_center, int focusedCell, Point_t cell_center){
 
-	vector<char[100]> text(2);
+	vector<char[100]> text(4);
 	sprintf(text[0], "CellData :");
 	sprintf(text[1], "Cell ID : %d", focusedCell);
+	sprintf(text[2], "Longitude : %f", cell_center.x);
+	sprintf(text[3], "Latitude  : %f", cell_center.y);
 
 	double textCenter_x = + 0.08;
 	double textCenter_y = ortho_center.y * 2 - 0.05;
@@ -235,9 +237,6 @@ void displayCellData(Point_t ortho_center, int focusedCell){
 		}
 	}
 }
-
-
-
 
 
 void init(){
@@ -298,6 +297,7 @@ void display(){
 	glTranslatef(total_translade.x, total_translade.y, 0.0f);
 
 	int focused_cell;
+	Point_t cell_center;
 	float focused_cell_distance = INFINITY;
 	float my_y = ortho_center.y - total_translade.y; //screen center em relação ao plano ortogonal
 	float my_x = ortho_center.x - total_translade.x;
@@ -318,8 +318,10 @@ void display(){
 	if(focused_cell_distance <= Cell_HexaPoly::Raio()){	//se está em cima da célula mais próxima do centro da tela
 		glColor3ub(135, 0, 255);	//cor roxa
 		Cells[focused_cell].draw();
+		cell_center = Cells[focused_cell].Center();
 	}else{
 		focused_cell = -1;
+		cell_center = {0,0};
 	}
 
 	glPopMatrix();
@@ -359,7 +361,7 @@ void display(){
 	//para escrever as infomações da célula focada no canto superior esquerdo
 	glPushMatrix();
 	glTranslated(0, (height_ratio - 1) * ortho_center.y * 2, 0);
-	displayCellData(ortho_center, focused_cell);
+	displayCellData(ortho_center, focused_cell,cell_center);
 	glPopMatrix();
 	
 
@@ -401,12 +403,6 @@ void idleFunc(){
 		curr_timeStep++;
 	}
 }
-
-
-
-
-
-
 
 
 /**********************Trecho de codigo responsável pelo input*************************/
