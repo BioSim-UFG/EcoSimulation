@@ -1,9 +1,9 @@
 /**
  * SimVisualization.cpp
- * Purpose: Visualization of a already exeuted EcoSim simulation
+ * Purpose: Visualization of a already executed EcoSim simulation
  * 
  * @author João Gabriel Silva Fernandes
- * @version 0.3 20/05/2016
+ * @version 0.4 05/06/2019
  */
 
 
@@ -30,12 +30,13 @@
 //#define NORMALIZE_LATITUDE
 
 //pode alterar o SCREEN_HEIGHT e SCREEN_WIDTH, já o resto não garanto...
-#define SCREEN_HEIGHT 940
-#define SCREEN_WIDTH (940*2)
+#define SCREEN_HEIGHT 768//940 
+#define SCREEN_WIDTH 1366//(940*2)
 #define LOWEST_RATIO (min<double>(SCREEN_HEIGHT, SCREEN_WIDTH))
 #define BIGGEST_RATIO (max<double>(SCREEN_HEIGHT, SCREEN_WIDTH))
 
 #define FONT GLUT_BITMAP_HELVETICA_18
+#define FONT_HEIGHT 18
 
 using namespace std;
 using namespace boost::filesystem;
@@ -219,22 +220,24 @@ void displayCellData(Point_t ortho_center, int focusedCell, Point_t cell_center)
 	for(int t=0; t<text.size();t++){
 		w = glutBitmapLength(FONT, (unsigned char *)text[t]) / (double)SCREEN_WIDTH;
 		h = padding + glutBitmapWidth(FONT, text[t][0]) / (double)SCREEN_HEIGHT;
-		textCenter_y -= h;
-
+		
 		glColor3f(0, 0, 0);
 		glBegin(GL_POLYGON);
 		glVertex2f(textCenter_x - pixelWidth_toOrtho(2), textCenter_y);
 		glVertex2f(textCenter_x + 2*w+pixelWidth_toOrtho(2), textCenter_y);
-		glVertex2f(textCenter_x + 2*w+pixelWidth_toOrtho(2), textCenter_y - pixelHeight_toOrtho(2) - h);
-		glVertex2f(textCenter_x - pixelWidth_toOrtho(2), textCenter_y - pixelHeight_toOrtho(2) - h);
+		glVertex2f(textCenter_x + 2*w+pixelWidth_toOrtho(2), textCenter_y - pixelHeight_toOrtho(2) - h - padding);
+		glVertex2f(textCenter_x - pixelWidth_toOrtho(2), textCenter_y - pixelHeight_toOrtho(2) - h - padding);
 		glEnd();
 
 		glColor3f(1.0f, 1.0f, 0); //amarelo
-		glRasterPos2f(textCenter_x, textCenter_y - (h));
+		glRasterPos2f(textCenter_x, textCenter_y -(h) );
 		int len = strlen((const char *)text[t]);
 		for (int i = 0; i < len; i++){
 			glutBitmapCharacter(FONT, text[t][i]);
 		}
+
+		textCenter_y -= pixelHeight_toOrtho(4) +h + padding;
+	
 	}
 }
 
@@ -326,8 +329,6 @@ void display(){
 
 	glPopMatrix();
 
-
-
 	//para desenhar o "+" no centro
 	glPushMatrix();
 
@@ -418,19 +419,6 @@ bool keystates[256] = {0};	//lista de estados das teclas, true para apertada, e 
 
 void MyKeyboardFunc(unsigned char Key, int x, int y){
 	keystates[Key] = true;
-	if(Key == ' '){
-		//pausa a animação
-		printf("Pausing/Playing animation\n");
-		isPaused=!isPaused;
-	}
-	if(Key == '\n' || Key == '\r'){
-		printf("restart animation\n");
-		curr_timeStep=0;
-		isPaused=true;
-		Cells_color_buffer[active_buffer].assign(total_celulas, {1.0, 1.0, 1.0, 0});
-		fillColorBuffer(Cells_color_buffer[free_buffer], curr_timeStep, 0);
-		display();
-	}
 }
 
 void MyKeyboardUpFunc(unsigned char Key, int x, int y){
@@ -441,6 +429,23 @@ void MyKeyboardUpFunc(unsigned char Key, int x, int y){
 
 void ApplyInput(int deltaTime){
 	bool callDisplay = false;
+
+	
+	if (keystates[' '])
+	{
+		//pausa a animação
+		printf("Pausing/Playing animation\n");
+		isPaused = !isPaused;
+	}
+	if (keystates['\n'] || keystates['\r'])
+	{
+		printf("restart animation\n");
+		curr_timeStep = 0;
+		isPaused = true;
+		Cells_color_buffer[active_buffer].assign(total_celulas, {1.0, 1.0, 1.0, 0});
+		fillColorBuffer(Cells_color_buffer[free_buffer], curr_timeStep, 0);
+		callDisplay = true;
+	}
 
 	if(keystates['+']){
 		total_scale.x+= total_scale.x*scaVel*deltaTime;
