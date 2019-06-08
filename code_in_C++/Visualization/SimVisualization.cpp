@@ -22,6 +22,7 @@
 #include <boost/filesystem.hpp>
 #include <thread>
 #include <cstdint>
+#include <cctype>
 
 #include "Tools.h"
 #include "Helper.h"
@@ -416,75 +417,20 @@ void idleFunc(){
 Point_t vetor_l={-velocity,0}, vetor_r={velocity,0}, vetor_d={0,-velocity}, vetor_u={0,velocity};
 Point_t vetor = {0.0f, 0.0f};
 
-//bool keystates[256] = {0};	//lista de estados das teclas, true para apertada, e false para solta
-
-int16_t keystates = 0;
-
-
-int getIndx(unsigned char Key){
-	int indx;
-		switch (Key)
-		{
-		case ' ':
-			indx = 0;
-			break;
-		case '\n':
-			indx = 1;
-			break;
-		case '\r':
-			indx = 2;
-			break;
-		case '+':
-			indx = 3;
-			break;
-		case '-':
-			indx = 4;
-			break;
-		case 'd':
-			indx = 5;
-			break;
-		case 'D':
-			indx = 6;
-			break;
-		case 'a':
-			indx = 7;
-			break;
-		case 'A':
-			indx = 8;
-			break;
-		case 's':
-			indx = 9;
-			break;
-		case 'S':
-			indx = 10;
-			break;
-		case 'w':
-			indx = 11;
-			break;
-		case 'W':
-			indx = 12;
-			break;
-		default:
-			indx = -1;
-		}
-	return indx;
-}
+bool keystates[256] = {0};	//lista de estados das teclas, true para apertada, e false para solta
 
 void MyKeyboardFunc(unsigned char Key, int x, int y){
-	int indx;
-		
-	if(keystates == 0){	
-		indx = getIndx(Key);
-		if(indx != -1)
-			keystates |= (1 << indx);
-	}
+	char c = Key;
+	if(  isupper(c) )
+		c+=32;
+	keystates[c] = true;
 }
 
 void MyKeyboardUpFunc(unsigned char Key, int x, int y){
-	int indx = getIndx(Key);
-
-	if(indx != -1)
-		keystates &= ~(1 << indx);
+	char c = Key;
+	if(isalpha(c) && isupper(c))
+		c+=32;
+	keystates[c] = false;
 }
 
 
@@ -492,14 +438,15 @@ void MyKeyboardUpFunc(unsigned char Key, int x, int y){
 void ApplyInput(int deltaTime){
 	bool callDisplay = false;
 
-	
-	if ( keystates & (1 << 0))
+	//
+	if(keystates[' '])
 	{
 		//pausa a animação
 		printf("Pausing/Playing animation\n");
 		isPaused = !isPaused;
 	}
-	if (keystates & (1 << 1) || keystates & (1 << 2))
+	//
+	if(keystates['\n'] || keystates['\r'])
 	{
 		printf("restart animation\n");
 		curr_timeStep = 0;
@@ -508,8 +455,8 @@ void ApplyInput(int deltaTime){
 		fillColorBuffer(Cells_color_buffer[free_buffer], curr_timeStep, 0);
 		callDisplay = true;
 	}
-
-	if(keystates & (1 << 3)){
+	//
+	if(keystates['+']){
 		total_scale.x+= total_scale.x*scaVel*deltaTime;
 		total_scale.y+= total_scale.y*scaVel*deltaTime;
 		if(total_scale.x > 450)	//treshold de zoomIn
@@ -517,7 +464,9 @@ void ApplyInput(int deltaTime){
 
 		callDisplay = true;
 	}
-	if(keystates & (1 << 4)){
+	//
+	if(keystates['-'])
+	{
 		total_scale.x-= total_scale.x*scaVel*deltaTime;
 		total_scale.y-= total_scale.y*scaVel*deltaTime;
 		if(total_scale.x <=1e-3)	//treshold de zoomOut
@@ -525,12 +474,14 @@ void ApplyInput(int deltaTime){
 		
 		callDisplay=true;
 	}
-
-	if(keystates & (1 << 5) || keystates & (1 << 6)){   total_translade.x -= transVel*deltaTime/total_scale.x; callDisplay=true;}
-	if(keystates & (1 << 7) || keystates & ( 1 << 8)){   total_translade.x += transVel*deltaTime/total_scale.x; callDisplay=true;}
-	if(keystates & (1 << 9) || keystates & (1 << 10)){   total_translade.y += transVel*deltaTime/total_scale.y; callDisplay=true;}
-	if(keystates & (1 << 11) || keystates & (1 << 12)){   total_translade.y -= transVel*deltaTime/total_scale.y; callDisplay=true;}
-
+	//'d' 'D'
+	if(keystates['d']){ total_translade.x -= transVel*deltaTime/total_scale.x; callDisplay=true;}
+	//'a' 'A'
+	if(keystates['a']){ total_translade.x += transVel*deltaTime/total_scale.x; callDisplay=true;}
+	//'s' 'S'
+	if(keystates['s']){total_translade.y += transVel*deltaTime/total_scale.y; callDisplay=true;}
+	//'w' 'W'
+	if(keystates['w']){ total_translade.y -= transVel*deltaTime/total_scale.y; callDisplay=true;}
 
 	if(callDisplay)
 		display();
