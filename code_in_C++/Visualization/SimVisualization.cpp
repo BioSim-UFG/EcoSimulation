@@ -63,6 +63,8 @@ vector<RGBAColorf_t> Cells_color_buffer[2];
 int active_buffer=0, free_buffer=1;
 int curr_timeStep=0;
 
+vector<float> NPPs;
+
 //registro de populações nas células de cada espécie
 //keys: Populations[celula][specie] = população dessa espécie nesta célula neste determinado timeStep
 vector<vector<float>> Populations;
@@ -95,7 +97,6 @@ void fillColorBuffer(vector<RGBAColorf_t> &buffer, int timeStep, pair<uint, stri
 		if (Populations[cellId].size() < specie + 1)
 			Populations[cellId].resize(specie + 1);
 		Populations[cellId].at(specie) = pop;
-		maxPopFound = max(maxPopFound, pop);
 	}
 
 	fclose(specie_arq);
@@ -422,20 +423,9 @@ void MyKeyboardFunc(unsigned char Key, int x, int y){
 	if(  isupper(c) )
 		c+=32;
 	keystates[c] = true;
-}
 
-void MyKeyboardUpFunc(unsigned char Key, int x, int y){
-	char c = Key;
-	if( isupper(c) )
-		c+=32;
-	keystates[c] = false;
-}
-
-
-
-void ApplyInput(int deltaTime){
+	//aqui vão teclar que ativão apenas uma vez (nao são reativadas enquanto nao levantar a tecla e pressionar de novo)
 	bool callDisplay = false;
-
 	//pausa a animação
 	if(keystates[' ']){
 		printf("Pausing/Playing animation\n");
@@ -450,6 +440,40 @@ void ApplyInput(int deltaTime){
 		fillColorBuffer(Cells_color_buffer[free_buffer], curr_timeStep, timeStep_fileNames[curr_timeStep][0]);
 		callDisplay = true;
 	}
+
+	//'n' 'N'
+	if(keystates['n']){
+		//antigo bug: se estiver apertando 'n' enquanto muda de timeStep, o iterators não serão do mesmo vector
+		//solução: verificar se os iterators estão no mesmo espaço de memória
+		if(currentSpecieFile_it < --timeStep_fileNames[curr_timeStep].end() && currentSpecieFile_it >= timeStep_fileNames[curr_timeStep].begin())
+			currentSpecieFile_it++;
+		callDisplay=true;
+		printf("changing specie to from file %s", currentSpecieFile_it->second.c_str());
+	}
+	//'p' 'P'
+	if(keystates['p']){
+		if(currentSpecieFile_it > timeStep_fileNames[curr_timeStep].begin() && currentSpecieFile_it < timeStep_fileNames[curr_timeStep].end())
+			currentSpecieFile_it--;
+		callDisplay=true;
+		printf("changing specie to from file %s", currentSpecieFile_it->second.c_str());
+	}
+
+	if(callDisplay)
+		display();
+}
+
+void MyKeyboardUpFunc(unsigned char Key, int x, int y){
+	char c = Key;
+	if( isupper(c) )
+		c+=32;
+	keystates[c] = false;
+}
+
+
+
+void ApplyInput(int deltaTime){
+	bool callDisplay = false;
+
 	//zoom in
 	if(keystates['+']){
 		total_scale.x+= total_scale.x*scaVel*deltaTime;
@@ -476,21 +500,6 @@ void ApplyInput(int deltaTime){
 	if(keystates['s']){ total_translade.y += transVel*deltaTime/total_scale.y; callDisplay=true;}
 	//'w' 'W'
 	if(keystates['w']){ total_translade.y -= transVel*deltaTime/total_scale.y; callDisplay=true;}
-
-	//'n' 'N'
-	if(keystates['n']){
-		//antigo bug: se estiver apertando 'n' enquanto muda de timeStep, o iterators não serão do mesmo vector
-		//solução: verificar se os iterators estão no mesmo espaço de memória
-		if(currentSpecieFile_it < --timeStep_fileNames[curr_timeStep].end() && currentSpecieFile_it >= timeStep_fileNames[curr_timeStep].begin())
-			currentSpecieFile_it++;
-		callDisplay=true;
-	}
-	//'p' 'P'
-	if(keystates['p']){
-		if(currentSpecieFile_it > timeStep_fileNames[curr_timeStep].begin() && currentSpecieFile_it < timeStep_fileNames[curr_timeStep].end())
-			currentSpecieFile_it--;
-		callDisplay=true;
-	}
 
 	if(callDisplay)
 		display();

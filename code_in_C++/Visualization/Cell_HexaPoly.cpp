@@ -33,6 +33,10 @@ void Cell_HexaPoly::draw(){
     glEnd();
 }
 
+float Cell_HexaPoly::Area(){
+    return area;
+}
+
 Point_t Cell_HexaPoly::Center(){
     return center;
 }
