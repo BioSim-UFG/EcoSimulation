@@ -17,6 +17,7 @@
 #include <unordered_map>
 
 #include <string>
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <boost/filesystem.hpp>
@@ -63,15 +64,13 @@ int active_buffer=0, free_buffer=1;
 int curr_timeStep=0;
 
 //registro de populações nas células de cada espécie
-//keys: Populations_byTime [time_step] [celula] [specie] = população dessa espécie nesta célula neste determinado timeStep
-vector<vector<vector<float> > > Populations_byTime;
-float maxPopFound=0.0f;
-
 //keys: Populations[celula][specie] = população dessa espécie nesta célula neste determinado timeStep
 vector<vector<float>> Populations;
-//lista de arquivos dentro de cada arquivo, timeStep_fileDescriptors[time_step][pair<specie, file_name>]
-vector<vector<pair<uint,string>>> timeStep_fileNames;
+float maxPopFound=0.0f;
 
+//lista de arquivos dentro de cada arquivo, timeStep_fileDescriptors[time_step][pair<specieId, file_name>]
+vector<vector<pair<uint,string>>> timeStep_fileNames;
+vector< pair<uint, string> >::iterator currentSpecieFile_it;
 
 void swapColorBuffer(){
 	int rangemax = 2;	//buffer size = 2 ( double buffer)
@@ -79,33 +78,27 @@ void swapColorBuffer(){
 	free_buffer = (free_buffer + 1) % ( min<int>(sizeof(Cells_color_buffer) / sizeof(RGBAColorf_t), rangemax) );
 }
 
-void fillColorBuffer(vector<RGBAColorf_t> &buffer, int timeStep, int specie){
-
-	for(auto &specie_fd: timeStep_fileNames[timeStep]){
-		if(specie_fd.first != specie)
-			continue;
-
-		FILE *specie_arq = fopen(specie_fd.second.c_str(), "rb");
-
-		if(specie_arq==NULL){
-			perror("Could not open file");
-			exit(1);
-		}
-
-		uint cellId;
-		float pop;
-		while (!feof(specie_arq)){
-			fread(&cellId, sizeof(uint), 1, specie_arq);
-			fread(&pop, sizeof(float), 1, specie_arq);
-
-			if (Populations[cellId].size() < specie + 1)
-				Populations[cellId].resize(specie + 1);
-			Populations[cellId].at(specie) = pop;
-			maxPopFound = max(maxPopFound, pop);
-		}
-
-		fclose(specie_arq);
+void fillColorBuffer(vector<RGBAColorf_t> &buffer, int timeStep, pair<uint, string> specieFile){
+	FILE *specie_arq = fopen(specieFile.second.c_str(), "rb");
+	if(specie_arq==NULL){
+		perror("Could not open file");
+		exit(1);
 	}
+
+	uint cellId;
+	uint specie = specieFile.first;
+	float pop;
+	while (!feof(specie_arq)){
+		fread(&cellId, sizeof(uint), 1, specie_arq);
+		fread(&pop, sizeof(float), 1, specie_arq);
+
+		if (Populations[cellId].size() < specie + 1)
+			Populations[cellId].resize(specie + 1);
+		Populations[cellId].at(specie) = pop;
+		maxPopFound = max(maxPopFound, pop);
+	}
+
+	fclose(specie_arq);
 
 
 	
@@ -388,7 +381,12 @@ void idleFunc(){
 
 	//seta as proxima novas cores;
 	if(haveToLoadNextCellColors && curr_timeStep<total_timeSteps){
-		fillCell_colorBuffer_thrd = new std::thread(fillColorBuffer, std::ref(Cells_color_buffer[free_buffer]), curr_timeStep, 1);
+		//acha o iterator para a mesma espécie no novo timeStep, ou a seguinte caso ela não exista mais
+		auto newSpecieFile_it = lower_bound(timeStep_fileNames[curr_timeStep].begin(), timeStep_fileNames[curr_timeStep].end(), currentSpecieFile_it->first,
+											[](pair<uint,string> &lhs, uint rhs) -> bool { return lhs.first < rhs; });
+		currentSpecieFile_it = newSpecieFile_it;
+
+		fillCell_colorBuffer_thrd = new std::thread(fillColorBuffer, std::ref(Cells_color_buffer[free_buffer]), curr_timeStep, *currentSpecieFile_it);
 		haveToLoadNextCellColors=false;
 	}
 
@@ -428,7 +426,7 @@ void MyKeyboardFunc(unsigned char Key, int x, int y){
 
 void MyKeyboardUpFunc(unsigned char Key, int x, int y){
 	char c = Key;
-	if(isalpha(c) && isupper(c))
+	if( isupper(c) )
 		c+=32;
 	keystates[c] = false;
 }
@@ -438,24 +436,21 @@ void MyKeyboardUpFunc(unsigned char Key, int x, int y){
 void ApplyInput(int deltaTime){
 	bool callDisplay = false;
 
-	//
-	if(keystates[' '])
-	{
-		//pausa a animação
+	//pausa a animação
+	if(keystates[' ']){
 		printf("Pausing/Playing animation\n");
 		isPaused = !isPaused;
 	}
-	//
-	if(keystates['\n'] || keystates['\r'])
-	{
+	//reinicia a animação
+	if(keystates['\n'] || keystates['\r']){
 		printf("restart animation\n");
 		curr_timeStep = 0;
 		isPaused = true;
 		Cells_color_buffer[active_buffer].assign(total_celulas, {1.0, 1.0, 1.0, 0});
-		fillColorBuffer(Cells_color_buffer[free_buffer], curr_timeStep, 0);
+		fillColorBuffer(Cells_color_buffer[free_buffer], curr_timeStep, timeStep_fileNames[curr_timeStep][0]);
 		callDisplay = true;
 	}
-	//
+	//zoom in
 	if(keystates['+']){
 		total_scale.x+= total_scale.x*scaVel*deltaTime;
 		total_scale.y+= total_scale.y*scaVel*deltaTime;
@@ -464,9 +459,8 @@ void ApplyInput(int deltaTime){
 
 		callDisplay = true;
 	}
-	//
-	if(keystates['-'])
-	{
+	//zoom out
+	if(keystates['-']){
 		total_scale.x-= total_scale.x*scaVel*deltaTime;
 		total_scale.y-= total_scale.y*scaVel*deltaTime;
 		if(total_scale.x <=1e-3)	//treshold de zoomOut
@@ -479,9 +473,24 @@ void ApplyInput(int deltaTime){
 	//'a' 'A'
 	if(keystates['a']){ total_translade.x += transVel*deltaTime/total_scale.x; callDisplay=true;}
 	//'s' 'S'
-	if(keystates['s']){total_translade.y += transVel*deltaTime/total_scale.y; callDisplay=true;}
+	if(keystates['s']){ total_translade.y += transVel*deltaTime/total_scale.y; callDisplay=true;}
 	//'w' 'W'
 	if(keystates['w']){ total_translade.y -= transVel*deltaTime/total_scale.y; callDisplay=true;}
+
+	//'n' 'N'
+	if(keystates['n']){
+		//antigo bug: se estiver apertando 'n' enquanto muda de timeStep, o iterators não serão do mesmo vector
+		//solução: verificar se os iterators estão no mesmo espaço de memória
+		if(currentSpecieFile_it < --timeStep_fileNames[curr_timeStep].end() && currentSpecieFile_it >= timeStep_fileNames[curr_timeStep].begin())
+			currentSpecieFile_it++;
+		callDisplay=true;
+	}
+	//'p' 'P'
+	if(keystates['p']){
+		if(currentSpecieFile_it > timeStep_fileNames[curr_timeStep].begin() && currentSpecieFile_it < timeStep_fileNames[curr_timeStep].end())
+			currentSpecieFile_it--;
+		callDisplay=true;
+	}
 
 	if(callDisplay)
 		display();
@@ -495,6 +504,7 @@ void readTimeStep(path dir_path);
 
 static string manual_comandos = " W,A,S,D para se mover pelo mapa, \n"
 								"'+' e '-' para dar zoom in e zoom out\n"
+								"'n' e 'p' para alternar as espécies\n"
 								" Barra de espaço para Play/Pause\n"
 								" Enter para reiniciar animação (pausada)\n\n";
 
@@ -538,11 +548,14 @@ int main(int argc, char **argv){
 	Cells_color_buffer[0].resize(total_celulas, {1.0f,1.0f,1.0f,.0f});
 	Cells_color_buffer[1].resize(total_celulas, {1.0f,1.0f,1.0f,.0f});
 
-	//Populations_byTime.resize(total_timeSteps+1, vector<vector<float>>(total_celulas,vector<float>()));
-
 	Populations.resize(total_celulas);
 	timeStep_fileNames.resize(total_timeSteps);
 	readSimulation_timeSteps(simPath);
+	for(auto &species: timeStep_fileNames){
+		sort(species.begin(), species.end());		//ordena as espécies por ID
+	}
+	currentSpecieFile_it = timeStep_fileNames[0].begin();
+
 
 	cout << manual_comandos;
 
@@ -709,8 +722,8 @@ void read_simInfo(string info_file_path, SimInfo_t *info){
 
 void readCoordinates(vector<Coord_t> *coord_v, string latPath, string lonPath){
 	int i, n_cells1, n_cells2;
-	ifstream latFile(latPath, std::ios::binary);
-	ifstream lonFile(lonPath, std::ios::binary);
+	std::ifstream latFile(latPath, std::ios::binary);
+	std::ifstream lonFile(lonPath, std::ios::binary);
 
 	Coord_t coord;
 
@@ -800,27 +813,6 @@ void readTimeStep(path dir_path){
 					uint specie = stoi(file_name.string().substr(s + 3, f));
 					//timeStep_fileDescriptors[timeStep].push_back( {specie, open(dir_it->path().c_str(), O_RDONLY)});	//abre arquivo e armazena o descritor dele
 					timeStep_fileNames[timeStep].push_back( {specie, dir_it->path().c_str()} ); //abre arquivo e armazena o descritor dele
-
-					/*
-					ifstream speciePopFile(dir_it->path().string(), std::ios::binary);
-
-					int s = file_name.string().rfind("Esp");
-					int f = file_name.string().rfind("_Time");
-					uint specie = stoi(file_name.string().substr(s+3,f));
-
-					uint cell;
-					float pop;
-					while(!speciePopFile.eof()){	
-						speciePopFile.read((char*)&cell, sizeof(uint));
-						speciePopFile.read((char *)&pop, sizeof(float));
-						if(Populations_byTime[timeStep][cell].size() < specie+1)
-							Populations_byTime[timeStep][cell].resize(specie+1);
-						Populations_byTime[timeStep][cell].at(specie) = pop;
-						maxPopFound = max(maxPopFound, pop);
-					}
-
-					speciePopFile.close();
-					*/
 				}
 				cout<<"\n";
 			}
