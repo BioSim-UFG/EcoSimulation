@@ -1,8 +1,13 @@
 #include "Cell_HexaPoly.hpp"
 
-Cell_HexaPoly::Cell_HexaPoly(Point_t center)
+Cell_HexaPoly::Cell_HexaPoly(Point_t center, float area)
 {
     setCenter(center);
+    setArea(area);
+}
+
+void Cell_HexaPoly::setArea(float area){
+    this->area = area;
 }
 
 void Cell_HexaPoly::setCenter(Point_t center){

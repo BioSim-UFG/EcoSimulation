@@ -47,16 +47,18 @@ void rotatePolygon(Point_t v[], int size, double angle){
 
 Point_t scaleByPoint(Point_t u, double sca, Point_t center){
 	Point_t transPoint = {-center.x, -center.y};
-	translate(u, transPoint);
-	scale(u, sca);
-	translate(u, center);
+	u = translate(u, transPoint);
+	u = scale(u, sca);
+	u = translate(u, center);
+	return u;
 }
 
 Point_t rotateByPoint(Point_t u, double angle, Point_t center){
 	Point_t transPoint = {-center.x, -center.y};
-	translate(u, transPoint);
-	rotate(u, angle);
-	translate(u, center);
+	u = translate(u, transPoint);
+	u = rotate(u, angle);
+	u = translate(u, center);
+	return u;
 }
 
 

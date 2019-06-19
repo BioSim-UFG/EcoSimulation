@@ -1,6 +1,9 @@
 #include "Helper.hpp"
 #include <iostream>
 
+//defina para considerar o angulo do globo terrestre (eixo latitude)
+//#define NORMALIZE_LATITUDE
+
 using namespace boost::filesystem;
 
 void read_simInfo(string info_file_path, SimInfo_t *info){
@@ -83,8 +86,6 @@ void readCoordinates(vector<Coord_t> *coord_v, string latPath, string lonPath){
 		coord.lat = sin(((coord.lat-0.5)*90.0)*3.14159265/180);
 		coord.lat = (coord.lat+1)/2;
 		#endif
-
-
 		coord_v->push_back(coord);
 	}
 
@@ -93,6 +94,23 @@ void readCoordinates(vector<Coord_t> *coord_v, string latPath, string lonPath){
 
 }
 
+void readAreas(vector<float> *area_v, string areaPath){
+	FILE *areaFile = fopen(areaPath.c_str(), "r");
+	if(areaFile==NULL){
+		perror("Não foi possivel abrir o arquivo de area\n");
+		exit(1);
+	}
+
+	float area;
+	fscanf(areaFile, "%*[^\n]\n");	//descarta a primeira linha
+
+	while(!feof(areaFile)){
+		fscanf(areaFile, "%f", &area);
+		fscanf(areaFile, "\n");
+		area_v->push_back(area);
+	}
+	fclose(areaFile);
+}
 
 void readSimulation_timeSteps(string dir_path, vector<vector<pair<uint,string>>> &timeStep_fileNames){
 	path p(dir_path); // p reads clearer than argv[1] in the following code

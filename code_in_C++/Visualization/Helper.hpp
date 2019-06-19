@@ -35,6 +35,7 @@ typedef struct SIM_INFO{
 
 void read_simInfo(string info_file_path, SimInfo_t *info);
 void readCoordinates(vector<Coord_t> *coord_v, string latPath, string lonPath);
+void readAreas(vector<float> *area_v, string areaPath);
 void readSimulation_timeSteps(string dir_path, vector<vector<pair<uint,string>>> &timeStep_fileNames);
 void readTimeStep(boost::filesystem::path dir_path, vector<vector<pair<uint,string>>> &timeStep_fileNames);
 

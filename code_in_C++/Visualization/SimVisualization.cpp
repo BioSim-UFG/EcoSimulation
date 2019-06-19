@@ -29,10 +29,8 @@
 #include "Helper.hpp"
 #include "Cell_HexaPoly.hpp"
 
-//defina para considerar o angulo do globo terrestre (eixo latitude)
-//#define NORMALIZE_LATITUDE
 
-//pode alterar o SCREEN_HEIGHT e SCREEN_WIDTH, já o resto não garanto...
+//pode alterar o SCREEN_HEIGHT e SCREEN_WIDTH sem problemas, já o resto não garanto...
 #define SCREEN_HEIGHT 768//940 
 #define SCREEN_WIDTH 1366//(940*2)
 #define LOWEST_RATIO (min<double>(SCREEN_HEIGHT, SCREEN_WIDTH))
@@ -54,6 +52,7 @@ Point_t total_scale = {1.0f, 1.0f};
 Point_t total_translade = {0.0f, 0.0f};
 
 
+SimInfo_t simInfo;
 
 int total_timeSteps;
 int total_celulas=0;
@@ -63,12 +62,12 @@ vector<RGBAColorf_t> Cells_color_buffer[2];
 int active_buffer=0, free_buffer=1;
 int curr_timeStep=0;
 
-vector<float> NPPs;
-
 //registro de populações nas células de cada espécie
 //keys: Populations[celula][specie] = população dessa espécie nesta célula neste determinado timeStep
 vector<vector<float>> Populations;
 float maxPopFound=0.0f;
+
+std::ifstream NPP_stream;
 
 //lista de arquivos dentro de cada arquivo, timeStep_fileDescriptors[time_step][pair<specieId, file_name>]
 vector<vector<pair<uint,string>>> timeStep_fileNames;
@@ -102,14 +101,26 @@ void fillColorBuffer(vector<RGBAColorf_t> &buffer, int timeStep, pair<uint, stri
 	}
 	fclose(specie_arq);
 
-	
+	//quantidade de bytes que um timeStep tem na stream
+	static const long int timeStepSize = sizeof(int) + (simInfo.NUM_CELLS * sizeof(float));
+
+	int size;
+	long int curr_pos = NPP_stream.tellg();
+	NPP_stream.seekg((timeStep*timeStepSize)-(curr_pos-sizeof(int)), ios_base::cur);
+	NPP_stream.read((char *)&size, sizeof(int));
+	vector<float> NPPs(size);
+	NPP_stream.read((char*)NPPs.data(), size * sizeof(float));
+
 	float density;
 	for (int i = 0; i < buffer.size(); i++){
 		if(stopThread) return;
 
 		auto &cell = Populations[i];
-		if (cell.size() > specie)
-			density = cell.at(specie) / maxPopFound;
+		if (cell.size() > specie){
+			float capacity_K = (NPPs[i]*Cells[i].Area())/50000;
+			density = cell.at(specie) / capacity_K;
+			//density = cell.at(specie) / maxPopFound;
+		}
 		else
 			density = 0.0f;
 		//buffer[i] = RGBAColorf_t(density, 0, 0, 0);	//para fundo preto
@@ -503,8 +514,8 @@ void MyKeyboardFunc(unsigned char Key, int x, int y){
 		callDisplay = true;
 	}
 
-	int realTimeStep = curr_timeStep;
-	//'n' 'N'
+	int realTimeStep = min(curr_timeStep,50);
+	//'n' 'N'a
 	if(keystates['n']){
 		//antigo bug: se estiver apertando 'n' enquanto muda de timeStep, o iterators não serão do mesmo vector
 		//solução: verificar se os iterators estão no mesmo espaço de memória
@@ -514,7 +525,7 @@ void MyKeyboardFunc(unsigned char Key, int x, int y){
 			updateColorBuffer_async(active_buffer, realTimeStep, *currentSpecieFile_it);
 			waitColorBufferUpdate();
 			haveToLoadNextCellColors=true;
-			if(isPaused && curr_timeStep>0) realTimeStep = curr_timeStep-1;
+			if(isPaused) realTimeStep = max(curr_timeStep-1, 0);
 		}
 		printf("changing specie to from file %s", currentSpecieFile_it->second.c_str());
 	}
@@ -526,7 +537,7 @@ void MyKeyboardFunc(unsigned char Key, int x, int y){
 			updateColorBuffer_async(active_buffer, realTimeStep, *currentSpecieFile_it);
 			waitColorBufferUpdate();
 			haveToLoadNextCellColors=true;
-			if(isPaused && curr_timeStep>0) realTimeStep = curr_timeStep-1;
+			if(isPaused) realTimeStep = max(curr_timeStep-1, 0);
 		}
 		printf("changing specie to from file %s", currentSpecieFile_it->second.c_str());
 	}
@@ -605,7 +616,7 @@ int main(int argc, char **argv){
 	string latPath = "../../output/";
 	string lonPath = "../../output/";
 
-	auto simInfo = processArgs(argc, argv, &simPath, &latPath, &lonPath);	
+	simInfo = processArgs(argc, argv, &simPath, &latPath, &lonPath);	
 
 
 
@@ -613,13 +624,20 @@ int main(int argc, char **argv){
 	total_celulas=simInfo.NUM_CELLS;
 	total_timeSteps=simInfo.TIMESTEPS;
 	maxPopFound = simInfo.MaxPopFound;
+	NPP_stream.open(simInfo.NPP_dataSource, std::ios::binary);
+	NPP_stream.seekg(sizeof(int), ios_base::beg);	//pula "quantidade de timeSteps" gravado no arquivo
 
 	Cells.reserve(total_celulas);
 	vector<Coord_t> *coords = new vector<Coord_t>();
 	coords->reserve(total_celulas);
 	readCoordinates(coords, simInfo.Lat_dataSource, simInfo.Lon_dataSource);
-	for(auto &c: *coords){
-		Cells.emplace_back((Point_t){c.lon,c.lat});
+	vector<float> *areas = new vector<float>();
+	areas->reserve(total_celulas);
+	readAreas(areas, simInfo.Areas_dataSource);
+	for(int i=0; i< total_celulas; i++){
+		auto &c = coords->at(i);
+		auto &a = areas->at(i);
+		Cells.emplace_back((Point_t){c.lon,c.lat}, a);
 	}
 	Cells_color_buffer[0].resize(total_celulas, {1.0f,1.0f,1.0f,.0f});
 	Cells_color_buffer[1].resize(total_celulas, {1.0f,1.0f,1.0f,.0f});

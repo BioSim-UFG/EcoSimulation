@@ -8,9 +8,10 @@ class Cell_HexaPoly
 {
 
 public:
-    Cell_HexaPoly(Point_t center);
+    Cell_HexaPoly(Point_t center, float area);
 
     void setCenter(Point_t center);
+    void setArea(float area);
     Point_t *get_Vertexes();
     float Area();
     Point_t Center();
