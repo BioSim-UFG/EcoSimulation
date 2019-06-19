@@ -1,12 +1,8 @@
-#ifndef HELPER_H
-#define HELPER_H
+#ifndef CELLPOLY_H
+#define CELLPOLY_H
 
 #include "Tools.h"
-
-typedef struct{
-    float lon;
-    float lat;
-}Coord_t;
+#include "Helper.hpp"
 
 class Cell_HexaPoly
 {

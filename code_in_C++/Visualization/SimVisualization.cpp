@@ -26,7 +26,7 @@
 #include <cctype>
 
 #include "Tools.h"
-#include "Helper.h"
+#include "Helper.hpp"
 #include "Cell_HexaPoly.hpp"
 
 //defina para considerar o angulo do globo terrestre (eixo latitude)
@@ -80,7 +80,7 @@ void swapColorBuffer(){
 	free_buffer = (free_buffer + 1) % ( min<int>(sizeof(Cells_color_buffer) / sizeof(RGBAColorf_t), rangemax) );
 }
 
-void fillColorBuffer(vector<RGBAColorf_t> &buffer, int timeStep, pair<uint, string> specieFile){
+void fillColorBuffer(vector<RGBAColorf_t> &buffer, int timeStep, pair<uint, string> specieFile, bool &stopThread){
 	FILE *specie_arq = fopen(specieFile.second.c_str(), "rb");
 	if(specie_arq==NULL){
 		perror("Could not open file");
@@ -91,6 +91,8 @@ void fillColorBuffer(vector<RGBAColorf_t> &buffer, int timeStep, pair<uint, stri
 	uint specie = specieFile.first;
 	float pop;
 	while (!feof(specie_arq)){
+		if(stopThread){ fclose(specie_arq); return; }
+
 		fread(&cellId, sizeof(uint), 1, specie_arq);
 		fread(&pop, sizeof(float), 1, specie_arq);
 
@@ -98,13 +100,13 @@ void fillColorBuffer(vector<RGBAColorf_t> &buffer, int timeStep, pair<uint, stri
 			Populations[cellId].resize(specie + 1);
 		Populations[cellId].at(specie) = pop;
 	}
-
 	fclose(specie_arq);
-
 
 	
 	float density;
 	for (int i = 0; i < buffer.size(); i++){
+		if(stopThread) return;
+
 		auto &cell = Populations[i];
 		if (cell.size() > specie)
 			density = cell.at(specie) / maxPopFound;
@@ -136,7 +138,7 @@ void displayTimeStep(Point_t ortho_center,int timeStep){
 	double h = glutBitmapWidth(GLUT_BITMAP_HELVETICA_12, text[0]) / (double)SCREEN_HEIGHT;
 
 	double textCenter_x = ortho_center.x*2-0.08;
-	double textCenter_y = ortho_center.y*2-0.05;
+	double textCenter_y = ortho_center.y*2-0.03;
 
 	glColor3f(0, 0, 0);
 	glBegin(GL_QUADS);
@@ -151,6 +153,42 @@ void displayTimeStep(Point_t ortho_center,int timeStep){
 	int len = strlen((const char *)text);
 	for(int i =0 ; i< len ; i++){
 		glutBitmapCharacter(FONT, text[i]);
+	}
+}
+
+void displaySpecieData(Point_t ortho_center, const pair<uint,string> &Specie){
+	vector<char[100]> text(1);
+	sprintf(text[0], "Specie ID : %u", Specie.first);
+
+	double textCenter_x = ortho_center.x*2-0.08;
+	double textCenter_y = ortho_center.y*2-0.03;
+
+	//vai ficar embaixo do timeStep, então considerando esse espaço
+
+	double padding = pixelHeight_toOrtho(4);
+	textCenter_y -=  padding + pixelHeight_toOrtho( glutBitmapWidth(GLUT_BITMAP_HELVETICA_12, 'S') );
+	double h = 0;
+	double w;
+	for(int t=0; t<text.size();t++){
+		w = glutBitmapLength(FONT, (unsigned char *)text[t]) / (double)SCREEN_WIDTH;
+		h = padding + glutBitmapWidth(FONT, text[t][0]) / (double)SCREEN_HEIGHT;
+		
+		glColor3f(0, 0, 0);
+		glBegin(GL_POLYGON);
+		glVertex2f(textCenter_x - (w+pixelWidth_toOrtho(2)), textCenter_y);
+		glVertex2f(textCenter_x + w+pixelWidth_toOrtho(2), textCenter_y);
+		glVertex2f(textCenter_x + w+pixelWidth_toOrtho(2), textCenter_y - pixelHeight_toOrtho(2) - h - padding);
+		glVertex2f(textCenter_x - (w+pixelWidth_toOrtho(2)), textCenter_y - pixelHeight_toOrtho(2) - h - padding);
+		glEnd();
+
+		glColor3f(1.0f, 1.0f, 0); //amarelo
+		glRasterPos2f(textCenter_x-w, textCenter_y -(h) );
+		int len = strlen((const char *)text[t]);
+		for (int i = 0; i < len; i++){
+			glutBitmapCharacter(FONT, text[t][i]);
+		}
+
+		textCenter_y -= pixelHeight_toOrtho(4) +h + padding;
 	}
 }
 
@@ -207,8 +245,8 @@ void displayCellData(Point_t ortho_center, int focusedCell, Point_t cell_center)
 	sprintf(text[2], "Longitude : %f", cell_center.x);
 	sprintf(text[3], "Latitude  : %f", cell_center.y);
 
-	double textCenter_x = + 0.08;
-	double textCenter_y = ortho_center.y * 2 - 0.05;
+	double textCenter_x = + 0.04;
+	double textCenter_y = ortho_center.y * 2 - 0.03;
 
 	double h = 0;
 	double w;
@@ -236,6 +274,7 @@ void displayCellData(Point_t ortho_center, int focusedCell, Point_t cell_center)
 	
 	}
 }
+
 
 
 void init(){
@@ -347,6 +386,8 @@ void display(){
 	if(!isPaused) displayTimeStep(ortho_center, curr_timeStep);
 	else displayTimeStep(ortho_center, curr_timeStep-1);
 
+	displaySpecieData(ortho_center, *currentSpecieFile_it);
+
 	glPopMatrix();
 
 	//para desenhar a barra legenda de densidade, no canto centro direito
@@ -366,11 +407,32 @@ void display(){
 	glutSwapBuffers();
 }
 
+
+std::thread *fillCell_colorBuffer_thrd = NULL;
+//interrompe ação de preencher cor antiga (se ainda estiver sendo feita), e inicia uma nova com as configurações do instante (timestep e specie)
+void updateColorBuffer_async(int bufferIdx, int timeStep, pair<uint, string> specieFile){
+	static bool stopCurrentThread = false;
+
+	if (fillCell_colorBuffer_thrd != NULL){
+		if(fillCell_colorBuffer_thrd->joinable()){
+			stopCurrentThread=true;			//para thread antiga forçadamente
+			fillCell_colorBuffer_thrd->join();
+		}
+		delete(fillCell_colorBuffer_thrd);		//libera memória
+	}
+	stopCurrentThread=false;
+	fillCell_colorBuffer_thrd = new std::thread(fillColorBuffer, std::ref(Cells_color_buffer[bufferIdx]), timeStep, specieFile, ref(stopCurrentThread));
+}
+//espera a thread que colore terminar
+void waitColorBufferUpdate(){
+	if(fillCell_colorBuffer_thrd->joinable())
+		fillCell_colorBuffer_thrd->join();
+}
+
 int oldTime=0;
 int countToNextFrame=0;
+bool haveToLoadNextCellColors = true;
 void idleFunc(){
-	static bool haveToLoadNextCellColors = true;
-	static thread *fillCell_colorBuffer_thrd;
 
 	int newTime = glutGet(GLUT_ELAPSED_TIME);
 	int delta = newTime - oldTime;
@@ -387,7 +449,8 @@ void idleFunc(){
 											[](pair<uint,string> &lhs, uint rhs) -> bool { return lhs.first < rhs; });
 		currentSpecieFile_it = newSpecieFile_it;
 
-		fillCell_colorBuffer_thrd = new std::thread(fillColorBuffer, std::ref(Cells_color_buffer[free_buffer]), curr_timeStep, *currentSpecieFile_it);
+		
+		updateColorBuffer_async(free_buffer, curr_timeStep, *currentSpecieFile_it);
 		haveToLoadNextCellColors=false;
 	}
 
@@ -395,11 +458,10 @@ void idleFunc(){
 	if(countToNextFrame >= FRAME_DURATION && curr_timeStep<total_timeSteps && !isPaused){
 		countToNextFrame=0;
 
-		fillCell_colorBuffer_thrd->join();
-		fillCell_colorBuffer_thrd->~thread();
 		haveToLoadNextCellColors=true;
+		waitColorBufferUpdate();
 		swapColorBuffer();
-		printf("new Frame of timeStep %d!\n", curr_timeStep);
+		printf("new Frame of timeStep %d!\n", curr_timeStep); fflush(stdout);
 
 		display();
 		curr_timeStep++;
@@ -419,12 +481,11 @@ Point_t vetor = {0.0f, 0.0f};
 bool keystates[256] = {0};	//lista de estados das teclas, true para apertada, e false para solta
 
 void MyKeyboardFunc(unsigned char Key, int x, int y){
-	char c = Key;
-	if(  isupper(c) )
-		c+=32;
-	keystates[c] = true;
+	if( isupper(Key) )
+		Key+=32;
+	keystates[Key] = true;
 
-	//aqui vão teclar que ativão apenas uma vez (nao são reativadas enquanto nao levantar a tecla e pressionar de novo)
+	//aqui vão teclas que ativam apenas uma vez (nao são reativadas enquanto nao levantar a tecla e pressionar de novo)
 	bool callDisplay = false;
 	//pausa a animação
 	if(keystates[' ']){
@@ -435,26 +496,38 @@ void MyKeyboardFunc(unsigned char Key, int x, int y){
 	if(keystates['\n'] || keystates['\r']){
 		printf("restart animation\n");
 		curr_timeStep = 0;
+		currentSpecieFile_it = timeStep_fileNames[0].begin();
 		isPaused = true;
 		Cells_color_buffer[active_buffer].assign(total_celulas, {1.0, 1.0, 1.0, 0});
-		fillColorBuffer(Cells_color_buffer[free_buffer], curr_timeStep, timeStep_fileNames[curr_timeStep][0]);
+		updateColorBuffer_async(free_buffer, curr_timeStep, *currentSpecieFile_it);
 		callDisplay = true;
 	}
 
+	int realTimeStep = curr_timeStep;
 	//'n' 'N'
 	if(keystates['n']){
 		//antigo bug: se estiver apertando 'n' enquanto muda de timeStep, o iterators não serão do mesmo vector
 		//solução: verificar se os iterators estão no mesmo espaço de memória
-		if(currentSpecieFile_it < --timeStep_fileNames[curr_timeStep].end() && currentSpecieFile_it >= timeStep_fileNames[curr_timeStep].begin())
+		if(currentSpecieFile_it < --timeStep_fileNames[realTimeStep].end() && currentSpecieFile_it >= timeStep_fileNames[realTimeStep].begin()){
 			currentSpecieFile_it++;
-		callDisplay=true;
+			callDisplay=true;
+			updateColorBuffer_async(active_buffer, realTimeStep, *currentSpecieFile_it);
+			waitColorBufferUpdate();
+			haveToLoadNextCellColors=true;
+			if(isPaused && curr_timeStep>0) realTimeStep = curr_timeStep-1;
+		}
 		printf("changing specie to from file %s", currentSpecieFile_it->second.c_str());
 	}
 	//'p' 'P'
 	if(keystates['p']){
-		if(currentSpecieFile_it > timeStep_fileNames[curr_timeStep].begin() && currentSpecieFile_it < timeStep_fileNames[curr_timeStep].end())
+		if(currentSpecieFile_it > timeStep_fileNames[realTimeStep].begin() && currentSpecieFile_it < timeStep_fileNames[realTimeStep].end()){
 			currentSpecieFile_it--;
-		callDisplay=true;
+			callDisplay=true;
+			updateColorBuffer_async(active_buffer, realTimeStep, *currentSpecieFile_it);
+			waitColorBufferUpdate();
+			haveToLoadNextCellColors=true;
+			if(isPaused && curr_timeStep>0) realTimeStep = curr_timeStep-1;
+		}
 		printf("changing specie to from file %s", currentSpecieFile_it->second.c_str());
 	}
 
@@ -463,14 +536,13 @@ void MyKeyboardFunc(unsigned char Key, int x, int y){
 }
 
 void MyKeyboardUpFunc(unsigned char Key, int x, int y){
-	char c = Key;
-	if( isupper(c) )
-		c+=32;
-	keystates[c] = false;
+	if( isupper(Key) )
+		Key+=32;
+	keystates[Key] = false;
 }
 
 
-
+//processa inputs do tipo que devem ser aplicados continuamente enquanto a tecla estiver pressionada
 void ApplyInput(int deltaTime){
 	bool callDisplay = false;
 
@@ -492,24 +564,18 @@ void ApplyInput(int deltaTime){
 		
 		callDisplay=true;
 	}
-	//'d' 'D'
-	if(keystates['d']){ total_translade.x -= transVel*deltaTime/total_scale.x; callDisplay=true;}
-	//'a' 'A'
-	if(keystates['a']){ total_translade.x += transVel*deltaTime/total_scale.x; callDisplay=true;}
-	//'s' 'S'
-	if(keystates['s']){ total_translade.y += transVel*deltaTime/total_scale.y; callDisplay=true;}
-	//'w' 'W'
-	if(keystates['w']){ total_translade.y -= transVel*deltaTime/total_scale.y; callDisplay=true;}
+	
+	if(keystates['d']){ total_translade.x -= transVel*deltaTime/total_scale.x; callDisplay=true;}	//'d' 'D'
+	if(keystates['a']){ total_translade.x += transVel*deltaTime/total_scale.x; callDisplay=true;}	//'a' 'A'
+	if(keystates['s']){ total_translade.y += transVel*deltaTime/total_scale.y; callDisplay=true;}	//'s' 'S'
+	if(keystates['w']){ total_translade.y -= transVel*deltaTime/total_scale.y; callDisplay=true;}	//'w' 'W'
 
 	if(callDisplay)
 		display();
 }
 
 SimInfo_t processArgs(int argc, char **argv, string *simPath, string *latPath, string *lonPath);
-void read_simInfo(string info_file_path, SimInfo_t *info);
-void readCoordinates(vector<Coord_t> *coord_v, string latPath, string lonPath);
-void readSimulation_timeSteps(string dir_path);
-void readTimeStep(path dir_path);
+
 
 static string manual_comandos = " W,A,S,D para se mover pelo mapa, \n"
 								"'+' e '-' para dar zoom in e zoom out\n"
@@ -546,6 +612,7 @@ int main(int argc, char **argv){
 
 	total_celulas=simInfo.NUM_CELLS;
 	total_timeSteps=simInfo.TIMESTEPS;
+	maxPopFound = simInfo.MaxPopFound;
 
 	Cells.reserve(total_celulas);
 	vector<Coord_t> *coords = new vector<Coord_t>();
@@ -559,7 +626,7 @@ int main(int argc, char **argv){
 
 	Populations.resize(total_celulas);
 	timeStep_fileNames.resize(total_timeSteps);
-	readSimulation_timeSteps(simPath);
+	readSimulation_timeSteps(simPath, timeStep_fileNames);
 	for(auto &species: timeStep_fileNames){
 		sort(species.begin(), species.end());		//ordena as espécies por ID
 	}
@@ -662,173 +729,4 @@ SimInfo_t processArgs(int argc, char **argv, string *simPath, string *latPath, s
 }
 
 
-void read_simInfo(string info_file_path, SimInfo_t *info){
-	FILE *info_file = fopen(info_file_path.c_str(),"r");
 
-	char atribute_cstr[100];
-	char value_cstr[100];
-
-	if(info_file == NULL){
-		printf("Não foi possivel abrir o arquivo %s\n", info_file_path.c_str());
-		exit(1);
-	}
-
-	while(!feof(info_file)){
-		fscanf(info_file, "%[^=]s", atribute_cstr); //lê até encontrar '='
-		fscanf(info_file,"=");	//descarta o '='
-		fscanf(info_file, "%[^\n]s", value_cstr);   //lê até final da linha
-		fscanf(info_file,"\n");	//descarta o '\n'
-
-		string atribute = string(atribute_cstr);
-		while(atribute.back()==' '){ atribute.pop_back();}	//remove os espaços sobrando
-
-		string value = string(value_cstr);
-		while(value.front()==' '){ value.erase(0,1);}	//remove os espaços sobrando
-			
-
-		if (atribute.compare("Name")==0){
-			info->Name = value;
-		}else if(atribute.compare("TimeSteps")==0){
-			info->TIMESTEPS = stoi(value);
-		}else if(atribute.compare("Num Cells")==0){
-			info->NUM_CELLS = stoi(value);
-		}else if(atribute.compare("Num Specie Founders")==0){
-			info->NUM_FOUNDERS = stoi(value);
-		}else if(atribute.compare("Max local specie population")==0){
-			maxPopFound = stof(value);
-		}else if(atribute.compare("MinTemp Source")==0){
-			info->MinTemp_dataSource = value;
-		}else if(atribute.compare("MaxTemp Source")==0){
-			info->MaxTemp_dataSource = value;
-		}else if(atribute.compare("MinPPTN Source")==0){
-			info->MinPPTN_dataSource = value;
-		}else if(atribute.compare("MaxPPTN Source")==0){
-			info->MaxPPTN_dataSource = value;
-		}else if(atribute.compare("NPP Source")==0){
-			info->NPP_dataSource = value;
-		}else if(atribute.compare("Latitude Source")==0){
-			info->Lat_dataSource = value;
-		}else if(atribute.compare("Longitude Source")==0){
-			info->Lon_dataSource = value;
-		}else if(atribute.compare("Areas Source")==0){
-			info->Areas_dataSource = value;
-		}else if(atribute.compare("Neighbors Source")==0){
-			info->Neighbors_dataSource = value;
-		}
-		
-	}
-
-}
-
-
-
-
-
-
-
-
-
-
-void readCoordinates(vector<Coord_t> *coord_v, string latPath, string lonPath){
-	int i, n_cells1, n_cells2;
-	std::ifstream latFile(latPath, std::ios::binary);
-	std::ifstream lonFile(lonPath, std::ios::binary);
-
-	Coord_t coord;
-
-	latFile.read((char*)&n_cells1, sizeof(int));
-	lonFile.read((char *)&n_cells2, sizeof(int));
-	if(n_cells1 != n_cells2){
-		perror("Quantidade de coordenadas de Latitude e Longitude diferem!\n");
-		exit(1);
-	}
-
-	for(int i=0; i< n_cells1;i++){
-		latFile.read((char *)&(coord.lat), sizeof(Coord_t::lat));
-		lonFile.read((char *)&(coord.lon), sizeof(Coord_t::lon));
-		
-		#ifdef NORMALIZE_LATITUDE
-		//normalizando o angulo da latitude
-		coord.lat = sin(((coord.lat-0.5)*90.0)*3.14159265/180);
-		coord.lat = (coord.lat+1)/2;
-		#endif
-
-
-		coord_v->push_back(coord);
-	}
-
-	latFile.close();
-	lonFile.close();
-
-}
-
-
-void readSimulation_timeSteps(string dir_path){
-	path p(dir_path); // p reads clearer than argv[1] in the following code
-
-	try{
-		if (exists(p)){ // does p actually exist?
-			if (is_regular_file(p)){ // is p a regular file?
-				printf("%s is a file\n", p.string().c_str());
-			}
-			else if (is_directory(p)){ // is p a directory?
-				printf("found %s DIR, containing\n", p.string().c_str());
-     
-				auto dir_it = directory_iterator(p);
-				while(dir_it != directory_iterator{}){
-					cout << *dir_it << "\tOpening it...\n";
-					readTimeStep(dir_it->path());
-					cout<<"\t\tOk!\n";
-					dir_it++;
-				}
-			}
-			else
-				printf("%s exists, but is neither a regular file nor a directory\n",p.string().c_str());
-		}
-		else
-			printf("%s does not exist\n",p.string().c_str());
-	}
-	catch (const filesystem_error &ex){
-		printf("%s\n",ex.what() );
-	}
-}
-
-void readTimeStep(path dir_path){
-	int timeStep;
-	
-	if (is_regular_file(dir_path)){ // is p a regular file?
-		printf("%s is a file\n", dir_path.string().c_str());
-	}else{
-		int pos = dir_path.string().find("timeStep");
-		int len = string("timeStep").size();
-		timeStep = stoi(dir_path.string().substr(pos+len));
-
-		if(total_timeSteps < timeStep+1){
-			printf("Skipping this folder\n");
-			return;
-		}
-
-		auto dir_it = directory_iterator(dir_path);
-		while(dir_it != directory_iterator{}){
-			if(is_regular_file(*dir_it)){
-				cout <<"\t\t" <<dir_it->path().filename();
-
-				auto file_name = dir_it->path().filename();
-				if(file_name.extension().string().compare(".txt") != 0){
-					cout << " -->reading it";
-
-					int s = file_name.string().rfind("Esp");
-					int f = file_name.string().rfind("_Time");
-					uint specie = stoi(file_name.string().substr(s + 3, f));
-					//timeStep_fileDescriptors[timeStep].push_back( {specie, open(dir_it->path().c_str(), O_RDONLY)});	//abre arquivo e armazena o descritor dele
-					timeStep_fileNames[timeStep].push_back( {specie, dir_it->path().c_str()} ); //abre arquivo e armazena o descritor dele
-				}
-				cout<<"\n";
-			}
-
-			dir_it++;
-		}
-		
-	}
-
-}
