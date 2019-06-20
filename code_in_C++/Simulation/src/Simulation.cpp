@@ -301,7 +301,7 @@ namespace SimEco{
 
 		
 		//etapa de difusão (população é interpretada como um fluido pelo mapa). Obs: todas celulas vizinhas de uma célula X são tratadas como se tivessem a mesma distancia de X, e consequentemente, como se TODAS as celulas tivessem o mesmo tamanho e distancia entre sí
-		float diffusion_rate = 0.01;
+		float diffusion_rate = 0.002;
 		float a = this->_Dtime * diffusion_rate * N;
 
 		for(int k=0; k<30; k++){

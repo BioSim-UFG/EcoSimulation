@@ -117,8 +117,11 @@ void fillColorBuffer(vector<RGBAColorf_t> &buffer, int timeStep, pair<uint, stri
 
 		auto &cell = Populations[i];
 		if (cell.size() > specie){
-			float capacity_K = (NPPs[i]*Cells[i].Area())/50000;
-			density = cell.at(specie) / capacity_K;
+			float capacity_K = (NPPs[i]*Cells[i].Area())/50000.0f;
+			if(isnan(NPPs[i]) || NPPs[i]<=0)
+				density=0.0f;
+			else
+				density = cell.at(specie) / capacity_K;
 			//density = cell.at(specie) / maxPopFound;
 		}
 		else
@@ -394,8 +397,7 @@ void display(){
 	glPushMatrix();
 	glTranslated((width_ratio - 1) * ortho_center.x*2, (height_ratio - 1) * ortho_center.y*2, 0);
 
-	if(!isPaused) displayTimeStep(ortho_center, curr_timeStep);
-	else displayTimeStep(ortho_center, curr_timeStep-1);
+	displayTimeStep(ortho_center, curr_timeStep);
 
 	displaySpecieData(ortho_center, *currentSpecieFile_it);
 
@@ -498,10 +500,13 @@ void MyKeyboardFunc(unsigned char Key, int x, int y){
 
 	//aqui vão teclas que ativam apenas uma vez (nao são reativadas enquanto nao levantar a tecla e pressionar de novo)
 	bool callDisplay = false;
+	bool overwriteCollorBuffer = false;
 	//pausa a animação
 	if(keystates[' ']){
 		printf("Pausing/Playing animation\n");
 		isPaused = !isPaused;
+		overwriteCollorBuffer = true;
+		callDisplay=true;
 	}
 	//reinicia a animação
 	if(keystates['\n'] || keystates['\r']){
@@ -509,23 +514,20 @@ void MyKeyboardFunc(unsigned char Key, int x, int y){
 		curr_timeStep = 0;
 		currentSpecieFile_it = timeStep_fileNames[0].begin();
 		isPaused = true;
-		Cells_color_buffer[active_buffer].assign(total_celulas, {1.0, 1.0, 1.0, 0});
-		updateColorBuffer_async(free_buffer, curr_timeStep, *currentSpecieFile_it);
+		overwriteCollorBuffer = true;
 		callDisplay = true;
 	}
 
-	int realTimeStep = min(curr_timeStep,50);
-	//'n' 'N'a
+	int realTimeStep = min(curr_timeStep,(int)simInfo.TIMESTEPS-1);
+	//'n' 'N'
 	if(keystates['n']){
 		//antigo bug: se estiver apertando 'n' enquanto muda de timeStep, o iterators não serão do mesmo vector
 		//solução: verificar se os iterators estão no mesmo espaço de memória
 		if(currentSpecieFile_it < --timeStep_fileNames[realTimeStep].end() && currentSpecieFile_it >= timeStep_fileNames[realTimeStep].begin()){
 			currentSpecieFile_it++;
+			overwriteCollorBuffer = true;
 			callDisplay=true;
-			updateColorBuffer_async(active_buffer, realTimeStep, *currentSpecieFile_it);
-			waitColorBufferUpdate();
-			haveToLoadNextCellColors=true;
-			if(isPaused) realTimeStep = max(curr_timeStep-1, 0);
+			haveToLoadNextCellColors = true;
 		}
 		printf("changing specie to from file %s", currentSpecieFile_it->second.c_str());
 	}
@@ -533,13 +535,16 @@ void MyKeyboardFunc(unsigned char Key, int x, int y){
 	if(keystates['p']){
 		if(currentSpecieFile_it > timeStep_fileNames[realTimeStep].begin() && currentSpecieFile_it < timeStep_fileNames[realTimeStep].end()){
 			currentSpecieFile_it--;
+			overwriteCollorBuffer = true;
 			callDisplay=true;
-			updateColorBuffer_async(active_buffer, realTimeStep, *currentSpecieFile_it);
-			waitColorBufferUpdate();
 			haveToLoadNextCellColors=true;
-			if(isPaused) realTimeStep = max(curr_timeStep-1, 0);
 		}
 		printf("changing specie to from file %s", currentSpecieFile_it->second.c_str());
+	}
+
+	if(overwriteCollorBuffer){
+		updateColorBuffer_async(active_buffer, realTimeStep, *currentSpecieFile_it);
+		waitColorBufferUpdate();
 	}
 
 	if(callDisplay)
