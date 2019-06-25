@@ -132,11 +132,8 @@ void fillColorBuffer(vector<RGBAColorf_t> &buffer, int timeStep, pair<uint, stri
 	
 }
 
-double pixelWidth_toOrtho(int pixels){
-	return pixels/(double)SCREEN_WIDTH;
-}
-double pixelHeight_toOrtho(int pixels){
-	return pixels/(double)SCREEN_HEIGHT;
+double pixeltoOrtho(int pixels){
+	return pixels/LOWEST_RATIO;
 }
 
 
@@ -156,10 +153,10 @@ void displayTimeStep(Point_t ortho_center,int timeStep){
 
 	glColor3f(0, 0, 0);
 	glBegin(GL_QUADS);
-	glVertex2f(textCenter_x -w -pixelWidth_toOrtho(2), textCenter_y + pixelHeight_toOrtho(2)+h);
-	glVertex2f(textCenter_x +w + pixelWidth_toOrtho(2), textCenter_y + pixelHeight_toOrtho(2)+h);
-	glVertex2f(textCenter_x +w + pixelWidth_toOrtho(2), textCenter_y - pixelHeight_toOrtho(2)-h);
-	glVertex2f(textCenter_x -w - pixelWidth_toOrtho(2), textCenter_y - pixelHeight_toOrtho(2)-h);
+	glVertex2f(textCenter_x -w -pixeltoOrtho(2), textCenter_y + pixeltoOrtho(2)+h);
+	glVertex2f(textCenter_x +w + pixeltoOrtho(2), textCenter_y + pixeltoOrtho(2)+h);
+	glVertex2f(textCenter_x +w + pixeltoOrtho(2), textCenter_y - pixeltoOrtho(2)-h);
+	glVertex2f(textCenter_x -w - pixeltoOrtho(2), textCenter_y - pixeltoOrtho(2)-h);
 	glEnd();
 
 	glColor3f(1.0f, 1.0f, 0); //amarelo
@@ -179,8 +176,8 @@ void displaySpecieData(Point_t ortho_center, const pair<uint,string> &Specie){
 
 	//vai ficar embaixo do timeStep, então considerando esse espaço
 
-	double padding = pixelHeight_toOrtho(4);
-	textCenter_y -=  padding + pixelHeight_toOrtho( glutBitmapWidth(GLUT_BITMAP_HELVETICA_12, 'S') );
+	double padding = pixeltoOrtho(4);
+	textCenter_y -=  padding + pixeltoOrtho( glutBitmapWidth(GLUT_BITMAP_HELVETICA_12, 'S') );
 	double h = 0;
 	double w;
 	for(int t=0; t<text.size();t++){
@@ -189,10 +186,10 @@ void displaySpecieData(Point_t ortho_center, const pair<uint,string> &Specie){
 		
 		glColor3f(0, 0, 0);
 		glBegin(GL_POLYGON);
-		glVertex2f(textCenter_x - (w+pixelWidth_toOrtho(2)), textCenter_y);
-		glVertex2f(textCenter_x + w+pixelWidth_toOrtho(2), textCenter_y);
-		glVertex2f(textCenter_x + w+pixelWidth_toOrtho(2), textCenter_y - pixelHeight_toOrtho(2) - h - padding);
-		glVertex2f(textCenter_x - (w+pixelWidth_toOrtho(2)), textCenter_y - pixelHeight_toOrtho(2) - h - padding);
+		glVertex2f(textCenter_x - (w+pixeltoOrtho(2)), textCenter_y);
+		glVertex2f(textCenter_x + w+pixeltoOrtho(2), textCenter_y);
+		glVertex2f(textCenter_x + w+pixeltoOrtho(2), textCenter_y - pixeltoOrtho(2) - h - padding);
+		glVertex2f(textCenter_x - (w+pixeltoOrtho(2)), textCenter_y - pixeltoOrtho(2) - h - padding);
 		glEnd();
 
 		glColor3f(1.0f, 1.0f, 0); //amarelo
@@ -202,7 +199,7 @@ void displaySpecieData(Point_t ortho_center, const pair<uint,string> &Specie){
 			glutBitmapCharacter(FONT, text[t][i]);
 		}
 
-		textCenter_y -= pixelHeight_toOrtho(4) +h + padding;
+		textCenter_y -= pixeltoOrtho(4) +h + padding;
 	}
 }
 
@@ -264,17 +261,17 @@ void displayCellData(Point_t ortho_center, int focusedCell, Point_t cell_center)
 
 	double h = 0;
 	double w;
-	double padding = pixelHeight_toOrtho(4);
+	double padding = pixeltoOrtho(4);
 	for(int t=0; t<text.size();t++){
 		w = glutBitmapLength(FONT, (unsigned char *)text[t]) / (double)SCREEN_WIDTH;
 		h = padding + glutBitmapWidth(FONT, text[t][0]) / (double)SCREEN_HEIGHT;
 		
 		glColor3f(0, 0, 0);
 		glBegin(GL_POLYGON);
-		glVertex2f(textCenter_x - pixelWidth_toOrtho(2), textCenter_y);
-		glVertex2f(textCenter_x + 2*w+pixelWidth_toOrtho(2), textCenter_y);
-		glVertex2f(textCenter_x + 2*w+pixelWidth_toOrtho(2), textCenter_y - pixelHeight_toOrtho(2) - h - padding);
-		glVertex2f(textCenter_x - pixelWidth_toOrtho(2), textCenter_y - pixelHeight_toOrtho(2) - h - padding);
+		glVertex2f(textCenter_x - pixeltoOrtho(2), textCenter_y);
+		glVertex2f(textCenter_x + 2*w+pixeltoOrtho(2), textCenter_y);
+		glVertex2f(textCenter_x + 2*w+pixeltoOrtho(2), textCenter_y - pixeltoOrtho(2) - h - padding);
+		glVertex2f(textCenter_x - pixeltoOrtho(2), textCenter_y - pixeltoOrtho(2) - h - padding);
 		glEnd();
 
 		glColor3f(1.0f, 1.0f, 0); //amarelo
@@ -284,7 +281,7 @@ void displayCellData(Point_t ortho_center, int focusedCell, Point_t cell_center)
 			glutBitmapCharacter(FONT, text[t][i]);
 		}
 
-		textCenter_y -= pixelHeight_toOrtho(4) +h + padding;
+		textCenter_y -= pixeltoOrtho(4) +h + padding;
 	
 	}
 }
@@ -315,8 +312,12 @@ void reshapeWindow(int width, int height){
 
 	//levando em conta que os dados de latitude estão entre 0-1
 	gluOrtho2D(0, (double)width / LOWEST_RATIO, 0, (double)height / LOWEST_RATIO);
+	total_translade.x += ((width - current_width)/LOWEST_RATIO)/2;
+	total_translade.y += ((height - current_height))/LOWEST_RATIO /2;
+
 	current_width = width;
 	current_height = height;
+
 
 	display();
 }
@@ -351,8 +352,8 @@ void display(){
 	int focused_cell;
 	Point_t cell_center;
 	float focused_cell_distance = INFINITY;
-	float my_y = ortho_center.y - total_translade.y; //screen center em relação ao plano ortogonal
-	float my_x = ortho_center.x - total_translade.x;
+	float my_y = (ortho_center.y * height_ratio) - total_translade.y; //screen center em relação ao plano ortogonal
+	float my_x = (ortho_center.x * width_ratio) - total_translade.x;
 
 	for(int i=0; i<Cells.size();i++){
 		Cell_HexaPoly &cell = Cells.at(i);
